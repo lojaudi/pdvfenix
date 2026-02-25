@@ -196,6 +196,7 @@ export type Database = {
           number: number
           status: Database["public"]["Enums"]["table_status"]
           updated_at: string
+          waiter_id: string | null
         }
         Insert: {
           capacity?: number
@@ -205,6 +206,7 @@ export type Database = {
           number: number
           status?: Database["public"]["Enums"]["table_status"]
           updated_at?: string
+          waiter_id?: string | null
         }
         Update: {
           capacity?: number
@@ -214,6 +216,7 @@ export type Database = {
           number?: number
           status?: Database["public"]["Enums"]["table_status"]
           updated_at?: string
+          waiter_id?: string | null
         }
         Relationships: [
           {
