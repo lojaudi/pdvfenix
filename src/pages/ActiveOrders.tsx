@@ -69,6 +69,15 @@ export default function ActiveOrdersPage() {
     return map;
   }, [orders]);
 
+  const freeTable = async (order: ActiveOrder) => {
+    if (order.channel === "garcom" && order.table_number) {
+      await supabase
+        .from("tables")
+        .update({ status: "livre" as any, current_order_id: null })
+        .eq("number", order.table_number);
+    }
+  };
+
   const advanceStatus = async (order: ActiveOrder) => {
     const idx = STATUS_FLOW.indexOf(order.status);
     if (idx === -1 || idx >= STATUS_FLOW.length - 1) return;
@@ -80,6 +89,7 @@ export default function ActiveOrdersPage() {
     if (error) {
       toast.error("Erro ao atualizar status");
     } else {
+      if (nextStatus === "entregue") await freeTable(order);
       toast.success(`Pedido movido para ${statusConfig[nextStatus].label}`);
     }
   };
@@ -89,8 +99,12 @@ export default function ActiveOrdersPage() {
       .from("orders")
       .update({ status: "cancelado" as any })
       .eq("id", order.id);
-    if (error) toast.error("Erro ao cancelar pedido");
-    else toast.success("Pedido cancelado");
+    if (error) {
+      toast.error("Erro ao cancelar pedido");
+    } else {
+      await freeTable(order);
+      toast.success("Pedido cancelado");
+    }
   };
 
   if (isLoading) {
