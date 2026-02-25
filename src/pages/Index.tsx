@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useProducts } from "@/hooks/useProducts";
 import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/hooks/useAuth";
-import { useIsAdmin } from "@/hooks/useIsAdmin";
+import { useUserRole } from "@/hooks/useUserRole";
 import { CategoryTabs } from "@/components/pos/CategoryTabs";
 import { ProductCard } from "@/components/pos/ProductCard";
 import { CartPanel } from "@/components/pos/CartPanel";
@@ -26,7 +26,7 @@ const channelLabels: Record<OrderChannel, string> = {
 const Index = () => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
-  const { isAdmin } = useIsAdmin();
+  const { isAdmin, isWaiter } = useUserRole();
   const { categories, products, loading } = useProducts();
   const [channel, setChannel] = useState<OrderChannel>("balcao");
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -35,6 +35,10 @@ const Index = () => {
   const [customerName, setCustomerName] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const cart = useCart();
+
+  useEffect(() => {
+    if (isWaiter) setChannel("garcom");
+  }, [isWaiter]);
 
   const filteredProducts =
     selectedCategory === "all"
@@ -121,7 +125,7 @@ const Index = () => {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <ChannelSelector selected={channel} onSelect={setChannel} />
+            <ChannelSelector selected={channel} onSelect={setChannel} hiddenChannels={isWaiter ? ["balcao", "delivery"] : []} />
             <button
               onClick={() => navigate("/orders")}
               className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
