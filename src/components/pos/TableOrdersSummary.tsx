@@ -4,6 +4,16 @@ import { Loader2, ShoppingBag, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useState } from "react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface TableOrdersSummaryProps {
   tableNumber: number;
@@ -37,6 +47,7 @@ const statusLabels: Record<string, string> = {
 export function TableOrdersSummary({ tableNumber }: TableOrdersSummaryProps) {
   const queryClient = useQueryClient();
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [confirmItem, setConfirmItem] = useState<{ order: OrderWithItems; item: OrderItem } | null>(null);
 
   const { data: orders, isLoading } = useQuery({
     queryKey: ["table-orders-summary", tableNumber],
@@ -142,7 +153,7 @@ export function TableOrdersSummary({ tableNumber }: TableOrdersSummaryProps) {
                     </span>
                     {isOpen && (
                       <button
-                        onClick={() => handleCancelItem(order, item)}
+                        onClick={() => setConfirmItem({ order, item })}
                         disabled={deletingId === item.id}
                         className="opacity-0 group-hover:opacity-100 w-5 h-5 rounded flex items-center justify-center bg-destructive/15 text-destructive hover:bg-destructive/25 transition-all disabled:opacity-50"
                         title="Cancelar item"
@@ -161,6 +172,33 @@ export function TableOrdersSummary({ tableNumber }: TableOrdersSummaryProps) {
           );
         })}
       </div>
+
+      <AlertDialog open={!!confirmItem} onOpenChange={(open) => !open && setConfirmItem(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Cancelar item?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja remover{" "}
+              <strong>{confirmItem?.item.quantity}x {confirmItem?.item.product_name}</strong>{" "}
+              do pedido? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Não, manter</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (confirmItem) {
+                  handleCancelItem(confirmItem.order, confirmItem.item);
+                  setConfirmItem(null);
+                }
+              }}
+            >
+              Sim, cancelar item
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
