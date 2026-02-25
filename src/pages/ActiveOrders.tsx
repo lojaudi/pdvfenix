@@ -86,6 +86,15 @@ export default function ActiveOrdersPage() {
     return map;
   }, [orders]);
 
+  const setTableAwaitingPayment = async (order: ActiveOrder) => {
+    if (order.channel === "garcom" && order.table_number) {
+      await supabase
+        .from("tables")
+        .update({ status: "aguardando_pagamento" as any })
+        .eq("number", order.table_number);
+    }
+  };
+
   const freeTable = async (order: ActiveOrder) => {
     if (order.channel === "garcom" && order.table_number) {
       await supabase
@@ -106,7 +115,7 @@ export default function ActiveOrdersPage() {
     if (error) {
       toast.error("Erro ao atualizar status");
     } else {
-      if (nextStatus === "entregue") await freeTable(order);
+      if (nextStatus === "entregue") await setTableAwaitingPayment(order);
       toast.success(`Pedido movido para ${statusConfig[nextStatus].label}`);
     }
   };
