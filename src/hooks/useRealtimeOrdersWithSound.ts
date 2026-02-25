@@ -3,9 +3,25 @@ import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
+let audioCtxReady = false;
+
+function ensureAudioContext() {
+  if (audioCtxReady) return;
+  const resume = () => {
+    audioCtxReady = true;
+    document.removeEventListener("click", resume);
+    document.removeEventListener("keydown", resume);
+  };
+  document.addEventListener("click", resume, { once: true });
+  document.addEventListener("keydown", resume, { once: true });
+}
+
 function playNotificationSound() {
   try {
     const ctx = new AudioContext();
+    if (ctx.state === "suspended") {
+      ctx.resume();
+    }
     const now = ctx.currentTime;
 
     // First beep
@@ -56,6 +72,10 @@ const channelLabels: Record<string, string> = {
 export function useRealtimeOrdersWithSound(queryKey: string[] = ["active-orders"]) {
   const queryClient = useQueryClient();
   const isFirstLoad = useRef(true);
+
+  useEffect(() => {
+    ensureAudioContext();
+  }, []);
 
   useEffect(() => {
     // Mark first load complete after a short delay

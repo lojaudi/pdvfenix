@@ -193,7 +193,10 @@ export default function ActiveOrdersPage() {
                             </span>
                           </div>
 
-                          {/* Customer */}
+                          {/* Customer / Staff */}
+                          {order.profiles && (
+                            <p className="text-xs text-muted-foreground truncate">🧑‍🍳 {order.profiles.name || order.profiles.email}</p>
+                          )}
                           {order.customer_name && (
                             <p className="text-xs text-muted-foreground truncate">👤 {order.customer_name}</p>
                           )}
