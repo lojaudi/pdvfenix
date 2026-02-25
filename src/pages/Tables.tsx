@@ -199,10 +199,10 @@ export default function TablesPage() {
                   )}
                   {table.status === "aguardando_pagamento" && (
                     <button
-                      onClick={() => changeStatus(table, "livre")}
-                      className="flex-1 py-1.5 rounded-lg bg-green-500/20 text-green-400 text-[10px] font-bold hover:bg-green-500/30 transition-colors"
+                      onClick={() => navigate("/cashier")}
+                      className="flex-1 py-1.5 rounded-lg bg-primary/20 text-primary text-[10px] font-bold hover:bg-primary/30 transition-colors"
                     >
-                      ✓ Pago — Liberar
+                      💳 Ir para Caixa
                     </button>
                   )}
                 </div>

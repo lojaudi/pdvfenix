@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { UserPlus, Trash2, Shield, Users, Headphones } from "lucide-react";
+import { UserPlus, Trash2, Shield, Users, Headphones, Wallet } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
@@ -17,6 +17,7 @@ const roleLabels: Record<AppRole, { label: string; icon: typeof Shield }> = {
   admin: { label: "Administrador", icon: Shield },
   attendant: { label: "Atendente", icon: Headphones },
   waiter: { label: "Garçom", icon: Users },
+  caixa: { label: "Caixa", icon: Wallet },
 };
 
 export function AdminUsers() {

@@ -10,6 +10,7 @@ import AdminPage from "./pages/Admin";
 import ReportsPage from "./pages/Reports";
 import ActiveOrdersPage from "./pages/ActiveOrders";
 import TablesPage from "./pages/Tables";
+import CashierPage from "./pages/Cashier";
 import NotFound from "./pages/NotFound";
 import { Loader2 } from "lucide-react";
 
@@ -57,6 +58,7 @@ const App = () => (
           <Route path="/reports" element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
           <Route path="/orders" element={<ProtectedRoute><ActiveOrdersPage /></ProtectedRoute>} />
           <Route path="/tables" element={<ProtectedRoute><TablesPage /></ProtectedRoute>} />
+          <Route path="/cashier" element={<ProtectedRoute><CashierPage /></ProtectedRoute>} />
           <Route path="/auth" element={<AuthRoute><AuthPage /></AuthRoute>} />
           <Route path="*" element={<NotFound />} />
         </Routes>

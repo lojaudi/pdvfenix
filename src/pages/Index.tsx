@@ -12,7 +12,7 @@ import { PaymentDialog } from "@/components/pos/PaymentDialog";
 import { TableSelector } from "@/components/pos/TableSelector";
 import { createOrder } from "@/services/orderService";
 import { toast } from "sonner";
-import { Store, LogOut, Loader2, Settings, BarChart3, ClipboardList, LayoutGrid } from "lucide-react";
+import { Store, LogOut, Loader2, Settings, BarChart3, ClipboardList, LayoutGrid, Wallet } from "lucide-react";
 
 type OrderChannel = "balcao" | "garcom" | "delivery";
 type PaymentMethodType = "dinheiro" | "credito" | "debito" | "pix";
@@ -26,7 +26,7 @@ const channelLabels: Record<OrderChannel, string> = {
 const Index = () => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
-  const { isAdmin, isWaiter } = useUserRole();
+  const { isAdmin, isWaiter, isCashier } = useUserRole();
   const { categories, products, loading } = useProducts();
   const [channel, setChannel] = useState<OrderChannel>("balcao");
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -140,6 +140,15 @@ const Index = () => {
             >
               <LayoutGrid className="w-4 h-4" />
             </button>
+            {(isAdmin || isCashier) && (
+              <button
+                onClick={() => navigate("/cashier")}
+                className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                title="Caixa"
+              >
+                <Wallet className="w-4 h-4" />
+              </button>
+            )}
             {isAdmin && (
               <>
                 <button
