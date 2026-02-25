@@ -1,11 +1,12 @@
-import { categories, Category } from "@/data/products";
+import { DbCategory } from "@/hooks/useProducts";
 
 interface CategoryTabsProps {
+  categories: DbCategory[];
   selected: string;
   onSelect: (id: string) => void;
 }
 
-export function CategoryTabs({ selected, onSelect }: CategoryTabsProps) {
+export function CategoryTabs({ categories, selected, onSelect }: CategoryTabsProps) {
   return (
     <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
       <button

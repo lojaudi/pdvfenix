@@ -1,8 +1,16 @@
-import { OrderItem, formatCurrency } from "@/data/products";
+import { DbProduct } from "@/hooks/useProducts";
 import { Minus, Plus, Trash2, ShoppingCart } from "lucide-react";
 
+const formatCurrency = (value: number) =>
+  new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
+
+export type CartItem = {
+  product: DbProduct;
+  quantity: number;
+};
+
 interface CartPanelProps {
-  items: OrderItem[];
+  items: CartItem[];
   total: number;
   onUpdateQuantity: (productId: string, qty: number) => void;
   onRemove: (productId: string) => void;
@@ -24,7 +32,6 @@ export function CartPanel({
 }: CartPanelProps) {
   return (
     <div className="flex flex-col h-full bg-card border-l border-border">
-      {/* Header */}
       <div className="p-4 border-b border-border">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -38,7 +45,6 @@ export function CartPanel({
         </div>
       </div>
 
-      {/* Items */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-thin">
         {items.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
@@ -90,7 +96,6 @@ export function CartPanel({
         )}
       </div>
 
-      {/* Footer */}
       {items.length > 0 && (
         <div className="p-4 border-t border-border space-y-3">
           <div className="flex justify-between items-center">
