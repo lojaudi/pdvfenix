@@ -10,6 +10,7 @@ import { CartPanel } from "@/components/pos/CartPanel";
 import { ChannelSelector } from "@/components/pos/ChannelSelector";
 import { PaymentDialog } from "@/components/pos/PaymentDialog";
 import { TableSelector } from "@/components/pos/TableSelector";
+import { TableOrdersSummary } from "@/components/pos/TableOrdersSummary";
 import { createOrder } from "@/services/orderService";
 import { toast } from "sonner";
 import { Store, LogOut, Loader2, Settings, BarChart3, ClipboardList, LayoutGrid, Wallet } from "lucide-react";
@@ -179,7 +180,12 @@ const Index = () => {
 
         <div className="flex-1 overflow-y-auto p-6 space-y-4">
           {channel === "garcom" && (
-            <TableSelector onSelect={setSelectedTable} selectedTable={selectedTable} currentUserId={user?.id} />
+            <>
+              <TableSelector onSelect={setSelectedTable} selectedTable={selectedTable} currentUserId={user?.id} />
+              {selectedTable && (
+                <TableOrdersSummary tableNumber={selectedTable} />
+              )}
+            </>
           )}
 
           {channel === "delivery" && (
