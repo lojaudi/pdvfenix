@@ -1,7 +1,9 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, ShoppingBag } from "lucide-react";
+import { Loader2, ShoppingBag, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
+import { useState } from "react";
 
 interface TableOrdersSummaryProps {
   tableNumber: number;
@@ -10,12 +12,19 @@ interface TableOrdersSummaryProps {
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
 
+interface OrderItem {
+  id: string;
+  product_name: string;
+  quantity: number;
+  unit_price: number;
+}
+
 interface OrderWithItems {
   id: string;
   status: string;
   total: number;
   created_at: string;
-  order_items: { id: string; product_name: string; quantity: number; unit_price: number }[];
+  order_items: OrderItem[];
 }
 
 const statusLabels: Record<string, string> = {
@@ -26,6 +35,9 @@ const statusLabels: Record<string, string> = {
 };
 
 export function TableOrdersSummary({ tableNumber }: TableOrdersSummaryProps) {
+  const queryClient = useQueryClient();
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
   const { data: orders, isLoading } = useQuery({
     queryKey: ["table-orders-summary", tableNumber],
     queryFn: async () => {
@@ -42,6 +54,44 @@ export function TableOrdersSummary({ tableNumber }: TableOrdersSummaryProps) {
     enabled: !!tableNumber,
   });
 
+  const handleCancelItem = async (order: OrderWithItems, item: OrderItem) => {
+    setDeletingId(item.id);
+    try {
+      // Delete the item
+      const { error: deleteError } = await supabase
+        .from("order_items")
+        .delete()
+        .eq("id", item.id);
+      if (deleteError) throw deleteError;
+
+      // Recalculate order total
+      const newTotal = order.total - item.quantity * item.unit_price;
+      const remainingItems = order.order_items.filter((i) => i.id !== item.id);
+
+      if (remainingItems.length === 0) {
+        // Cancel the entire order if no items left
+        await supabase
+          .from("orders")
+          .update({ status: "cancelado" as any, total: 0 })
+          .eq("id", order.id);
+        toast.success("Pedido cancelado (sem itens restantes)");
+      } else {
+        // Update order total
+        await supabase
+          .from("orders")
+          .update({ total: Math.max(0, newTotal) })
+          .eq("id", order.id);
+        toast.success(`${item.product_name} removido do pedido`);
+      }
+
+      queryClient.invalidateQueries({ queryKey: ["table-orders-summary", tableNumber] });
+    } catch {
+      toast.error("Erro ao cancelar item");
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center gap-2 text-muted-foreground text-xs py-2">
@@ -52,25 +102,7 @@ export function TableOrdersSummary({ tableNumber }: TableOrdersSummaryProps) {
 
   if (!orders || orders.length === 0) return null;
 
-  // Aggregate all items across orders
-  const allItems: Record<string, { name: string; qty: number; total: number }> = {};
-  orders.forEach((order) => {
-    order.order_items.forEach((item) => {
-      if (allItems[item.product_name]) {
-        allItems[item.product_name].qty += item.quantity;
-        allItems[item.product_name].total += item.quantity * item.unit_price;
-      } else {
-        allItems[item.product_name] = {
-          name: item.product_name,
-          qty: item.quantity,
-          total: item.quantity * item.unit_price,
-        };
-      }
-    });
-  });
-
   const grandTotal = orders.reduce((sum, o) => sum + o.total, 0);
-  const itemList = Object.values(allItems);
 
   return (
     <div className="mb-4 rounded-xl border border-border bg-card p-4 space-y-3">
@@ -89,23 +121,45 @@ export function TableOrdersSummary({ tableNumber }: TableOrdersSummaryProps) {
         </span>
       </div>
 
-      <div className="space-y-1 max-h-32 overflow-y-auto">
-        {itemList.map((item) => (
-          <div key={item.name} className="flex justify-between text-xs">
-            <span className="text-foreground">
-              {item.qty}x {item.name}
-            </span>
-            <span className="text-muted-foreground">{formatCurrency(item.total)}</span>
-          </div>
-        ))}
-      </div>
-
-      <div className="flex gap-1.5 flex-wrap">
-        {orders.map((order, i) => (
-          <Badge key={order.id} variant="outline" className="text-[10px]">
-            #{i + 1} • {statusLabels[order.status] || order.status}
-          </Badge>
-        ))}
+      <div className="space-y-3 max-h-48 overflow-y-auto">
+        {orders.map((order, i) => {
+          const isOpen = order.status === "aberto";
+          return (
+            <div key={order.id} className="space-y-1">
+              <div className="flex items-center gap-1.5">
+                <Badge variant="outline" className="text-[10px]">
+                  #{i + 1} • {statusLabels[order.status] || order.status}
+                </Badge>
+              </div>
+              {order.order_items.map((item) => (
+                <div key={item.id} className="flex items-center justify-between text-xs group">
+                  <span className="text-foreground">
+                    {item.quantity}x {item.product_name}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-muted-foreground">
+                      {formatCurrency(item.quantity * item.unit_price)}
+                    </span>
+                    {isOpen && (
+                      <button
+                        onClick={() => handleCancelItem(order, item)}
+                        disabled={deletingId === item.id}
+                        className="opacity-0 group-hover:opacity-100 w-5 h-5 rounded flex items-center justify-center bg-destructive/15 text-destructive hover:bg-destructive/25 transition-all disabled:opacity-50"
+                        title="Cancelar item"
+                      >
+                        {deletingId === item.id ? (
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                        ) : (
+                          <X className="w-3 h-3" />
+                        )}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
