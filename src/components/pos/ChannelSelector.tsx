@@ -5,6 +5,7 @@ type OrderChannel = "balcao" | "garcom" | "delivery";
 interface ChannelSelectorProps {
   selected: OrderChannel;
   onSelect: (channel: OrderChannel) => void;
+  hiddenChannels?: OrderChannel[];
 }
 
 const channels: { id: OrderChannel; label: string; icon: typeof Monitor }[] = [
@@ -13,10 +14,12 @@ const channels: { id: OrderChannel; label: string; icon: typeof Monitor }[] = [
   { id: "delivery", label: "Delivery", icon: Truck },
 ];
 
-export function ChannelSelector({ selected, onSelect }: ChannelSelectorProps) {
+export function ChannelSelector({ selected, onSelect, hiddenChannels = [] }: ChannelSelectorProps) {
+  const visibleChannels = channels.filter((ch) => !hiddenChannels.includes(ch.id));
+
   return (
     <div className="flex gap-1 bg-secondary/50 rounded-xl p-1">
-      {channels.map((ch) => (
+      {visibleChannels.map((ch) => (
         <button
           key={ch.id}
           onClick={() => onSelect(ch.id)}
