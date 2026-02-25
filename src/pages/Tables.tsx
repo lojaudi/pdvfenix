@@ -49,9 +49,17 @@ export default function TablesPage() {
   });
 
   const changeStatus = async (table: TableItem, newStatus: TableStatus) => {
+    const updateData: any = {
+      status: newStatus,
+      current_order_id: newStatus === "livre" ? null : table.current_order_id,
+    };
+    // Clear waiter when freeing table
+    if (newStatus === "livre") {
+      updateData.waiter_id = null;
+    }
     const { error } = await supabase
       .from("tables")
-      .update({ status: newStatus as any, current_order_id: newStatus === "livre" ? null : table.current_order_id })
+      .update(updateData)
       .eq("id", table.id);
     if (error) {
       toast.error("Erro ao atualizar mesa");

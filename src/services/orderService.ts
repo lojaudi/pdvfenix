@@ -51,11 +51,15 @@ export async function createOrder(
 
   if (itemsError) throw itemsError;
 
-  // If garçom channel, mark table as occupied and link order
+  // If garçom channel, mark table as occupied, link order, and assign waiter
   if (channel === "garcom" && tableNumber) {
     await supabase
       .from("tables")
-      .update({ status: "ocupada" as any, current_order_id: order.id })
+      .update({
+        status: "ocupada" as any,
+        current_order_id: order.id,
+        waiter_id: userId,
+      } as any)
       .eq("number", tableNumber);
   }
 
