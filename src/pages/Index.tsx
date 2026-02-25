@@ -12,7 +12,7 @@ import { PaymentDialog } from "@/components/pos/PaymentDialog";
 import { TableSelector } from "@/components/pos/TableSelector";
 import { createOrder } from "@/services/orderService";
 import { toast } from "sonner";
-import { Store, LogOut, Loader2, Settings, BarChart3 } from "lucide-react";
+import { Store, LogOut, Loader2, Settings, BarChart3, ClipboardList } from "lucide-react";
 
 type OrderChannel = "balcao" | "garcom" | "delivery";
 type PaymentMethodType = "dinheiro" | "credito" | "debito" | "pix";
@@ -100,6 +100,13 @@ const Index = () => {
           </div>
           <div className="flex items-center gap-3">
             <ChannelSelector selected={channel} onSelect={setChannel} />
+            <button
+              onClick={() => navigate("/orders")}
+              className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+              title="Pedidos Ativos"
+            >
+              <ClipboardList className="w-4 h-4" />
+            </button>
             {isAdmin && (
               <>
                 <button

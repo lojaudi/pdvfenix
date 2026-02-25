@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import AuthPage from "./pages/Auth";
 import AdminPage from "./pages/Admin";
 import ReportsPage from "./pages/Reports";
+import ActiveOrdersPage from "./pages/ActiveOrders";
 import NotFound from "./pages/NotFound";
 import { Loader2 } from "lucide-react";
 
@@ -53,6 +54,7 @@ const App = () => (
           <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
           <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
           <Route path="/reports" element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
+          <Route path="/orders" element={<ProtectedRoute><ActiveOrdersPage /></ProtectedRoute>} />
           <Route path="/auth" element={<AuthRoute><AuthPage /></AuthRoute>} />
           <Route path="*" element={<NotFound />} />
         </Routes>

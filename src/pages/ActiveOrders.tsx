@@ -1,0 +1,217 @@
+import { useMemo } from "react";
+import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useRealtimeOrders } from "@/hooks/useRealtimeOrders";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { ArrowLeft, Loader2, Clock, ChefHat, CheckCircle2, Truck, XCircle } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+
+type OrderStatus = "aberto" | "preparando" | "pronto" | "entregue" | "pago" | "cancelado";
+
+interface ActiveOrder {
+  id: string;
+  channel: string;
+  table_number: number | null;
+  customer_name: string | null;
+  status: OrderStatus;
+  payment_method: string | null;
+  total: number;
+  created_at: string;
+  order_items: { id: string; product_name: string; quantity: number; unit_price: number }[];
+}
+
+const STATUS_FLOW: OrderStatus[] = ["aberto", "preparando", "pronto", "entregue"];
+
+const statusConfig: Record<string, { label: string; icon: typeof Clock; color: string; bg: string }> = {
+  aberto: { label: "Aberto", icon: Clock, color: "text-blue-400", bg: "bg-blue-500/15 border-blue-500/30" },
+  preparando: { label: "Preparando", icon: ChefHat, color: "text-yellow-400", bg: "bg-yellow-500/15 border-yellow-500/30" },
+  pronto: { label: "Pronto", icon: CheckCircle2, color: "text-green-400", bg: "bg-green-500/15 border-green-500/30" },
+  entregue: { label: "Entregue", icon: Truck, color: "text-emerald-400", bg: "bg-emerald-500/15 border-emerald-500/30" },
+  pago: { label: "Pago", icon: CheckCircle2, color: "text-primary", bg: "bg-primary/15 border-primary/30" },
+  cancelado: { label: "Cancelado", icon: XCircle, color: "text-destructive", bg: "bg-destructive/15 border-destructive/30" },
+};
+
+const channelLabels: Record<string, string> = {
+  balcao: "Balcão", garcom: "Garçom", delivery: "Delivery",
+};
+
+const QUERY_KEY = ["active-orders"];
+
+export default function ActiveOrdersPage() {
+  const navigate = useNavigate();
+  useRealtimeOrders(QUERY_KEY);
+
+  const { data: orders, isLoading } = useQuery({
+    queryKey: QUERY_KEY,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("orders")
+        .select("*, order_items(id, product_name, quantity, unit_price)")
+        .in("status", ["aberto", "preparando", "pronto", "entregue"])
+        .order("created_at", { ascending: true });
+      if (error) throw error;
+      return data as ActiveOrder[];
+    },
+  });
+
+  const grouped = useMemo(() => {
+    const map: Record<string, ActiveOrder[]> = {
+      aberto: [], preparando: [], pronto: [], entregue: [],
+    };
+    orders?.forEach((o) => {
+      if (map[o.status]) map[o.status].push(o);
+    });
+    return map;
+  }, [orders]);
+
+  const advanceStatus = async (order: ActiveOrder) => {
+    const idx = STATUS_FLOW.indexOf(order.status);
+    if (idx === -1 || idx >= STATUS_FLOW.length - 1) return;
+    const nextStatus = STATUS_FLOW[idx + 1];
+    const { error } = await supabase
+      .from("orders")
+      .update({ status: nextStatus as any })
+      .eq("id", order.id);
+    if (error) {
+      toast.error("Erro ao atualizar status");
+    } else {
+      toast.success(`Pedido movido para ${statusConfig[nextStatus].label}`);
+    }
+  };
+
+  const cancelOrder = async (order: ActiveOrder) => {
+    const { error } = await supabase
+      .from("orders")
+      .update({ status: "cancelado" as any })
+      .eq("id", order.id);
+    if (error) toast.error("Erro ao cancelar pedido");
+    else toast.success("Pedido cancelado");
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-background">
+        <Loader2 className="w-8 h-8 text-primary animate-spin" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      <header className="border-b border-border px-6 py-4">
+        <div className="flex items-center gap-3">
+          <button onClick={() => navigate("/")} className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <div>
+            <h1 className="text-lg font-bold text-foreground">Pedidos Ativos</h1>
+            <p className="text-xs text-muted-foreground">Acompanhamento em tempo real • {orders?.length || 0} pedidos</p>
+          </div>
+        </div>
+      </header>
+
+      <main className="p-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+          {STATUS_FLOW.map((status) => {
+            const cfg = statusConfig[status];
+            const Icon = cfg.icon;
+            const list = grouped[status] || [];
+
+            return (
+              <div key={status} className="space-y-3">
+                {/* Column header */}
+                <div className="flex items-center gap-2 px-1">
+                  <Icon className={cn("w-4 h-4", cfg.color)} />
+                  <span className={cn("text-sm font-bold", cfg.color)}>{cfg.label}</span>
+                  <Badge variant="secondary" className="ml-auto text-xs">{list.length}</Badge>
+                </div>
+
+                {/* Cards */}
+                <div className="space-y-3 min-h-[200px]">
+                  {list.length === 0 && (
+                    <div className="flex items-center justify-center h-[200px] rounded-xl border border-dashed border-border text-muted-foreground text-xs">
+                      Nenhum pedido
+                    </div>
+                  )}
+                  {list.map((order) => {
+                    const canAdvance = STATUS_FLOW.indexOf(order.status) < STATUS_FLOW.length - 1;
+                    const nextLabel = canAdvance
+                      ? statusConfig[STATUS_FLOW[STATUS_FLOW.indexOf(order.status) + 1]]?.label
+                      : null;
+
+                    return (
+                      <Card key={order.id} className={cn("border bg-card", cfg.bg)}>
+                        <CardContent className="p-4 space-y-3">
+                          {/* Header */}
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <Badge variant="outline" className="text-xs">
+                                {channelLabels[order.channel] || order.channel}
+                              </Badge>
+                              {order.table_number && (
+                                <span className="text-xs font-semibold text-foreground">Mesa {order.table_number}</span>
+                              )}
+                            </div>
+                            <span className="text-[10px] text-muted-foreground">
+                              {format(new Date(order.created_at), "HH:mm", { locale: ptBR })}
+                            </span>
+                          </div>
+
+                          {/* Customer */}
+                          {order.customer_name && (
+                            <p className="text-xs text-muted-foreground truncate">👤 {order.customer_name}</p>
+                          )}
+
+                          {/* Items */}
+                          <div className="space-y-1">
+                            {order.order_items.map((item) => (
+                              <div key={item.id} className="flex justify-between text-xs">
+                                <span className="text-foreground">{item.quantity}x {item.product_name}</span>
+                                <span className="text-muted-foreground">R$ {(item.quantity * item.unit_price).toFixed(2)}</span>
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* Total */}
+                          <div className="flex justify-between items-center pt-2 border-t border-border">
+                            <span className="text-xs font-bold text-foreground">Total</span>
+                            <span className="font-mono text-sm font-bold text-primary">R$ {order.total.toFixed(2)}</span>
+                          </div>
+
+                          {/* Actions */}
+                          <div className="flex gap-2 pt-1">
+                            {canAdvance && (
+                              <button
+                                onClick={() => advanceStatus(order)}
+                                className="flex-1 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:opacity-90 transition-opacity"
+                              >
+                                → {nextLabel}
+                              </button>
+                            )}
+                            {order.status !== "entregue" && (
+                              <button
+                                onClick={() => cancelOrder(order)}
+                                className="py-2 px-3 rounded-lg bg-destructive/15 text-destructive text-xs font-semibold hover:bg-destructive/25 transition-colors"
+                              >
+                                Cancelar
+                              </button>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </main>
+    </div>
+  );
+}
