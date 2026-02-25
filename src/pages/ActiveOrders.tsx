@@ -22,7 +22,9 @@ interface ActiveOrder {
   payment_method: string | null;
   total: number;
   created_at: string;
+  user_id: string | null;
   order_items: { id: string; product_name: string; quantity: number; unit_price: number }[];
+  profiles: { name: string; email: string | null } | null;
 }
 
 const STATUS_FLOW: OrderStatus[] = ["aberto", "preparando", "pronto", "entregue"];
@@ -55,7 +57,22 @@ export default function ActiveOrdersPage() {
         .in("status", ["aberto", "preparando", "pronto", "entregue"])
         .order("created_at", { ascending: true });
       if (error) throw error;
-      return data as ActiveOrder[];
+
+      // Fetch staff names
+      const userIds = [...new Set((data || []).map(o => o.user_id).filter(Boolean))] as string[];
+      let profilesMap: Record<string, { name: string; email: string | null }> = {};
+      if (userIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("user_id, name, email")
+          .in("user_id", userIds);
+        profiles?.forEach(p => { profilesMap[p.user_id] = { name: p.name, email: p.email }; });
+      }
+
+      return (data as any[]).map(o => ({
+        ...o,
+        profiles: o.user_id ? profilesMap[o.user_id] || null : null,
+      })) as ActiveOrder[];
     },
   });
 
