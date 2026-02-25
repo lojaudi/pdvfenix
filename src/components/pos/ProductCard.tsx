@@ -14,22 +14,23 @@ export function ProductCard({ product, onAdd }: ProductCardProps) {
     <button
       onClick={() => onAdd(product)}
       disabled={!product.in_stock}
-      className="group relative flex flex-col bg-card rounded-xl border border-border p-4 text-left transition-all hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed"
+      className="group relative flex flex-col bg-card rounded-xl border border-border p-3 sm:p-4 text-left transition-all hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background min-h-[88px]"
+      aria-label={`Adicionar ${product.name} - ${formatCurrency(product.price)}${!product.in_stock ? " (indisponível)" : ""}`}
     >
       <div className="flex items-start justify-between mb-2">
         <h3 className="font-semibold text-card-foreground text-sm leading-tight pr-2">
           {product.name}
         </h3>
-        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center sm:opacity-0 sm:group-hover:opacity-100 transition-opacity" aria-hidden="true">
           <Plus className="w-4 h-4" />
         </div>
       </div>
       <div className="mt-auto flex items-end justify-between">
-        <span className="text-lg font-bold text-primary">
+        <span className="text-base sm:text-lg font-bold text-primary">
           {formatCurrency(product.price)}
         </span>
         {product.stock_qty <= 10 && product.in_stock && (
-          <span className="text-xs text-destructive font-medium">
+          <span className="text-xs text-destructive font-medium" role="status">
             Restam {product.stock_qty}
           </span>
         )}
