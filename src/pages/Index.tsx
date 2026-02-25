@@ -1,14 +1,19 @@
 import { useState } from "react";
-import { products, Product, OrderChannel, PaymentMethod } from "@/data/products";
+import { useProducts } from "@/hooks/useProducts";
 import { useCart } from "@/hooks/useCart";
+import { useAuth } from "@/hooks/useAuth";
 import { CategoryTabs } from "@/components/pos/CategoryTabs";
 import { ProductCard } from "@/components/pos/ProductCard";
 import { CartPanel } from "@/components/pos/CartPanel";
 import { ChannelSelector } from "@/components/pos/ChannelSelector";
 import { PaymentDialog } from "@/components/pos/PaymentDialog";
 import { TableSelector } from "@/components/pos/TableSelector";
+import { createOrder } from "@/services/orderService";
 import { toast } from "sonner";
-import { Store } from "lucide-react";
+import { Store, LogOut, Loader2 } from "lucide-react";
+
+type OrderChannel = "balcao" | "garcom" | "delivery";
+type PaymentMethodType = "dinheiro" | "credito" | "debito" | "pix";
 
 const channelLabels: Record<OrderChannel, string> = {
   balcao: "Balcão",
@@ -17,16 +22,20 @@ const channelLabels: Record<OrderChannel, string> = {
 };
 
 const Index = () => {
+  const { user, signOut } = useAuth();
+  const { categories, products, loading } = useProducts();
   const [channel, setChannel] = useState<OrderChannel>("balcao");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [showPayment, setShowPayment] = useState(false);
   const [selectedTable, setSelectedTable] = useState<number | null>(null);
+  const [customerName, setCustomerName] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const cart = useCart();
 
   const filteredProducts =
     selectedCategory === "all"
       ? products
-      : products.filter((p) => p.categoryId === selectedCategory);
+      : products.filter((p) => p.category_id === selectedCategory);
 
   const handleCheckout = () => {
     if (channel === "garcom" && !selectedTable) {
@@ -36,22 +45,45 @@ const Index = () => {
     setShowPayment(true);
   };
 
-  const handlePayment = (method: PaymentMethod) => {
-    toast.success(
-      `Pedido finalizado! Pagamento via ${method.toUpperCase()} • ${channelLabels[channel]}${
-        selectedTable ? ` • Mesa ${selectedTable}` : ""
-      }`
-    );
-    cart.clearCart();
-    setShowPayment(false);
-    setSelectedTable(null);
+  const handlePayment = async (method: PaymentMethodType) => {
+    if (!user) return;
+    setSubmitting(true);
+    try {
+      await createOrder(
+        cart.items,
+        channel,
+        method,
+        user.id,
+        selectedTable ?? undefined,
+        customerName || undefined
+      );
+      toast.success(
+        `Pedido finalizado! Pagamento via ${method.toUpperCase()} • ${channelLabels[channel]}${
+          selectedTable ? ` • Mesa ${selectedTable}` : ""
+        }`
+      );
+      cart.clearCart();
+      setShowPayment(false);
+      setSelectedTable(null);
+      setCustomerName("");
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao criar pedido");
+    } finally {
+      setSubmitting(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-background">
+        <Loader2 className="w-8 h-8 text-primary animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
-      {/* Main area */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Top bar */}
         <header className="flex items-center justify-between px-6 py-4 border-b border-border">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center">
@@ -59,20 +91,26 @@ const Index = () => {
             </div>
             <div>
               <h1 className="text-lg font-bold text-foreground">PDV Express</h1>
-              <p className="text-xs text-muted-foreground">Sistema de Vendas</p>
+              <p className="text-xs text-muted-foreground">{user?.email}</p>
             </div>
           </div>
-          <ChannelSelector selected={channel} onSelect={setChannel} />
+          <div className="flex items-center gap-3">
+            <ChannelSelector selected={channel} onSelect={setChannel} />
+            <button
+              onClick={signOut}
+              className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+              title="Sair"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          </div>
         </header>
 
-        {/* Content */}
         <div className="flex-1 overflow-y-auto p-6 space-y-4">
-          {/* Table selector for waiter mode */}
           {channel === "garcom" && (
             <TableSelector onSelect={setSelectedTable} selectedTable={selectedTable} />
           )}
 
-          {/* Delivery customer name */}
           {channel === "delivery" && (
             <div className="mb-4">
               <label className="text-sm font-semibold text-muted-foreground block mb-2">
@@ -81,12 +119,14 @@ const Index = () => {
               <input
                 type="text"
                 placeholder="Digite o nome do cliente..."
+                value={customerName}
+                onChange={(e) => setCustomerName(e.target.value)}
                 className="w-full max-w-sm px-4 py-2.5 rounded-lg bg-secondary border border-border text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
               />
             </div>
           )}
 
-          <CategoryTabs selected={selectedCategory} onSelect={setSelectedCategory} />
+          <CategoryTabs categories={categories} selected={selectedCategory} onSelect={setSelectedCategory} />
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
             {filteredProducts.map((product) => (
@@ -96,7 +136,6 @@ const Index = () => {
         </div>
       </div>
 
-      {/* Cart sidebar */}
       <div className="w-[380px] flex-shrink-0 hidden md:flex">
         <CartPanel
           items={cart.items}
@@ -110,7 +149,6 @@ const Index = () => {
         />
       </div>
 
-      {/* Mobile cart floating button */}
       {cart.itemCount > 0 && (
         <button
           onClick={handleCheckout}
@@ -123,7 +161,6 @@ const Index = () => {
         </button>
       )}
 
-      {/* Payment modal */}
       {showPayment && (
         <PaymentDialog
           total={cart.total}

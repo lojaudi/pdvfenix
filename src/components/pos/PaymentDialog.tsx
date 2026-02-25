@@ -1,6 +1,10 @@
 import { useState } from "react";
-import { formatCurrency, PaymentMethod } from "@/data/products";
 import { CreditCard, Banknote, Smartphone, QrCode, X, Check } from "lucide-react";
+
+const formatCurrency = (value: number) =>
+  new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
+
+type PaymentMethod = "dinheiro" | "credito" | "debito" | "pix";
 
 interface PaymentDialogProps {
   total: number;

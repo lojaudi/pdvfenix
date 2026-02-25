@@ -1,5 +1,6 @@
-import { OrderChannel } from "@/data/products";
 import { Monitor, Users, Truck } from "lucide-react";
+
+type OrderChannel = "balcao" | "garcom" | "delivery";
 
 interface ChannelSelectorProps {
   selected: OrderChannel;

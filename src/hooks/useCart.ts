@@ -1,10 +1,11 @@
 import { useState, useCallback } from "react";
-import { OrderItem, Product } from "@/data/products";
+import { DbProduct } from "@/hooks/useProducts";
+import { CartItem } from "@/components/pos/CartPanel";
 
 export function useCart() {
-  const [items, setItems] = useState<OrderItem[]>([]);
+  const [items, setItems] = useState<CartItem[]>([]);
 
-  const addItem = useCallback((product: Product) => {
+  const addItem = useCallback((product: DbProduct) => {
     setItems((prev) => {
       const existing = prev.find((i) => i.product.id === product.id);
       if (existing) {
