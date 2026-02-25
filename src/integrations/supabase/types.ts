@@ -187,6 +187,44 @@ export type Database = {
         }
         Relationships: []
       }
+      tables: {
+        Row: {
+          capacity: number
+          created_at: string
+          current_order_id: string | null
+          id: string
+          number: number
+          status: Database["public"]["Enums"]["table_status"]
+          updated_at: string
+        }
+        Insert: {
+          capacity?: number
+          created_at?: string
+          current_order_id?: string | null
+          id?: string
+          number: number
+          status?: Database["public"]["Enums"]["table_status"]
+          updated_at?: string
+        }
+        Update: {
+          capacity?: number
+          created_at?: string
+          current_order_id?: string | null
+          id?: string
+          number?: number
+          status?: Database["public"]["Enums"]["table_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tables_current_order_id_fkey"
+            columns: ["current_order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           id: string
@@ -231,6 +269,7 @@ export type Database = {
         | "pago"
         | "cancelado"
       payment_method: "dinheiro" | "credito" | "debito" | "pix"
+      table_status: "livre" | "ocupada" | "aguardando_pagamento"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -369,6 +408,7 @@ export const Constants = {
         "cancelado",
       ],
       payment_method: ["dinheiro", "credito", "debito", "pix"],
+      table_status: ["livre", "ocupada", "aguardando_pagamento"],
     },
   },
 } as const
