@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, ShoppingBag, X } from "lucide-react";
+import { Loader2, ShoppingBag, X, CreditCard } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useState } from "react";
@@ -48,6 +48,39 @@ export function TableOrdersSummary({ tableNumber }: TableOrdersSummaryProps) {
   const queryClient = useQueryClient();
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [confirmItem, setConfirmItem] = useState<{ order: OrderWithItems; item: OrderItem } | null>(null);
+  const [requestingBill, setRequestingBill] = useState(false);
+
+  const handleRequestBill = async () => {
+    if (!orders || orders.length === 0) return;
+    setRequestingBill(true);
+    try {
+      // Update all active orders to "entregue"
+      const activeOrderIds = orders
+        .filter(o => ["aberto", "preparando", "pronto"].includes(o.status))
+        .map(o => o.id);
+      if (activeOrderIds.length > 0) {
+        const { error: orderError } = await supabase
+          .from("orders")
+          .update({ status: "entregue" as any })
+          .in("id", activeOrderIds);
+        if (orderError) throw orderError;
+      }
+      // Update table status to aguardando_pagamento
+      const { error: tableError } = await supabase
+        .from("tables")
+        .update({ status: "aguardando_pagamento" as any })
+        .eq("number", tableNumber);
+      if (tableError) throw tableError;
+
+      toast.success(`Conta solicitada para Mesa ${tableNumber}!`);
+      queryClient.invalidateQueries({ queryKey: ["table-orders-summary", tableNumber] });
+      queryClient.invalidateQueries({ queryKey: ["tables-selector"] });
+    } catch {
+      toast.error("Erro ao solicitar conta");
+    } finally {
+      setRequestingBill(false);
+    }
+  };
 
   const { data: orders, isLoading } = useQuery({
     queryKey: ["table-orders-summary", tableNumber],
@@ -172,6 +205,22 @@ export function TableOrdersSummary({ tableNumber }: TableOrdersSummaryProps) {
           );
         })}
       </div>
+
+      {/* Request bill button - only show if there are non-entregue orders */}
+      {orders.some(o => ["aberto", "preparando", "pronto"].includes(o.status)) && (
+        <button
+          onClick={handleRequestBill}
+          disabled={requestingBill}
+          className="w-full py-2.5 rounded-lg bg-orange-500/20 text-orange-400 text-xs font-bold hover:bg-orange-500/30 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+        >
+          {requestingBill ? (
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+          ) : (
+            <CreditCard className="w-3.5 h-3.5" />
+          )}
+          Pedir Conta
+        </button>
+      )}
 
       <AlertDialog open={!!confirmItem} onOpenChange={(open) => !open && setConfirmItem(null)}>
         <AlertDialogContent>
