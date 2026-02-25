@@ -14,6 +14,7 @@ import { TableOrdersSummary } from "@/components/pos/TableOrdersSummary";
 import { createOrder } from "@/services/orderService";
 import { toast } from "sonner";
 import { Store, LogOut, Loader2, Settings, BarChart3, ClipboardList, LayoutGrid, Wallet } from "lucide-react";
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 
 type OrderChannel = "balcao" | "garcom" | "delivery";
 type PaymentMethodType = "dinheiro" | "credito" | "debito" | "pix";
@@ -35,6 +36,7 @@ const Index = () => {
   const [selectedTable, setSelectedTable] = useState<number | null>(null);
   const [customerName, setCustomerName] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [showMobileCart, setShowMobileCart] = useState(false);
   const cart = useCart();
 
   useEffect(() => {
@@ -51,21 +53,15 @@ const Index = () => {
       toast.error("Selecione uma mesa antes de finalizar!");
       return;
     }
-    // Garçom: envia direto sem pagamento
     if (channel === "garcom") {
       if (!user) return;
       setSubmitting(true);
       try {
-        await createOrder(
-          cart.items,
-          channel,
-          undefined as any,
-          user.id,
-          selectedTable ?? undefined
-        );
+        await createOrder(cart.items, channel, undefined as any, user.id, selectedTable ?? undefined);
         toast.success(`Pedido enviado para Mesa ${selectedTable}!`);
         cart.clearCart();
         setSelectedTable(null);
+        setShowMobileCart(false);
       } catch (err: any) {
         toast.error(err.message || "Erro ao enviar pedido");
       } finally {
@@ -80,23 +76,15 @@ const Index = () => {
     if (!user) return;
     setSubmitting(true);
     try {
-      await createOrder(
-        cart.items,
-        channel,
-        method,
-        user.id,
-        selectedTable ?? undefined,
-        customerName || undefined
-      );
+      await createOrder(cart.items, channel, method, user.id, selectedTable ?? undefined, customerName || undefined);
       toast.success(
-        `Pedido finalizado! Pagamento via ${method.toUpperCase()} • ${channelLabels[channel]}${
-          selectedTable ? ` • Mesa ${selectedTable}` : ""
-        }`
+        `Pedido finalizado! Pagamento via ${method.toUpperCase()} • ${channelLabels[channel]}${selectedTable ? ` • Mesa ${selectedTable}` : ""}`
       );
       cart.clearCart();
       setShowPayment(false);
       setSelectedTable(null);
       setCustomerName("");
+      setShowMobileCart(false);
     } catch (err: any) {
       toast.error(err.message || "Erro ao criar pedido");
     } finally {
@@ -106,106 +94,78 @@ const Index = () => {
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-background">
+      <div className="flex h-screen items-center justify-center bg-background" role="status" aria-label="Carregando produtos">
         <Loader2 className="w-8 h-8 text-primary animate-spin" />
+        <span className="sr-only">Carregando produtos...</span>
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
+    <main className="flex h-screen overflow-hidden bg-background">
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="flex items-center justify-between px-6 py-4 border-b border-border">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center">
-              <Store className="w-5 h-5 text-primary" />
+        {/* Header */}
+        <header className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-border gap-2">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-primary/15 flex items-center justify-center flex-shrink-0">
+              <Store className="w-4 h-4 sm:w-5 sm:h-5 text-primary" aria-hidden="true" />
             </div>
-            <div>
-              <h1 className="text-lg font-bold text-foreground">PDV Express</h1>
-              <p className="text-xs text-muted-foreground">{user?.email}</p>
+            <div className="min-w-0">
+              <h1 className="text-base sm:text-lg font-bold text-foreground truncate">PDV Express</h1>
+              <p className="text-xs text-muted-foreground truncate hidden sm:block">{user?.email}</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <ChannelSelector selected={channel} onSelect={setChannel} hiddenChannels={isWaiter ? ["balcao", "delivery"] : []} />
-            <button
-              onClick={() => navigate("/orders")}
-              className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-              title="Pedidos Ativos"
-            >
-              <ClipboardList className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => navigate("/tables")}
-              className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-              title="Mesas"
-            >
-              <LayoutGrid className="w-4 h-4" />
-            </button>
-            {(isAdmin || isCashier) && (
-              <button
-                onClick={() => navigate("/cashier")}
-                className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-                title="Caixa"
-              >
-                <Wallet className="w-4 h-4" />
-              </button>
-            )}
+
+          <nav className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 flex-wrap justify-end" aria-label="Navegação principal">
+            <div className="hidden sm:flex">
+              <ChannelSelector selected={channel} onSelect={setChannel} hiddenChannels={isWaiter ? ["balcao", "delivery"] : []} />
+            </div>
+            <NavButton onClick={() => navigate("/orders")} title="Pedidos Ativos" icon={ClipboardList} />
+            <NavButton onClick={() => navigate("/tables")} title="Mesas" icon={LayoutGrid} />
+            {(isAdmin || isCashier) && <NavButton onClick={() => navigate("/cashier")} title="Caixa" icon={Wallet} />}
             {isAdmin && (
               <>
-                <button
-                  onClick={() => navigate("/reports")}
-                  className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-                  title="Relatórios"
-                >
-                  <BarChart3 className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => navigate("/admin")}
-                  className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-                  title="Administração"
-                >
-                  <Settings className="w-4 h-4" />
-                </button>
+                <NavButton onClick={() => navigate("/reports")} title="Relatórios" icon={BarChart3} />
+                <NavButton onClick={() => navigate("/admin")} title="Administração" icon={Settings} />
               </>
             )}
-            <button
-              onClick={signOut}
-              className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-              title="Sair"
-            >
-              <LogOut className="w-4 h-4" />
-            </button>
-          </div>
+            <NavButton onClick={signOut} title="Sair" icon={LogOut} />
+          </nav>
         </header>
 
-        <div className="flex-1 overflow-y-auto p-6 space-y-4">
+        {/* Mobile channel selector */}
+        <div className="sm:hidden px-4 pt-3">
+          <ChannelSelector selected={channel} onSelect={setChannel} hiddenChannels={isWaiter ? ["balcao", "delivery"] : []} />
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 scrollbar-thin">
           {channel === "garcom" && (
             <>
               <TableSelector onSelect={setSelectedTable} selectedTable={selectedTable} currentUserId={user?.id} />
-              {selectedTable && (
-                <TableOrdersSummary tableNumber={selectedTable} />
-              )}
+              {selectedTable && <TableOrdersSummary tableNumber={selectedTable} />}
             </>
           )}
 
           {channel === "delivery" && (
             <div className="mb-4">
-              <label className="text-sm font-semibold text-muted-foreground block mb-2">
+              <label htmlFor="customer-name" className="text-sm font-semibold text-muted-foreground block mb-2">
                 Nome do Cliente
               </label>
               <input
+                id="customer-name"
                 type="text"
                 placeholder="Digite o nome do cliente..."
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
-                className="w-full max-w-sm px-4 py-2.5 rounded-lg bg-secondary border border-border text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                className="w-full max-w-sm px-4 py-3 rounded-lg bg-secondary border border-border text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
               />
             </div>
           )}
 
           <CategoryTabs categories={categories} selected={selectedCategory} onSelect={setSelectedCategory} />
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3">
             {filteredProducts.map((product) => (
               <ProductCard key={product.id} product={product} onAdd={cart.addItem} />
             ))}
@@ -213,7 +173,8 @@ const Index = () => {
         </div>
       </div>
 
-      <div className="w-[380px] flex-shrink-0 hidden md:flex">
+      {/* Desktop cart */}
+      <aside className="w-[380px] flex-shrink-0 hidden md:flex" aria-label="Carrinho de compras">
         <CartPanel
           items={cart.items}
           total={cart.total}
@@ -225,19 +186,39 @@ const Index = () => {
           tableNumber={channel === "garcom" ? selectedTable ?? undefined : undefined}
           checkoutLabel={channel === "garcom" ? "Enviar Pedido" : "Finalizar Pedido"}
         />
-      </div>
+      </aside>
 
+      {/* Mobile cart FAB */}
       {cart.itemCount > 0 && (
         <button
-          onClick={handleCheckout}
-          className="md:hidden fixed bottom-6 right-6 bg-primary text-primary-foreground px-6 py-4 rounded-2xl font-bold shadow-2xl shadow-primary/30 flex items-center gap-3 z-40"
+          onClick={() => setShowMobileCart(true)}
+          className="md:hidden fixed bottom-6 right-6 bg-primary text-primary-foreground px-6 py-4 rounded-2xl font-bold shadow-2xl shadow-primary/30 flex items-center gap-3 z-40 min-h-[56px] active:scale-95 transition-transform"
+          aria-label={`Ver pedido com ${cart.itemCount} itens`}
         >
-          <span className="w-6 h-6 rounded-full bg-primary-foreground/20 flex items-center justify-center text-xs font-bold">
+          <span className="w-7 h-7 rounded-full bg-primary-foreground/20 flex items-center justify-center text-sm font-bold" aria-hidden="true">
             {cart.itemCount}
           </span>
           Ver Pedido
         </button>
       )}
+
+      {/* Mobile cart sheet */}
+      <Sheet open={showMobileCart} onOpenChange={setShowMobileCart}>
+        <SheetContent side="right" className="w-full sm:max-w-[400px] p-0">
+          <SheetTitle className="sr-only">Carrinho de compras</SheetTitle>
+          <CartPanel
+            items={cart.items}
+            total={cart.total}
+            onUpdateQuantity={cart.updateQuantity}
+            onRemove={cart.removeItem}
+            onClear={cart.clearCart}
+            onCheckout={handleCheckout}
+            channelLabel={channelLabels[channel]}
+            tableNumber={channel === "garcom" ? selectedTable ?? undefined : undefined}
+            checkoutLabel={channel === "garcom" ? "Enviar Pedido" : "Finalizar Pedido"}
+          />
+        </SheetContent>
+      </Sheet>
 
       {showPayment && (
         <PaymentDialog
@@ -246,8 +227,21 @@ const Index = () => {
           onClose={() => setShowPayment(false)}
         />
       )}
-    </div>
+    </main>
   );
 };
+
+function NavButton({ onClick, title, icon: Icon }: { onClick: () => void; title: string; icon: React.ComponentType<{ className?: string }> }) {
+  return (
+    <button
+      onClick={onClick}
+      className="w-10 h-10 sm:w-10 sm:h-10 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background transition-colors"
+      title={title}
+      aria-label={title}
+    >
+      <Icon className="w-4 h-4" aria-hidden="true" />
+    </button>
+  );
+}
 
 export default Index;
