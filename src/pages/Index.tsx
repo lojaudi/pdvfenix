@@ -12,7 +12,7 @@ import { PaymentDialog } from "@/components/pos/PaymentDialog";
 import { TableSelector } from "@/components/pos/TableSelector";
 import { createOrder } from "@/services/orderService";
 import { toast } from "sonner";
-import { Store, LogOut, Loader2, Settings } from "lucide-react";
+import { Store, LogOut, Loader2, Settings, BarChart3 } from "lucide-react";
 
 type OrderChannel = "balcao" | "garcom" | "delivery";
 type PaymentMethodType = "dinheiro" | "credito" | "debito" | "pix";
@@ -101,13 +101,22 @@ const Index = () => {
           <div className="flex items-center gap-3">
             <ChannelSelector selected={channel} onSelect={setChannel} />
             {isAdmin && (
-              <button
-                onClick={() => navigate("/admin")}
-                className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-                title="Administração"
-              >
-                <Settings className="w-4 h-4" />
-              </button>
+              <>
+                <button
+                  onClick={() => navigate("/reports")}
+                  className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                  title="Relatórios"
+                >
+                  <BarChart3 className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => navigate("/admin")}
+                  className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                  title="Administração"
+                >
+                  <Settings className="w-4 h-4" />
+                </button>
+              </>
             )}
             <button
               onClick={signOut}
