@@ -41,9 +41,31 @@ const Index = () => {
       ? products
       : products.filter((p) => p.category_id === selectedCategory);
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
     if (channel === "garcom" && !selectedTable) {
       toast.error("Selecione uma mesa antes de finalizar!");
+      return;
+    }
+    // Garçom: envia direto sem pagamento
+    if (channel === "garcom") {
+      if (!user) return;
+      setSubmitting(true);
+      try {
+        await createOrder(
+          cart.items,
+          channel,
+          undefined as any,
+          user.id,
+          selectedTable ?? undefined
+        );
+        toast.success(`Pedido enviado para Mesa ${selectedTable}!`);
+        cart.clearCart();
+        setSelectedTable(null);
+      } catch (err: any) {
+        toast.error(err.message || "Erro ao enviar pedido");
+      } finally {
+        setSubmitting(false);
+      }
       return;
     }
     setShowPayment(true);
@@ -182,6 +204,7 @@ const Index = () => {
           onCheckout={handleCheckout}
           channelLabel={channelLabels[channel]}
           tableNumber={channel === "garcom" ? selectedTable ?? undefined : undefined}
+          checkoutLabel={channel === "garcom" ? "Enviar Pedido" : "Finalizar Pedido"}
         />
       </div>
 

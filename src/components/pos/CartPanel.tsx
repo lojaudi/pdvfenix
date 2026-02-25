@@ -18,6 +18,7 @@ interface CartPanelProps {
   onCheckout: () => void;
   channelLabel: string;
   tableNumber?: number;
+  checkoutLabel?: string;
 }
 
 export function CartPanel({
@@ -29,6 +30,7 @@ export function CartPanel({
   onCheckout,
   channelLabel,
   tableNumber,
+  checkoutLabel = "Finalizar Pedido",
 }: CartPanelProps) {
   return (
     <div className="flex flex-col h-full bg-card border-l border-border">
@@ -115,7 +117,7 @@ export function CartPanel({
               onClick={onCheckout}
               className="flex-[2] py-3 rounded-lg bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20"
             >
-              Finalizar Pedido
+              {checkoutLabel}
             </button>
           </div>
         </div>
