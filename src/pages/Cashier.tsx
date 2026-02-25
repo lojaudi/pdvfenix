@@ -5,11 +5,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useRealtimeOrdersWithSound } from "@/hooks/useRealtimeOrdersWithSound";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { ArrowLeft, Loader2, Wallet, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Loader2, Wallet, CheckCircle2, Printer } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { PaymentDialog } from "@/components/pos/PaymentDialog";
-import { cn } from "@/lib/utils";
+import { ReceiptPrint, triggerPrint, type ReceiptData } from "@/components/pos/ReceiptPrint";
 import { toast } from "sonner";
 
 type PaymentMethod = "dinheiro" | "credito" | "debito" | "pix";
@@ -36,16 +36,35 @@ const QUERY_KEY = ["cashier-orders"];
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
 
+function buildReceiptData(order: PendingOrder, paymentMethod?: string): ReceiptData {
+  return {
+    orderId: order.id,
+    channel: order.channel,
+    tableNumber: order.table_number,
+    customerName: order.customer_name,
+    waiterName: order.profiles?.name || null,
+    items: order.order_items.map((i) => ({
+      product_name: i.product_name,
+      quantity: i.quantity,
+      unit_price: i.unit_price,
+    })),
+    total: order.total,
+    paymentMethod: paymentMethod || null,
+    createdAt: order.created_at,
+    paidAt: paymentMethod ? new Date().toISOString() : undefined,
+  };
+}
+
 export default function CashierPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [selectedOrder, setSelectedOrder] = useState<PendingOrder | null>(null);
+  const [receiptData, setReceiptData] = useState<ReceiptData | null>(null);
   useRealtimeOrdersWithSound(QUERY_KEY);
 
   const { data: orders, isLoading } = useQuery({
     queryKey: QUERY_KEY,
     queryFn: async () => {
-      // Fetch orders that are "entregue" (awaiting payment) or recent "pago"
       const { data, error } = await supabase
         .from("orders")
         .select("*, order_items(id, product_name, quantity, unit_price)")
@@ -73,6 +92,12 @@ export default function CashierPage() {
   const pendingPayment = orders?.filter(o => o.status === "entregue") || [];
   const inProgress = orders?.filter(o => ["aberto", "preparando", "pronto"].includes(o.status)) || [];
 
+  const handlePrintOrder = (order: PendingOrder, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setReceiptData(buildReceiptData(order));
+    triggerPrint();
+  };
+
   const handlePayment = async (method: PaymentMethod) => {
     if (!selectedOrder) return;
 
@@ -99,6 +124,11 @@ export default function CashierPage() {
         selectedOrder.table_number ? ` • Mesa ${selectedOrder.table_number} liberada` : ""
       }`
     );
+
+    // Auto-print receipt after payment
+    setReceiptData(buildReceiptData(selectedOrder, method));
+    triggerPrint();
+
     setSelectedOrder(null);
     queryClient.invalidateQueries({ queryKey: QUERY_KEY });
   };
@@ -113,13 +143,13 @@ export default function CashierPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b border-border px-6 py-4">
+      <header className="border-b border-border px-4 sm:px-6 py-4">
         <div className="flex items-center gap-3">
-          <button onClick={() => navigate("/")} className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
+          <button onClick={() => navigate("/")} className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors min-h-[44px]" aria-label="Voltar">
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div className="flex items-center gap-2">
-            <Wallet className="w-5 h-5 text-primary" />
+            <Wallet className="w-5 h-5 text-primary" aria-hidden="true" />
             <div>
               <h1 className="text-lg font-bold text-foreground">Caixa</h1>
               <p className="text-xs text-muted-foreground">
@@ -130,18 +160,18 @@ export default function CashierPage() {
         </div>
       </header>
 
-      <main className="p-6 space-y-8">
+      <main className="p-4 sm:p-6 space-y-8">
         {/* Awaiting Payment Section */}
-        <section>
+        <section aria-label="Pedidos aguardando pagamento">
           <div className="flex items-center gap-2 mb-4">
-            <div className="w-3 h-3 rounded-full bg-orange-500 animate-pulse" />
+            <div className="w-3 h-3 rounded-full bg-orange-500 animate-pulse" aria-hidden="true" />
             <h2 className="text-sm font-bold text-foreground">Aguardando Pagamento</h2>
             <Badge variant="secondary">{pendingPayment.length}</Badge>
           </div>
 
           {pendingPayment.length === 0 ? (
             <div className="flex items-center justify-center h-32 rounded-xl border border-dashed border-border text-muted-foreground text-sm">
-              <CheckCircle2 className="w-5 h-5 mr-2 opacity-50" />
+              <CheckCircle2 className="w-5 h-5 mr-2 opacity-50" aria-hidden="true" />
               Nenhum pedido aguardando pagamento
             </div>
           ) : (
@@ -158,9 +188,19 @@ export default function CashierPage() {
                           <span className="text-sm font-bold text-foreground">Mesa {order.table_number}</span>
                         )}
                       </div>
-                      <span className="text-[10px] text-muted-foreground">
-                        {format(new Date(order.created_at), "HH:mm", { locale: ptBR })}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={(e) => handlePrintOrder(order, e)}
+                          className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
+                          aria-label={`Imprimir comanda ${order.table_number ? `Mesa ${order.table_number}` : ''}`}
+                          title="Imprimir comanda"
+                        >
+                          <Printer className="w-4 h-4" />
+                        </button>
+                        <span className="text-[10px] text-muted-foreground">
+                          {format(new Date(order.created_at), "HH:mm", { locale: ptBR })}
+                        </span>
+                      </div>
                     </div>
 
                     {order.profiles && (
@@ -184,7 +224,7 @@ export default function CashierPage() {
                       <span className="font-mono text-lg font-bold text-primary">{formatCurrency(order.total)}</span>
                     </div>
 
-                    <button className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-bold hover:opacity-90 transition-opacity">
+                    <button className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-bold hover:opacity-90 transition-opacity min-h-[44px]">
                       💳 Receber Pagamento
                     </button>
                   </CardContent>
@@ -195,9 +235,9 @@ export default function CashierPage() {
         </section>
 
         {/* In Progress Section */}
-        <section>
+        <section aria-label="Pedidos em andamento">
           <div className="flex items-center gap-2 mb-4">
-            <div className="w-3 h-3 rounded-full bg-blue-500" />
+            <div className="w-3 h-3 rounded-full bg-blue-500" aria-hidden="true" />
             <h2 className="text-sm font-bold text-foreground">Em Andamento</h2>
             <Badge variant="secondary">{inProgress.length}</Badge>
           </div>
@@ -220,7 +260,17 @@ export default function CashierPage() {
                           <span className="text-xs font-semibold text-foreground">Mesa {order.table_number}</span>
                         )}
                       </div>
-                      <Badge variant="secondary" className="text-[10px]">{order.status}</Badge>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={(e) => handlePrintOrder(order, e)}
+                          className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
+                          aria-label="Imprimir comanda"
+                          title="Imprimir comanda"
+                        >
+                          <Printer className="w-3.5 h-3.5" />
+                        </button>
+                        <Badge variant="secondary" className="text-[10px]">{order.status}</Badge>
+                      </div>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-xs text-muted-foreground">{order.order_items.length} itens</span>
@@ -241,6 +291,9 @@ export default function CashierPage() {
           onClose={() => setSelectedOrder(null)}
         />
       )}
+
+      {/* Hidden receipt for printing */}
+      {receiptData && <ReceiptPrint data={receiptData} />}
     </div>
   );
 }
