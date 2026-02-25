@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useRealtimeOrders } from "@/hooks/useRealtimeOrders";
+import { useRealtimeOrdersWithSound } from "@/hooks/useRealtimeOrdersWithSound";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { ArrowLeft, Loader2, Clock, ChefHat, CheckCircle2, Truck, XCircle } from "lucide-react";
@@ -44,7 +44,7 @@ const QUERY_KEY = ["active-orders"];
 
 export default function ActiveOrdersPage() {
   const navigate = useNavigate();
-  useRealtimeOrders(QUERY_KEY);
+  useRealtimeOrdersWithSound(QUERY_KEY);
 
   const { data: orders, isLoading } = useQuery({
     queryKey: QUERY_KEY,
