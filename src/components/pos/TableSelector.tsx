@@ -1,15 +1,30 @@
-import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useRealtimeTables } from "@/hooks/useRealtimeTables";
 
 interface TableSelectorProps {
   onSelect: (tableNumber: number) => void;
   selectedTable: number | null;
 }
 
-export function TableSelector({ onSelect, selectedTable }: TableSelectorProps) {
-  const tables = Array.from({ length: 15 }, (_, i) => i + 1);
+const QUERY_KEY = ["tables-selector"];
 
-  // Mock status
-  const occupiedTables = [2, 5, 7, 11, 13];
+export function TableSelector({ onSelect, selectedTable }: TableSelectorProps) {
+  useRealtimeTables(QUERY_KEY);
+
+  const { data: tables } = useQuery({
+    queryKey: QUERY_KEY,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("tables")
+        .select("number, status")
+        .order("number", { ascending: true });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const tableList = tables || [];
 
   return (
     <div className="mb-4">
@@ -25,22 +40,23 @@ export function TableSelector({ onSelect, selectedTable }: TableSelectorProps) {
         </div>
       </div>
       <div className="flex flex-wrap gap-2">
-        {tables.map((num) => {
-          const isOccupied = occupiedTables.includes(num);
-          const isSelected = selectedTable === num;
+        {tableList.map((table) => {
+          const isOccupied = table.status !== "livre";
+          const isSelected = selectedTable === table.number;
           return (
             <button
-              key={num}
-              onClick={() => onSelect(num)}
+              key={table.number}
+              onClick={() => !isOccupied && onSelect(table.number)}
+              disabled={isOccupied}
               className={`w-12 h-12 rounded-lg text-sm font-bold flex items-center justify-center transition-all ${
                 isSelected
                   ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25 scale-105"
                   : isOccupied
-                  ? "bg-primary/15 text-primary border border-primary/30"
+                  ? "bg-primary/15 text-primary border border-primary/30 opacity-60 cursor-not-allowed"
                   : "bg-secondary text-muted-foreground hover:bg-secondary/80 border border-border"
               }`}
             >
-              {num}
+              {table.number}
             </button>
           );
         })}
