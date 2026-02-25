@@ -59,11 +59,13 @@ export async function createOrder(
       .eq("number", tableNumber);
   }
 
-  // Update order status to paid
-  await supabase
-    .from("orders")
-    .update({ status: "pago" as const })
-    .eq("id", order.id);
+  // Balcão orders are paid immediately; garçom/delivery go through the kitchen flow
+  if (channel === "balcao") {
+    await supabase
+      .from("orders")
+      .update({ status: "pago" as const })
+      .eq("id", order.id);
+  }
 
   return order;
 }
