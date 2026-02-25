@@ -18,6 +18,8 @@ interface TableItem {
   capacity: number;
   current_order_id: string | null;
   updated_at: string;
+  waiter_id: string | null;
+  waiter_name?: string | null;
 }
 
 const statusConfig: Record<TableStatus, { label: string; icon: typeof Users; color: string; bg: string; border: string }> = {
@@ -44,7 +46,21 @@ export default function TablesPage() {
         .select("*")
         .order("number", { ascending: true });
       if (error) throw error;
-      return data as TableItem[];
+      const items = data as TableItem[];
+
+      // Fetch waiter names for occupied tables
+      const waiterIds = [...new Set(items.map(t => t.waiter_id).filter(Boolean))] as string[];
+      let waiterMap: Record<string, string> = {};
+      if (waiterIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("user_id, name")
+          .in("user_id", waiterIds);
+        if (profiles) {
+          waiterMap = Object.fromEntries(profiles.map(p => [p.user_id, p.name]));
+        }
+      }
+      return items.map(t => ({ ...t, waiter_name: t.waiter_id ? waiterMap[t.waiter_id] || null : null }));
     },
   });
 
@@ -175,6 +191,11 @@ export default function TablesPage() {
                   <Icon className={cn("w-3 h-3", cfg.color)} />
                   <span className={cn("text-[10px] font-bold", cfg.color)}>{cfg.label}</span>
                 </div>
+
+                {/* Waiter name */}
+                {table.waiter_name && (
+                  <span className="text-[10px] text-muted-foreground truncate max-w-full">👤 {table.waiter_name}</span>
+                )}
 
                 {/* Capacity */}
                 <span className="text-[10px] text-muted-foreground">{table.capacity} lugares</span>
