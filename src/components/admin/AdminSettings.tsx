@@ -2,20 +2,22 @@ import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Save, Phone } from "lucide-react";
+import { Save, Phone, Store, Clock, MessageSquare } from "lucide-react";
 
 export function AdminSettings() {
   const queryClient = useQueryClient();
   const [whatsapp, setWhatsapp] = useState("");
+  const [restaurantName, setRestaurantName] = useState("");
+  const [openingHours, setOpeningHours] = useState("");
+  const [welcomeMessage, setWelcomeMessage] = useState("");
   const [saving, setSaving] = useState(false);
 
   const { data: settings, isLoading } = useQuery({
     queryKey: ["app-settings"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("app_settings")
-        .select("*");
+      const { data, error } = await supabase.from("app_settings").select("*");
       if (error) throw error;
       return data as { key: string; value: string }[];
     },
@@ -23,17 +25,27 @@ export function AdminSettings() {
 
   useEffect(() => {
     if (settings) {
-      const wp = settings.find((s) => s.key === "whatsapp_number");
-      if (wp) setWhatsapp(wp.value);
+      const get = (k: string) => settings.find((s) => s.key === k)?.value ?? "";
+      setWhatsapp(get("whatsapp_number"));
+      setRestaurantName(get("restaurant_name"));
+      setOpeningHours(get("opening_hours"));
+      setWelcomeMessage(get("welcome_message"));
     }
   }, [settings]);
 
   const handleSave = async () => {
     setSaving(true);
     try {
+      const now = new Date().toISOString();
+      const entries = [
+        { key: "whatsapp_number", value: whatsapp, updated_at: now },
+        { key: "restaurant_name", value: restaurantName, updated_at: now },
+        { key: "opening_hours", value: openingHours, updated_at: now },
+        { key: "welcome_message", value: welcomeMessage, updated_at: now },
+      ];
       const { error } = await supabase
         .from("app_settings")
-        .upsert({ key: "whatsapp_number", value: whatsapp, updated_at: new Date().toISOString() }, { onConflict: "key" });
+        .upsert(entries, { onConflict: "key" });
       if (error) throw error;
       queryClient.invalidateQueries({ queryKey: ["app-settings"] });
       toast.success("Configurações salvas!");
@@ -53,10 +65,25 @@ export function AdminSettings() {
         <p className="text-xs text-muted-foreground">Ajustes gerais do restaurante</p>
       </div>
 
-      <div className="bg-card border border-border rounded-xl p-4 space-y-4 max-w-md">
+      <div className="bg-card border border-border rounded-xl p-4 space-y-5 max-w-md">
+        {/* Restaurant Name */}
         <div>
-          <label className="text-xs font-semibold text-foreground mb-1.5 block">Número WhatsApp do restaurante</label>
-          <p className="text-[10px] text-muted-foreground mb-2">Formato: código do país + DDD + número (ex: 5511999999999)</p>
+          <label className="text-xs font-semibold text-foreground mb-1.5 block">Nome do restaurante</label>
+          <div className="relative">
+            <Store className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Meu Restaurante"
+              value={restaurantName}
+              onChange={(e) => setRestaurantName(e.target.value)}
+              className="pl-10 bg-background border-border"
+            />
+          </div>
+        </div>
+
+        {/* WhatsApp */}
+        <div>
+          <label className="text-xs font-semibold text-foreground mb-1.5 block">Número WhatsApp</label>
+          <p className="text-[10px] text-muted-foreground mb-2">Formato: 5511999999999</p>
           <div className="relative">
             <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
@@ -64,6 +91,36 @@ export function AdminSettings() {
               value={whatsapp}
               onChange={(e) => setWhatsapp(e.target.value.replace(/\D/g, ""))}
               className="pl-10 bg-background border-border"
+            />
+          </div>
+        </div>
+
+        {/* Opening Hours */}
+        <div>
+          <label className="text-xs font-semibold text-foreground mb-1.5 block">Horário de funcionamento</label>
+          <div className="relative">
+            <Clock className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
+            <Textarea
+              placeholder={"Seg-Sex: 11h–22h\nSáb-Dom: 10h–23h"}
+              value={openingHours}
+              onChange={(e) => setOpeningHours(e.target.value)}
+              className="pl-10 bg-background border-border min-h-[70px]"
+              rows={2}
+            />
+          </div>
+        </div>
+
+        {/* Welcome Message */}
+        <div>
+          <label className="text-xs font-semibold text-foreground mb-1.5 block">Mensagem de boas-vindas do cardápio</label>
+          <div className="relative">
+            <MessageSquare className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
+            <Textarea
+              placeholder="Bem-vindo ao nosso cardápio! Escolha seus pratos favoritos."
+              value={welcomeMessage}
+              onChange={(e) => setWelcomeMessage(e.target.value)}
+              className="pl-10 bg-background border-border min-h-[70px]"
+              rows={2}
             />
           </div>
         </div>
