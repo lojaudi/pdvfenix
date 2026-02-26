@@ -7,7 +7,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
   Bike, MapPin, Phone, User, Clock, Package, CheckCircle2,
-  Navigation, History, Loader2, LogOut, RefreshCw, ExternalLink,
+  Navigation, History, Loader2, LogOut, RefreshCw, ExternalLink, Volume2, VolumeX,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -54,6 +54,10 @@ export default function DriverPage() {
   const queryClient = useQueryClient();
   const [tab, setTab] = useState<Tab>("active");
   const [sharingLocation, setSharingLocation] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(() => {
+    const saved = localStorage.getItem("driver-sound-enabled");
+    return saved !== null ? saved === "true" : true;
+  });
   const [loginPhone, setLoginPhone] = useState("");
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
@@ -195,7 +199,7 @@ export default function DriverPage() {
     if (prevCount > 0 || currentCount > 0) {
       // New deliveries appeared
       if (currentCount > prevCount && prevCount >= 0 && prevPendingCountRef.current !== -1) {
-        playDriverSound();
+        if (soundEnabled) playDriverSound();
         const diff = currentCount - prevCount;
         toast.info(`🛵 ${diff} nova(s) entrega(s) disponível(is)!`, { duration: 6000 });
         sendPushNotification(
@@ -206,7 +210,15 @@ export default function DriverPage() {
     }
 
     prevPendingCountRef.current = currentCount;
-  }, [pendingDeliveries?.length, playDriverSound, sendPushNotification]);
+  }, [pendingDeliveries?.length, playDriverSound, sendPushNotification, soundEnabled]);
+
+  const toggleSound = useCallback(() => {
+    setSoundEnabled((prev) => {
+      const next = !prev;
+      localStorage.setItem("driver-sound-enabled", String(next));
+      return next;
+    });
+  }, []);
 
   // Realtime
   useEffect(() => {
@@ -406,9 +418,18 @@ export default function DriverPage() {
               </div>
             </div>
           </div>
-          <button onClick={signOut} className="w-9 h-9 rounded-lg bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground">
-            <LogOut className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={toggleSound}
+              className={cn("w-9 h-9 rounded-lg flex items-center justify-center transition-colors", soundEnabled ? "bg-primary/15 text-primary" : "bg-secondary text-muted-foreground")}
+              title={soundEnabled ? "Desativar som" : "Ativar som"}
+            >
+              {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+            </button>
+            <button onClick={signOut} className="w-9 h-9 rounded-lg bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground">
+              <LogOut className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </header>
 
