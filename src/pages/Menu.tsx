@@ -323,9 +323,17 @@ export default function MenuPage() {
             return (
               <div
                 key={product.id}
-                className="bg-card border border-border rounded-xl p-4 flex justify-between items-center gap-3"
+                className="bg-card border border-border rounded-xl overflow-hidden flex justify-between items-center gap-3"
               >
-                <div className="flex-1 min-w-0">
+                {product.image_url && (
+                  <img
+                    src={product.image_url}
+                    alt={product.name}
+                    className="w-20 h-20 object-cover flex-shrink-0"
+                    loading="lazy"
+                  />
+                )}
+                <div className="flex-1 min-w-0 p-4">
                   <h3 className="text-sm font-semibold text-foreground truncate">{product.name}</h3>
                   <p className="text-primary font-bold text-sm mt-1">{formatCurrency(product.price)}</p>
                 </div>
