@@ -38,6 +38,148 @@ export type Database = {
         }
         Relationships: []
       }
+      delivery_details: {
+        Row: {
+          created_at: string
+          customer_phone: string
+          delivered_at: string | null
+          delivery_address: string
+          delivery_fee: number
+          delivery_status: Database["public"]["Enums"]["delivery_status"]
+          delivery_zone_id: string | null
+          driver_id: string | null
+          estimated_delivery_at: string | null
+          id: string
+          notes: string | null
+          order_id: string
+          payment_on_delivery: boolean
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_phone: string
+          delivered_at?: string | null
+          delivery_address: string
+          delivery_fee?: number
+          delivery_status?: Database["public"]["Enums"]["delivery_status"]
+          delivery_zone_id?: string | null
+          driver_id?: string | null
+          estimated_delivery_at?: string | null
+          id?: string
+          notes?: string | null
+          order_id: string
+          payment_on_delivery?: boolean
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_phone?: string
+          delivered_at?: string | null
+          delivery_address?: string
+          delivery_fee?: number
+          delivery_status?: Database["public"]["Enums"]["delivery_status"]
+          delivery_zone_id?: string | null
+          driver_id?: string | null
+          estimated_delivery_at?: string | null
+          id?: string
+          notes?: string | null
+          order_id?: string
+          payment_on_delivery?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "delivery_details_delivery_zone_id_fkey"
+            columns: ["delivery_zone_id"]
+            isOneToOne: false
+            referencedRelation: "delivery_zones"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "delivery_details_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "delivery_drivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "delivery_details_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      delivery_drivers: {
+        Row: {
+          created_at: string
+          current_lat: number | null
+          current_lng: number | null
+          id: string
+          is_available: boolean
+          location_updated_at: string | null
+          name: string
+          phone: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          current_lat?: number | null
+          current_lng?: number | null
+          id?: string
+          is_available?: boolean
+          location_updated_at?: string | null
+          name: string
+          phone: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          current_lat?: number | null
+          current_lng?: number | null
+          id?: string
+          is_available?: boolean
+          location_updated_at?: string | null
+          name?: string
+          phone?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      delivery_zones: {
+        Row: {
+          created_at: string
+          fee_type: Database["public"]["Enums"]["delivery_fee_type"]
+          fee_value: number
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          fee_type?: Database["public"]["Enums"]["delivery_fee_type"]
+          fee_value?: number
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          fee_type?: Database["public"]["Enums"]["delivery_fee_type"]
+          fee_value?: number
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       order_items: {
         Row: {
           created_at: string
@@ -264,6 +406,13 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "attendant" | "waiter" | "caixa"
+      delivery_fee_type: "fixa" | "bairro" | "regiao" | "km"
+      delivery_status:
+        | "aguardando"
+        | "aceito"
+        | "saiu_para_entrega"
+        | "entregue"
+        | "cancelado"
       order_channel: "balcao" | "garcom" | "delivery"
       order_status:
         | "aberto"
@@ -402,6 +551,14 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "attendant", "waiter", "caixa"],
+      delivery_fee_type: ["fixa", "bairro", "regiao", "km"],
+      delivery_status: [
+        "aguardando",
+        "aceito",
+        "saiu_para_entrega",
+        "entregue",
+        "cancelado",
+      ],
       order_channel: ["balcao", "garcom", "delivery"],
       order_status: [
         "aberto",

@@ -14,6 +14,7 @@ const ReportsPage = React.lazy(() => import("./pages/Reports"));
 const ActiveOrdersPage = React.lazy(() => import("./pages/ActiveOrders"));
 const TablesPage = React.lazy(() => import("./pages/Tables"));
 const CashierPage = React.lazy(() => import("./pages/Cashier"));
+const MenuPage = React.lazy(() => import("./pages/Menu"));
 const NotFound = React.lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -58,6 +59,7 @@ const App = () => (
             <Route path="/tables" element={<ProtectedRoute><TablesPage /></ProtectedRoute>} />
             <Route path="/cashier" element={<ProtectedRoute><CashierPage /></ProtectedRoute>} />
             <Route path="/auth" element={<AuthRoute><AuthPage /></AuthRoute>} />
+            <Route path="/menu" element={<MenuPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
