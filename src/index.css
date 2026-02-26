@@ -59,6 +59,11 @@
     @apply bg-background text-foreground font-sans antialiased;
     font-family: 'Inter', system-ui, sans-serif;
   }
+
+  #root {
+    position: relative;
+    z-index: 1;
+  }
 }
 
 @layer utilities {
