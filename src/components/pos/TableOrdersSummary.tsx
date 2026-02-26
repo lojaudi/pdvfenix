@@ -207,7 +207,7 @@ export function TableOrdersSummary({ tableNumber }: TableOrdersSummaryProps) {
       </div>
 
       {/* Request bill button - only show if there are non-entregue orders */}
-      {orders.some(o => ["aberto", "preparando", "pronto"].includes(o.status)) && (
+      {orders.some(o => ["aberto", "preparando", "pronto", "entregue"].includes(o.status)) && (
         <button
           onClick={handleRequestBill}
           disabled={requestingBill}
