@@ -2,13 +2,15 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus, Trash2, Phone, User, Loader2, Link2, Unlink } from "lucide-react";
+import { Plus, Trash2, Phone, User, Loader2, Link2, Unlink, Mail, Lock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 export function AdminDrivers() {
   const queryClient = useQueryClient();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   const { data: drivers, isLoading } = useQuery({
     queryKey: ["drivers"],
@@ -35,7 +37,28 @@ export function AdminDrivers() {
     },
   });
 
-  const addDriver = useMutation({
+  const addDriverWithAccount = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.functions.invoke("create-driver-account", {
+        body: { email, password, name, phone },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data;
+    },
+    onSuccess: () => {
+      toast.success("Entregador criado com conta de acesso!");
+      setName("");
+      setPhone("");
+      setEmail("");
+      setPassword("");
+      queryClient.invalidateQueries({ queryKey: ["drivers"] });
+      queryClient.invalidateQueries({ queryKey: ["profiles-for-drivers"] });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const addDriverNoAccount = useMutation({
     mutationFn: async () => {
       const { error } = await supabase
         .from("delivery_drivers")
@@ -43,9 +66,11 @@ export function AdminDrivers() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Entregador adicionado!");
+      toast.success("Entregador adicionado (sem conta)!");
       setName("");
       setPhone("");
+      setEmail("");
+      setPassword("");
       queryClient.invalidateQueries({ queryKey: ["drivers"] });
     },
     onError: (e: any) => toast.error(e.message),
@@ -97,34 +122,75 @@ export function AdminDrivers() {
   const linkedUserIds = new Set(drivers?.filter(d => d.user_id).map(d => d.user_id) || []);
   const availableProfiles = profiles?.filter(p => !linkedUserIds.has(p.user_id)) || [];
 
+  const canCreateWithAccount = name.trim() && phone.trim() && email.trim() && password.trim() && password.length >= 6;
+  const canCreateWithoutAccount = name.trim() && phone.trim();
+  const isPending = addDriverWithAccount.isPending || addDriverNoAccount.isPending;
+
   return (
     <div className="space-y-4">
       <h2 className="text-lg font-bold text-foreground">Entregadores ({drivers?.length || 0})</h2>
       <p className="text-xs text-muted-foreground">
-        Vincule uma conta de usuário para que o entregador acesse <strong>/driver</strong> e gerencie suas entregas.
+        Cadastre o entregador com email e senha para que ele acesse <strong>/driver</strong> e gerencie suas entregas.
       </p>
 
       {/* Add form */}
-      <div className="flex gap-2 flex-wrap">
-        <input
-          placeholder="Nome"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          className="flex-1 min-w-[150px] px-3 py-2 rounded-lg bg-secondary border border-border text-foreground text-sm"
-        />
-        <input
-          placeholder="Telefone"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-          className="flex-1 min-w-[120px] px-3 py-2 rounded-lg bg-secondary border border-border text-foreground text-sm"
-        />
-        <button
-          onClick={() => addDriver.mutate()}
-          disabled={!name.trim() || !phone.trim() || addDriver.isPending}
-          className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-semibold disabled:opacity-50 flex items-center gap-2"
-        >
-          <Plus className="w-4 h-4" /> Adicionar
-        </button>
+      <div className="bg-card border border-border rounded-xl p-4 space-y-3">
+        <div className="flex gap-2 flex-wrap">
+          <input
+            placeholder="Nome"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="flex-1 min-w-[150px] px-3 py-2 rounded-lg bg-secondary border border-border text-foreground text-sm"
+          />
+          <input
+            placeholder="Telefone"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            className="flex-1 min-w-[120px] px-3 py-2 rounded-lg bg-secondary border border-border text-foreground text-sm"
+          />
+        </div>
+        <div className="flex gap-2 flex-wrap">
+          <div className="flex-1 min-w-[180px] relative">
+            <Mail className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="email"
+              placeholder="Email de acesso"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full pl-9 pr-3 py-2 rounded-lg bg-secondary border border-border text-foreground text-sm"
+            />
+          </div>
+          <div className="flex-1 min-w-[150px] relative">
+            <Lock className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="password"
+              placeholder="Senha (mín. 6 caracteres)"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full pl-9 pr-3 py-2 rounded-lg bg-secondary border border-border text-foreground text-sm"
+            />
+          </div>
+        </div>
+        <div className="flex gap-2 flex-wrap">
+          <button
+            onClick={() => addDriverWithAccount.mutate()}
+            disabled={!canCreateWithAccount || isPending}
+            className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-semibold disabled:opacity-50 flex items-center gap-2"
+          >
+            {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+            Criar com conta de acesso
+          </button>
+          <button
+            onClick={() => addDriverNoAccount.mutate()}
+            disabled={!canCreateWithoutAccount || isPending}
+            className="px-4 py-2 rounded-lg bg-secondary text-secondary-foreground text-sm font-semibold disabled:opacity-50 flex items-center gap-2 border border-border"
+          >
+            <Plus className="w-4 h-4" /> Adicionar sem conta
+          </button>
+        </div>
+        {password && password.length < 6 && (
+          <p className="text-[11px] text-destructive">A senha deve ter no mínimo 6 caracteres</p>
+        )}
       </div>
 
       {isLoading ? (
@@ -174,7 +240,7 @@ export function AdminDrivers() {
                     <>
                       <Link2 className="w-3.5 h-3.5 text-primary flex-shrink-0" />
                       <span className="text-xs text-foreground flex-1">
-                        Vinculado: <strong>{linkedProfile?.email || linkedProfile?.name || d.user_id}</strong>
+                        Vinculado: <strong>{linkedProfile?.email || linkedProfile?.name || "conta vinculada"}</strong>
                       </span>
                       <button
                         onClick={() => linkUser.mutate({ driverId: d.id, userId: null })}
