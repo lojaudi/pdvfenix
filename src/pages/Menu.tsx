@@ -1,7 +1,8 @@
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ShoppingCart, Plus, Minus, Trash2, Send, MapPin, Phone, User, MessageSquare, Search } from "lucide-react";
+import { ShoppingCart, Plus, Minus, Trash2, Send, MapPin, Phone, User, MessageSquare, Search, MapPinned } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -24,6 +25,7 @@ interface DeliveryZone {
 }
 
 export default function MenuPage() {
+  const navigate = useNavigate();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [showCart, setShowCart] = useState(false);
   const [search, setSearch] = useState("");
@@ -210,9 +212,17 @@ export default function MenuPage() {
             <h1 className="text-lg font-bold text-foreground">🔥 PDV Fênix</h1>
             <p className="text-xs text-muted-foreground">Cardápio Online • Delivery</p>
           </div>
-          <button
-            onClick={() => setShowCart(true)}
-            className="relative w-11 h-11 rounded-xl bg-primary text-primary-foreground flex items-center justify-center"
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => navigate("/rastreio")}
+              className="h-9 px-3 rounded-lg bg-secondary text-secondary-foreground text-xs font-semibold flex items-center gap-1.5 hover:bg-secondary/80 transition-colors"
+            >
+              <MapPinned className="w-4 h-4" />
+              Rastrear
+            </button>
+            <button
+              onClick={() => setShowCart(true)}
+              className="relative w-11 h-11 rounded-xl bg-primary text-primary-foreground flex items-center justify-center"
             aria-label="Abrir carrinho"
           >
             <ShoppingCart className="w-5 h-5" />
@@ -221,7 +231,8 @@ export default function MenuPage() {
                 {cartCount}
               </span>
             )}
-          </button>
+           </button>
+          </div>
         </div>
       </header>
 
