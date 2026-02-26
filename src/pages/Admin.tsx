@@ -6,9 +6,10 @@ import { AdminCategories } from "@/components/admin/AdminCategories";
 import { AdminUsers } from "@/components/admin/AdminUsers";
 import { AdminDeliveryZones } from "@/components/admin/AdminDeliveryZones";
 import { AdminDrivers } from "@/components/admin/AdminDrivers";
-import { ArrowLeft, Package, Grid3X3, Users, Loader2, ShieldAlert, Truck, Bike } from "lucide-react";
+import { AdminSettings } from "@/components/admin/AdminSettings";
+import { ArrowLeft, Package, Grid3X3, Users, Loader2, ShieldAlert, Truck, Bike, Settings } from "lucide-react";
 
-type Tab = "products" | "categories" | "users" | "delivery" | "drivers";
+type Tab = "products" | "categories" | "users" | "delivery" | "drivers" | "settings";
 
 const tabs: { id: Tab; label: string; icon: typeof Package }[] = [
   { id: "products", label: "Produtos", icon: Package },
@@ -16,6 +17,7 @@ const tabs: { id: Tab; label: string; icon: typeof Package }[] = [
   { id: "users", label: "Usuários", icon: Users },
   { id: "delivery", label: "Zonas", icon: Truck },
   { id: "drivers", label: "Entregadores", icon: Bike },
+  { id: "settings", label: "Config", icon: Settings },
 ];
 
 export default function AdminPage() {
@@ -84,6 +86,7 @@ export default function AdminPage() {
         {activeTab === "users" && <AdminUsers />}
         {activeTab === "delivery" && <AdminDeliveryZones />}
         {activeTab === "drivers" && <AdminDrivers />}
+        {activeTab === "settings" && <AdminSettings />}
       </main>
     </div>
   );

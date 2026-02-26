@@ -63,6 +63,18 @@ export default function MenuPage() {
     },
   });
 
+  const { data: whatsappNumber } = useQuery({
+    queryKey: ["whatsapp-number"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("app_settings")
+        .select("value")
+        .eq("key", "whatsapp_number")
+        .single();
+      return data?.value || "";
+    },
+  });
+
   const filteredProducts = useMemo(() => {
     let list = products || [];
     if (selectedCategory) list = list.filter((p) => p.category_id === selectedCategory);
@@ -146,27 +158,29 @@ export default function MenuPage() {
       });
       if (deliveryError) throw deliveryError;
 
-      // 4. Send WhatsApp message
-      const zoneName = zones?.find((z) => z.id === selectedZone)?.name || "Não selecionada";
-      const payLabel = paymentOnDelivery ? "Na entrega" : "PIX antecipado";
-      const lines = [
-        `🛒 *NOVO PEDIDO DELIVERY*`,
-        ``,
-        `👤 *Cliente:* ${customerName}`,
-        `📱 *Telefone:* ${customerPhone}`,
-        `📍 *Endereço:* ${deliveryAddress}`,
-        `🏘️ *Região:* ${zoneName}`,
-        `💳 *Pagamento:* ${payLabel}`,
-        notes ? `📝 *Obs:* ${notes}` : "",
-        ``,
-        `*── ITENS ──*`,
-        ...cart.map((i) => `• ${i.qty}x ${i.name} — ${formatCurrency(i.price * i.qty)}`),
-        ``,
-        `🚚 *Taxa de entrega:* ${formatCurrency(deliveryFee)}`,
-        `💰 *TOTAL: ${formatCurrency(grandTotal)}*`,
-      ].filter(Boolean);
-      const text = encodeURIComponent(lines.join("\n"));
-      window.open(`https://wa.me/?text=${text}`, "_blank");
+      // 4. Send WhatsApp message if number is configured
+      if (whatsappNumber) {
+        const zoneName = zones?.find((z) => z.id === selectedZone)?.name || "Não selecionada";
+        const payLabel = paymentOnDelivery ? "Na entrega" : "PIX antecipado";
+        const lines = [
+          `🛒 *NOVO PEDIDO DELIVERY*`,
+          ``,
+          `👤 *Cliente:* ${customerName}`,
+          `📱 *Telefone:* ${customerPhone}`,
+          `📍 *Endereço:* ${deliveryAddress}`,
+          `🏘️ *Região:* ${zoneName}`,
+          `💳 *Pagamento:* ${payLabel}`,
+          notes ? `📝 *Obs:* ${notes}` : "",
+          ``,
+          `*── ITENS ──*`,
+          ...cart.map((i) => `• ${i.qty}x ${i.name} — ${formatCurrency(i.price * i.qty)}`),
+          ``,
+          `🚚 *Taxa de entrega:* ${formatCurrency(deliveryFee)}`,
+          `💰 *TOTAL: ${formatCurrency(grandTotal)}*`,
+        ].filter(Boolean);
+        const text = encodeURIComponent(lines.join("\n"));
+        window.open(`https://wa.me/${whatsappNumber}?text=${text}`, "_blank");
+      }
 
       // 5. Reset state
       setCart([]);
