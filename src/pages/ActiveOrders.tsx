@@ -117,6 +117,17 @@ export default function ActiveOrdersPage() {
     } else {
       if (nextStatus === "entregue") await setTableAwaitingPayment(order);
       toast.success(`Pedido movido para ${statusConfig[nextStatus].label}`);
+
+      // When a delivery order becomes "pronto", notify drivers via WhatsApp
+      if (nextStatus === "pronto" && order.channel === "delivery") {
+        try {
+          await supabase.functions.invoke("evolution-api", {
+            body: { action: "notify-drivers", orderId: order.id },
+          });
+        } catch (err) {
+          console.error("WhatsApp notification error:", err);
+        }
+      }
     }
   };
 
