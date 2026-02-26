@@ -81,17 +81,23 @@ export default function MenuPage() {
     },
   });
 
-  const { data: whatsappNumber } = useQuery({
-    queryKey: ["whatsapp-number"],
+  const { data: settings } = useQuery({
+    queryKey: ["menu-settings"],
     queryFn: async () => {
       const { data } = await supabase
         .from("app_settings")
-        .select("value")
-        .eq("key", "whatsapp_number")
-        .single();
-      return data?.value || "";
+        .select("key, value")
+        .in("key", ["whatsapp_number", "restaurant_name", "opening_hours", "welcome_message"]);
+      const map: Record<string, string> = {};
+      (data || []).forEach((s) => { map[s.key] = s.value; });
+      return map;
     },
   });
+
+  const whatsappNumber = settings?.whatsapp_number || "";
+  const restaurantName = settings?.restaurant_name || "🔥 PDV Fênix";
+  const openingHours = settings?.opening_hours || "";
+  const welcomeMessage = settings?.welcome_message || "";
 
   const filteredProducts = useMemo(() => {
     let list = products || [];
@@ -225,8 +231,10 @@ export default function MenuPage() {
       <header className="sticky top-0 z-40 bg-background/95 backdrop-blur border-b border-border px-4 py-3">
         <div className="max-w-3xl mx-auto flex items-center justify-between">
           <div>
-            <h1 className="text-lg font-bold text-foreground">🔥 PDV Fênix</h1>
-            <p className="text-xs text-muted-foreground">Cardápio Online • Delivery</p>
+            <h1 className="text-lg font-bold text-foreground">{restaurantName}</h1>
+            <p className="text-xs text-muted-foreground">
+              {openingHours ? `${openingHours} • Delivery` : "Cardápio Online • Delivery"}
+            </p>
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -239,18 +247,27 @@ export default function MenuPage() {
             <button
               onClick={() => setShowCart(true)}
               className="relative w-11 h-11 rounded-xl bg-primary text-primary-foreground flex items-center justify-center"
-            aria-label="Abrir carrinho"
-          >
-            <ShoppingCart className="w-5 h-5" />
-            {cartCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center">
-                {cartCount}
-              </span>
-            )}
-           </button>
+              aria-label="Abrir carrinho"
+            >
+              <ShoppingCart className="w-5 h-5" />
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center">
+                  {cartCount}
+                </span>
+              )}
+            </button>
           </div>
         </div>
       </header>
+
+      {/* Welcome message */}
+      {welcomeMessage && (
+        <div className="max-w-3xl mx-auto px-4 pt-4">
+          <div className="bg-primary/10 text-primary rounded-xl px-4 py-3 text-sm font-medium">
+            {welcomeMessage}
+          </div>
+        </div>
+      )}
 
       <main className="max-w-3xl mx-auto p-4 space-y-4 pb-24">
         {/* Search */}
