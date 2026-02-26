@@ -13,7 +13,7 @@ import { TableSelector } from "@/components/pos/TableSelector";
 import { TableOrdersSummary } from "@/components/pos/TableOrdersSummary";
 import { createOrder } from "@/services/orderService";
 import { toast } from "sonner";
-import { Store, LogOut, Loader2, Settings, BarChart3, ClipboardList, LayoutGrid, Wallet } from "lucide-react";
+import { Store, LogOut, Loader2, Settings, BarChart3, ClipboardList, LayoutGrid, Wallet, Bike } from "lucide-react";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 
 type OrderChannel = "balcao" | "garcom" | "delivery";
@@ -121,6 +121,7 @@ const Index = () => {
               <ChannelSelector selected={channel} onSelect={setChannel} hiddenChannels={isWaiter ? ["balcao", "delivery"] : []} />
             </div>
             <NavButton onClick={() => navigate("/orders")} title="Pedidos Ativos" icon={ClipboardList} />
+            <NavButton onClick={() => navigate("/deliveries")} title="Entregas" icon={Bike} />
             <NavButton onClick={() => navigate("/tables")} title="Mesas" icon={LayoutGrid} />
             {(isAdmin || isCashier) && <NavButton onClick={() => navigate("/cashier")} title="Caixa" icon={Wallet} />}
             {isAdmin && (
