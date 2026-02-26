@@ -2,7 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { DbProduct } from "@/hooks/useProducts";
 
 type OrderChannel = "balcao" | "garcom" | "delivery";
-type PaymentMethod = "dinheiro" | "credito" | "debito" | "pix" | null;
+type PaymentMethod = "dinheiro" | "credito" | "debito" | "pix" | "pix_maquina" | null;
 
 interface CartItem {
   product: DbProduct;

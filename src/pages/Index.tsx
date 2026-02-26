@@ -17,7 +17,7 @@ import { Store, LogOut, Loader2, Settings, BarChart3, ClipboardList, LayoutGrid,
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 
 type OrderChannel = "balcao" | "garcom" | "delivery";
-type PaymentMethodType = "dinheiro" | "credito" | "debito" | "pix";
+import type { PaymentMethod as PaymentMethodType } from "@/components/pos/PaymentDialog";
 
 const channelLabels: Record<OrderChannel, string> = {
   balcao: "Balcão",
@@ -72,7 +72,7 @@ const Index = () => {
     setShowPayment(true);
   };
 
-  const handlePayment = async (method: PaymentMethodType) => {
+  const handlePayment = async (method: PaymentMethodType, _changeValue?: number) => {
     if (!user) return;
     setSubmitting(true);
     try {
@@ -226,6 +226,7 @@ const Index = () => {
           total={cart.total}
           onConfirm={handlePayment}
           onClose={() => setShowPayment(false)}
+          channel={channel}
         />
       )}
     </main>
