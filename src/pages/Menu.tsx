@@ -92,7 +92,9 @@ export default function MenuPage() {
 
   const removeItem = (id: string) => setCart((prev) => prev.filter((i) => i.id !== id));
 
-  const sendToWhatsApp = () => {
+  const [sending, setSending] = useState(false);
+
+  const sendOrder = async () => {
     if (!customerName.trim() || !customerPhone.trim() || !deliveryAddress.trim()) {
       toast.error("Preencha nome, telefone e endereço");
       return;
@@ -102,30 +104,85 @@ export default function MenuPage() {
       return;
     }
 
-    const zoneName = zones?.find((z) => z.id === selectedZone)?.name || "Não selecionada";
-    const payLabel = paymentOnDelivery ? "Na entrega" : "PIX antecipado";
+    setSending(true);
+    try {
+      // 1. Create order
+      const { data: order, error: orderError } = await supabase
+        .from("orders")
+        .insert({
+          channel: "delivery" as const,
+          customer_name: customerName,
+          status: "aberto" as const,
+          payment_method: paymentOnDelivery ? null : ("pix" as const),
+          total: grandTotal,
+          user_id: null,
+        })
+        .select()
+        .single();
 
-    const lines = [
-      `🛒 *NOVO PEDIDO DELIVERY*`,
-      ``,
-      `👤 *Cliente:* ${customerName}`,
-      `📱 *Telefone:* ${customerPhone}`,
-      `📍 *Endereço:* ${deliveryAddress}`,
-      `🏘️ *Região:* ${zoneName}`,
-      `💳 *Pagamento:* ${payLabel}`,
-      notes ? `📝 *Obs:* ${notes}` : "",
-      ``,
-      `*── ITENS ──*`,
-      ...cart.map((i) => `• ${i.qty}x ${i.name} — ${formatCurrency(i.price * i.qty)}`),
-      ``,
-      `🚚 *Taxa de entrega:* ${formatCurrency(deliveryFee)}`,
-      `💰 *TOTAL: ${formatCurrency(grandTotal)}*`,
-    ].filter(Boolean);
+      if (orderError) throw orderError;
 
-    const text = encodeURIComponent(lines.join("\n"));
-    // Replace with the restaurant's WhatsApp number
-    const whatsappUrl = `https://wa.me/?text=${text}`;
-    window.open(whatsappUrl, "_blank");
+      // 2. Create order items
+      const orderItems = cart.map((item) => ({
+        order_id: order.id,
+        product_id: item.id,
+        product_name: item.name,
+        quantity: item.qty,
+        unit_price: item.price,
+      }));
+
+      const { error: itemsError } = await supabase.from("order_items").insert(orderItems);
+      if (itemsError) throw itemsError;
+
+      // 3. Create delivery details
+      const { error: deliveryError } = await supabase.from("delivery_details").insert({
+        order_id: order.id,
+        customer_phone: customerPhone,
+        delivery_address: deliveryAddress,
+        delivery_zone_id: selectedZone || null,
+        delivery_fee: deliveryFee,
+        payment_on_delivery: paymentOnDelivery,
+        notes: notes || null,
+      });
+      if (deliveryError) throw deliveryError;
+
+      // 4. Send WhatsApp message
+      const zoneName = zones?.find((z) => z.id === selectedZone)?.name || "Não selecionada";
+      const payLabel = paymentOnDelivery ? "Na entrega" : "PIX antecipado";
+      const lines = [
+        `🛒 *NOVO PEDIDO DELIVERY*`,
+        ``,
+        `👤 *Cliente:* ${customerName}`,
+        `📱 *Telefone:* ${customerPhone}`,
+        `📍 *Endereço:* ${deliveryAddress}`,
+        `🏘️ *Região:* ${zoneName}`,
+        `💳 *Pagamento:* ${payLabel}`,
+        notes ? `📝 *Obs:* ${notes}` : "",
+        ``,
+        `*── ITENS ──*`,
+        ...cart.map((i) => `• ${i.qty}x ${i.name} — ${formatCurrency(i.price * i.qty)}`),
+        ``,
+        `🚚 *Taxa de entrega:* ${formatCurrency(deliveryFee)}`,
+        `💰 *TOTAL: ${formatCurrency(grandTotal)}*`,
+      ].filter(Boolean);
+      const text = encodeURIComponent(lines.join("\n"));
+      window.open(`https://wa.me/?text=${text}`, "_blank");
+
+      // 5. Reset state
+      setCart([]);
+      setCustomerName("");
+      setCustomerPhone("");
+      setDeliveryAddress("");
+      setSelectedZone("");
+      setNotes("");
+      setShowCart(false);
+      toast.success("Pedido registrado com sucesso!");
+    } catch (err: any) {
+      console.error("Erro ao criar pedido:", err);
+      toast.error("Erro ao enviar pedido. Tente novamente.");
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
@@ -385,11 +442,12 @@ export default function MenuPage() {
 
                   {/* WhatsApp button */}
                   <button
-                    onClick={sendToWhatsApp}
-                    className="w-full py-3.5 rounded-xl bg-[hsl(142,60%,45%)] text-white font-bold text-sm flex items-center justify-center gap-2 hover:opacity-90 transition-opacity min-h-[48px]"
+                    onClick={sendOrder}
+                    disabled={sending}
+                    className="w-full py-3.5 rounded-xl bg-[hsl(142,60%,45%)] text-white font-bold text-sm flex items-center justify-center gap-2 hover:opacity-90 transition-opacity min-h-[48px] disabled:opacity-50"
                   >
                     <Send className="w-5 h-5" />
-                    Enviar Pedido via WhatsApp
+                    {sending ? "Enviando..." : "Enviar Pedido via WhatsApp"}
                   </button>
                 </>
               )}
