@@ -3,8 +3,17 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Save, Plus, Trash2, Zap, Eye, EyeOff, Type, Gauge } from "lucide-react";
+import { Save, Plus, Trash2, Zap, Eye, EyeOff, Type, Gauge, Smile } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+
+const EMOJI_GROUPS = [
+  { label: "Comida", emojis: ["🍕", "🍔", "🌮", "🍟", "🍗", "🥩", "🍖", "🌭", "🥪", "🧀", "🍳", "🥚", "🥓", "🥞", "🧇", "🍞", "🥐", "🥖", "🧁", "🍰", "🎂", "🍩", "🍪", "🍫", "🍬", "🍭", "🍮", "🍧", "🍨", "🍦"] },
+  { label: "Bebidas", emojis: ["☕", "🍵", "🥤", "🧃", "🍺", "🍻", "🥂", "🍷", "🍸", "🍹", "🧊", "💧", "🥛", "🫖"] },
+  { label: "Frutas", emojis: ["🍎", "🍊", "🍋", "🍌", "🍉", "🍇", "🍓", "🫐", "🍑", "🥭", "🍍", "🥝", "🥑", "🍈"] },
+  { label: "Expressões", emojis: ["😋", "🤤", "😍", "🔥", "⭐", "✨", "💯", "❤️", "💛", "💚", "🎉", "🎊", "👨‍🍳", "👩‍🍳", "🏆", "👑", "💎", "🌟", "⚡", "🆕"] },
+  { label: "Setas", emojis: ["➡️", "⬅️", "⬆️", "⬇️", "▶️", "◀️", "🔴", "🟢", "🟡", "🔵", "⚪", "⚫", "🟠", "🟣"] },
+];
 
 const NEON_COLORS = [
   { id: "cyan", label: "Ciano", hex: "#00ffff" },
@@ -282,6 +291,36 @@ export function AdminNeonBoard() {
                   onChange={(e) => updateMessage(i, e.target.value)}
                   className="bg-background border-border flex-1"
                 />
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      className="w-9 h-9 rounded-lg bg-secondary text-secondary-foreground flex items-center justify-center hover:bg-accent transition-colors"
+                      title="Inserir emoji"
+                    >
+                      <Smile className="w-4 h-4" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-72 p-2" side="left" align="start">
+                    <div className="space-y-2 max-h-52 overflow-y-auto">
+                      {EMOJI_GROUPS.map((group) => (
+                        <div key={group.label}>
+                          <p className="text-[10px] font-semibold text-muted-foreground mb-1">{group.label}</p>
+                          <div className="flex flex-wrap gap-1">
+                            {group.emojis.map((emoji) => (
+                              <button
+                                key={emoji}
+                                onClick={() => updateMessage(i, msg + emoji)}
+                                className="w-7 h-7 text-base hover:bg-accent rounded transition-colors flex items-center justify-center"
+                              >
+                                {emoji}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
                 {messages.length > 1 && (
                   <button
                     onClick={() => removeMessage(i)}
