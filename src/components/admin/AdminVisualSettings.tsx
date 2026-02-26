@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { ImagePlus, Trash2, Save, Palette, Image, Globe } from "lucide-react";
+import { ImagePlus, Trash2, Save, Palette, Image, Globe, Eye } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -209,7 +209,8 @@ export function AdminVisualSettings() {
         <p className="text-xs text-muted-foreground">Imagem de fundo e cores do sistema</p>
       </div>
 
-      <div className="bg-card border border-border rounded-xl p-4 space-y-6 max-w-md">
+      <div className="flex gap-6 flex-wrap">
+      <div className="bg-card border border-border rounded-xl p-4 space-y-6 max-w-md flex-1 min-w-[300px]">
         {/* Background Image */}
         <div>
           <label className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1.5">
@@ -341,6 +342,59 @@ export function AdminVisualSettings() {
             Resetar
           </button>
         </div>
+      </div>
+
+      {/* Live Preview */}
+      <div className="w-72 shrink-0">
+        <label className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1.5">
+          <Eye className="w-4 h-4" /> Pré-visualização
+        </label>
+        <div
+          className="rounded-xl border-2 border-border overflow-hidden shadow-lg relative"
+          style={{ backgroundColor: `hsl(${colorBackground || "220 20% 10%"})` }}
+        >
+          {bgImageUrl && (
+            <div
+              className="absolute inset-0 bg-cover bg-center pointer-events-none"
+              style={{ backgroundImage: `url(${bgImageUrl})`, opacity: bgOpacity / 100 }}
+            />
+          )}
+          <div className="relative z-10">
+            {/* Header */}
+            <div className="px-3 py-2 flex items-center gap-2" style={{ backgroundColor: `hsl(${colorPrimary || "36 95% 55%"})` }}>
+              <div className="w-5 h-5 rounded-full bg-white/30" />
+              <span className="text-xs font-bold text-white">Meu Restaurante</span>
+            </div>
+            {/* Body */}
+            <div className="p-3 space-y-2">
+              {/* Card */}
+              <div className="rounded-lg p-2.5 space-y-1.5" style={{ backgroundColor: `hsl(${colorCard || "220 18% 14%"})` }}>
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-semibold text-white/90">Pedido #42</span>
+                  <span className="text-[9px] px-1.5 py-0.5 rounded-full font-medium text-white" style={{ backgroundColor: `hsl(${colorAccent || "36 80% 45%"})` }}>
+                    Preparando
+                  </span>
+                </div>
+                <div className="text-[9px] text-white/50">2x Hambúrguer • 1x Suco</div>
+              </div>
+              {/* Secondary area */}
+              <div className="rounded-lg p-2" style={{ backgroundColor: `hsl(${colorSecondary || "220 16% 20%"})` }}>
+                <div className="text-[9px] text-white/60 mb-1">Categorias</div>
+                <div className="flex gap-1">
+                  {["Lanches", "Bebidas", "Sobremesas"].map(c => (
+                    <span key={c} className="text-[8px] px-1.5 py-0.5 rounded text-white/70" style={{ backgroundColor: `hsl(${colorCard || "220 18% 14%"})` }}>{c}</span>
+                  ))}
+                </div>
+              </div>
+              {/* Button */}
+              <button className="w-full text-[10px] font-semibold py-1.5 rounded-lg text-white" style={{ backgroundColor: `hsl(${colorPrimary || "36 95% 55%"})` }}>
+                Novo Pedido
+              </button>
+            </div>
+          </div>
+        </div>
+        <p className="text-[10px] text-muted-foreground mt-2 text-center">As cores mudam em tempo real</p>
+      </div>
       </div>
     </div>
   );
