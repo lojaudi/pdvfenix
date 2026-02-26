@@ -40,16 +40,32 @@ export default function MenuPage() {
   const { data: categories } = useQuery({
     queryKey: ["menu-categories"],
     queryFn: async () => {
-      const { data } = await supabase.from("categories").select("*").order("sort_order");
-      return data || [];
+      const all: any[] = [];
+      let offset = 0;
+      while (true) {
+        const { data } = await supabase.from("categories").select("*").order("sort_order").range(offset, offset + 999);
+        if (!data || data.length === 0) break;
+        all.push(...data);
+        if (data.length < 1000) break;
+        offset += 1000;
+      }
+      return all;
     },
   });
 
   const { data: products } = useQuery({
     queryKey: ["menu-products"],
     queryFn: async () => {
-      const { data } = await supabase.from("products").select("*").eq("in_stock", true).order("name");
-      return data || [];
+      const all: any[] = [];
+      let offset = 0;
+      while (true) {
+        const { data } = await supabase.from("products").select("*").eq("in_stock", true).order("name").range(offset, offset + 999);
+        if (!data || data.length === 0) break;
+        all.push(...data);
+        if (data.length < 1000) break;
+        offset += 1000;
+      }
+      return all;
     },
   });
 
