@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Loader2 } from "lucide-react";
 import React, { Suspense } from "react";
+import { useThemeSettings } from "@/hooks/useThemeSettings";
 
 const Index = React.lazy(() => import("./pages/Index"));
 const AuthPage = React.lazy(() => import("./pages/Auth"));
@@ -46,9 +47,15 @@ function AuthRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function ThemeApplier({ children }: { children: React.ReactNode }) {
+  useThemeSettings();
+  return <>{children}</>;
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
+      <ThemeApplier>
       <Toaster />
       <Sonner />
       <BrowserRouter>
@@ -68,6 +75,7 @@ const App = () => (
           </Routes>
         </Suspense>
       </BrowserRouter>
+      </ThemeApplier>
     </TooltipProvider>
   </QueryClientProvider>
 );
