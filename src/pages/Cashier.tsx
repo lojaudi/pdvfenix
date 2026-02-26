@@ -12,7 +12,7 @@ import { PaymentDialog } from "@/components/pos/PaymentDialog";
 import { ReceiptPrint, triggerPrint, type ReceiptData } from "@/components/pos/ReceiptPrint";
 import { toast } from "sonner";
 
-type PaymentMethod = "dinheiro" | "credito" | "debito" | "pix";
+import type { PaymentMethod } from "@/components/pos/PaymentDialog";
 
 interface PendingOrder {
   id: string;
@@ -98,7 +98,7 @@ export default function CashierPage() {
     triggerPrint();
   };
 
-  const handlePayment = async (method: PaymentMethod) => {
+  const handlePayment = async (method: PaymentMethod, changeValue?: number) => {
     if (!selectedOrder) return;
 
     const { error } = await supabase
@@ -119,13 +119,13 @@ export default function CashierPage() {
         .eq("number", selectedOrder.table_number);
     }
 
+    const changeMsg = method === "dinheiro" && changeValue ? ` • Troco: ${formatCurrency(changeValue)}` : "";
     toast.success(
       `Pagamento confirmado! ${formatCurrency(selectedOrder.total)} via ${method.toUpperCase()}${
         selectedOrder.table_number ? ` • Mesa ${selectedOrder.table_number} liberada` : ""
-      }`
+      }${changeMsg}`
     );
 
-    // Auto-print receipt after payment
     setReceiptData(buildReceiptData(selectedOrder, method));
     triggerPrint();
 
@@ -289,6 +289,7 @@ export default function CashierPage() {
           total={selectedOrder.total}
           onConfirm={handlePayment}
           onClose={() => setSelectedOrder(null)}
+          channel={selectedOrder.channel}
         />
       )}
 
