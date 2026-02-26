@@ -17,10 +17,19 @@ const NEON_COLORS = [
   { id: "white", label: "Branco", hex: "#ffffff" },
 ];
 
+const ANIMATIONS = [
+  { id: "fade", label: "Fade", icon: "✨", desc: "Transição suave" },
+  { id: "typewriter", label: "Digitação", icon: "⌨️", desc: "Efeito máquina de escrever" },
+  { id: "blink", label: "Piscar", icon: "💡", desc: "Pisca como neon real" },
+  { id: "pulse", label: "Pulsar", icon: "💫", desc: "Pulsa com brilho" },
+  { id: "slide", label: "Deslizar", icon: "➡️", desc: "Desliza lateralmente" },
+];
+
 export function AdminNeonBoard() {
   const queryClient = useQueryClient();
   const [messages, setMessages] = useState<string[]>([""]);
   const [color, setColor] = useState("cyan");
+  const [animation, setAnimation] = useState("fade");
   const [enabled, setEnabled] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -30,7 +39,7 @@ export function AdminNeonBoard() {
       const { data } = await supabase
         .from("app_settings")
         .select("key, value")
-        .in("key", ["neon_messages", "neon_color", "neon_enabled"]);
+        .in("key", ["neon_messages", "neon_color", "neon_enabled", "neon_animation"]);
       const map: Record<string, string> = {};
       (data || []).forEach((s) => { map[s.key] = s.value; });
       return map;
@@ -46,6 +55,7 @@ export function AdminNeonBoard() {
         setMessages([""]);
       }
       setColor(settings.neon_color || "cyan");
+      setAnimation(settings.neon_animation || "fade");
       setEnabled(settings.neon_enabled !== "false");
     }
   }, [settings]);
@@ -63,6 +73,7 @@ export function AdminNeonBoard() {
       const entries = [
         { key: "neon_messages", value: JSON.stringify(filteredMessages), updated_at: now },
         { key: "neon_color", value: color, updated_at: now },
+        { key: "neon_animation", value: animation, updated_at: now },
         { key: "neon_enabled", value: String(enabled), updated_at: now },
       ];
       const { error } = await supabase.from("app_settings").upsert(entries, { onConflict: "key" });
@@ -156,7 +167,30 @@ export function AdminNeonBoard() {
           </div>
         </div>
 
-        {/* Messages */}
+        {/* Animation selector */}
+        <div>
+          <label className="text-xs font-semibold text-foreground mb-2 block">Animação</label>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {ANIMATIONS.map((a) => (
+              <button
+                key={a.id}
+                onClick={() => setAnimation(a.id)}
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-left transition-all text-xs font-semibold ${
+                  animation === a.id
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-secondary text-secondary-foreground border-border hover:border-primary/40"
+                }`}
+              >
+                <span className="text-base">{a.icon}</span>
+                <div>
+                  <div>{a.label}</div>
+                  <div className={`text-[10px] font-normal ${animation === a.id ? "text-primary-foreground/70" : "text-muted-foreground"}`}>{a.desc}</div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div>
           <label className="text-xs font-semibold text-foreground mb-2 block">
             Mensagens ({messages.length})
