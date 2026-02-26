@@ -2,9 +2,10 @@ import { useState, useEffect, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { ImagePlus, Trash2, Save, Palette, Image } from "lucide-react";
+import { ImagePlus, Trash2, Save, Palette, Image, Globe } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
@@ -29,6 +30,7 @@ export function AdminVisualSettings() {
   const [colorSecondary, setColorSecondary] = useState("");
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [applyToMenu, setApplyToMenu] = useState(false);
 
   const { data: settings, isLoading } = useQuery({
     queryKey: ["visual-settings"],
@@ -36,7 +38,7 @@ export function AdminVisualSettings() {
       const { data } = await supabase
         .from("app_settings")
         .select("key, value")
-        .in("key", ["bg_image_url", "bg_image_opacity", "color_primary", "color_background", "color_card", "color_accent", "color_secondary"]);
+        .in("key", ["bg_image_url", "bg_image_opacity", "color_primary", "color_background", "color_card", "color_accent", "color_secondary", "theme_apply_to_menu"]);
       const map: Record<string, string> = {};
       (data || []).forEach((s) => { map[s.key] = s.value; });
       return map;
@@ -52,6 +54,7 @@ export function AdminVisualSettings() {
       setColorCard(settings.color_card || "");
       setColorAccent(settings.color_accent || "");
       setColorSecondary(settings.color_secondary || "");
+      setApplyToMenu(settings.theme_apply_to_menu === "true");
     }
   }, [settings]);
 
@@ -112,6 +115,7 @@ export function AdminVisualSettings() {
         { key: "color_card", value: colorCard, updated_at: now },
         { key: "color_accent", value: colorAccent, updated_at: now },
         { key: "color_secondary", value: colorSecondary, updated_at: now },
+        { key: "theme_apply_to_menu", value: applyToMenu ? "true" : "false", updated_at: now },
       ];
       const { error } = await supabase.from("app_settings").upsert(entries, { onConflict: "key" });
       if (error) throw error;
@@ -256,6 +260,20 @@ export function AdminVisualSettings() {
               </div>
             </div>
           ))}
+        </div>
+
+        {/* Apply to public menu toggle */}
+        <div className="pt-2 border-t border-border">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Globe className="w-4 h-4 text-muted-foreground" />
+              <div>
+                <p className="text-xs font-semibold text-foreground">Aplicar tema ao cardápio público</p>
+                <p className="text-[10px] text-muted-foreground">Cores e fundo também aparecem em /menu</p>
+              </div>
+            </div>
+            <Switch checked={applyToMenu} onCheckedChange={setApplyToMenu} />
+          </div>
         </div>
 
         <div className="flex gap-2">

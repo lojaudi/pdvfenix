@@ -10,6 +10,7 @@ const THEME_KEYS = [
   "color_card",
   "color_accent",
   "color_secondary",
+  "theme_apply_to_menu",
 ];
 
 export function useThemeSettings() {
@@ -30,6 +31,18 @@ export function useThemeSettings() {
   useEffect(() => {
     if (!themeSettings) return;
     const root = document.documentElement;
+
+    // Check if we're on the public menu and theme is disabled for it
+    const isMenuPage = window.location.pathname === "/menu" || window.location.pathname === "/rastreio";
+    const applyToMenu = themeSettings.theme_apply_to_menu === "true";
+
+    if (isMenuPage && !applyToMenu) {
+      // Don't apply theme on public pages; clean up if previously applied
+      const cssVars = ["--primary", "--background", "--card", "--accent", "--secondary"];
+      cssVars.forEach((v) => root.style.removeProperty(v));
+      document.getElementById("theme-bg-overlay")?.remove();
+      return;
+    }
 
     // Apply custom colors (HSL values like "36 95% 55%")
     const colorMap: Record<string, string> = {
