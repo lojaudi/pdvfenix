@@ -4,14 +4,16 @@ import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { AdminProducts } from "@/components/admin/AdminProducts";
 import { AdminCategories } from "@/components/admin/AdminCategories";
 import { AdminUsers } from "@/components/admin/AdminUsers";
-import { ArrowLeft, Package, Grid3X3, Users, Loader2, ShieldAlert } from "lucide-react";
+import { AdminDeliveryZones } from "@/components/admin/AdminDeliveryZones";
+import { ArrowLeft, Package, Grid3X3, Users, Loader2, ShieldAlert, Truck } from "lucide-react";
 
-type Tab = "products" | "categories" | "users";
+type Tab = "products" | "categories" | "users" | "delivery";
 
 const tabs: { id: Tab; label: string; icon: typeof Package }[] = [
   { id: "products", label: "Produtos", icon: Package },
   { id: "categories", label: "Categorias", icon: Grid3X3 },
   { id: "users", label: "Usuários", icon: Users },
+  { id: "delivery", label: "Entregas", icon: Truck },
 ];
 
 export default function AdminPage() {
@@ -78,6 +80,7 @@ export default function AdminPage() {
         {activeTab === "products" && <AdminProducts />}
         {activeTab === "categories" && <AdminCategories />}
         {activeTab === "users" && <AdminUsers />}
+        {activeTab === "delivery" && <AdminDeliveryZones />}
       </main>
     </div>
   );
