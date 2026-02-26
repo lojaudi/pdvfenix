@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { AdminProducts } from "@/components/admin/AdminProducts";
 import { AdminCategories } from "@/components/admin/AdminCategories";
@@ -24,6 +26,22 @@ export default function AdminPage() {
   const { isAdmin, loading } = useIsAdmin();
   const [activeTab, setActiveTab] = useState<Tab>("products");
   const navigate = useNavigate();
+
+  const { data: adminSettings } = useQuery({
+    queryKey: ["admin-header-settings"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("app_settings")
+        .select("key, value")
+        .in("key", ["restaurant_name", "restaurant_logo"]);
+      const map: Record<string, string> = {};
+      (data || []).forEach((s) => { map[s.key] = s.value; });
+      return map;
+    },
+  });
+
+  const adminLogo = adminSettings?.restaurant_logo || "";
+  const adminName = adminSettings?.restaurant_name || "Administração";
 
   if (loading) {
     return (
@@ -56,8 +74,11 @@ export default function AdminPage() {
             <button onClick={() => navigate("/")} className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
               <ArrowLeft className="w-5 h-5" />
             </button>
+            {adminLogo && (
+              <img src={adminLogo} alt="Logo" className="w-10 h-10 rounded-xl object-cover" />
+            )}
             <div>
-              <h1 className="text-lg font-bold text-foreground">Administração</h1>
+              <h1 className="text-lg font-bold text-foreground">{adminName}</h1>
               <p className="text-xs text-muted-foreground">Gerenciamento do sistema</p>
             </div>
           </div>

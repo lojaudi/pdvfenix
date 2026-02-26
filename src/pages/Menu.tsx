@@ -87,7 +87,7 @@ export default function MenuPage() {
       const { data } = await supabase
         .from("app_settings")
         .select("key, value")
-        .in("key", ["whatsapp_number", "restaurant_name", "opening_hours", "welcome_message"]);
+        .in("key", ["whatsapp_number", "restaurant_name", "opening_hours", "welcome_message", "restaurant_logo"]);
       const map: Record<string, string> = {};
       (data || []).forEach((s) => { map[s.key] = s.value; });
       return map;
@@ -98,6 +98,7 @@ export default function MenuPage() {
   const restaurantName = settings?.restaurant_name || "🔥 PDV Fênix";
   const openingHours = settings?.opening_hours || "";
   const welcomeMessage = settings?.welcome_message || "";
+  const restaurantLogo = settings?.restaurant_logo || "";
 
   const filteredProducts = useMemo(() => {
     let list = products || [];
@@ -230,11 +231,16 @@ export default function MenuPage() {
       {/* Header */}
       <header className="sticky top-0 z-40 bg-background/95 backdrop-blur border-b border-border px-4 py-3">
         <div className="max-w-3xl mx-auto flex items-center justify-between">
-          <div>
-            <h1 className="text-lg font-bold text-foreground">{restaurantName}</h1>
-            <p className="text-xs text-muted-foreground">
-              {openingHours ? `${openingHours} • Delivery` : "Cardápio Online • Delivery"}
-            </p>
+          <div className="flex items-center gap-3">
+            {restaurantLogo && (
+              <img src={restaurantLogo} alt="Logo" className="w-10 h-10 rounded-xl object-cover" />
+            )}
+            <div>
+              <h1 className="text-lg font-bold text-foreground">{restaurantName}</h1>
+              <p className="text-xs text-muted-foreground">
+                {openingHours ? `${openingHours} • Delivery` : "Cardápio Online • Delivery"}
+              </p>
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <button
