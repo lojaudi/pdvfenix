@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useProducts, DbCategory } from "@/hooks/useProducts";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Save, X, LayoutGrid, List } from "lucide-react";
+import { Plus, Pencil, Trash2, Save, X, LayoutGrid, List, Search, ImageIcon, Loader2 } from "lucide-react";
 
 type ViewMode = "list" | "grid";
 
@@ -15,9 +15,17 @@ type ProductForm = {
   stock_qty: string;
   category_id: string;
   in_stock: boolean;
+  image_url: string;
 };
 
-const emptyForm: ProductForm = { name: "", price: "", stock_qty: "", category_id: "", in_stock: true };
+const emptyForm: ProductForm = { name: "", price: "", stock_qty: "", category_id: "", in_stock: true, image_url: "" };
+
+type ImageResult = {
+  url: string;
+  thumbnail: string;
+  title: string;
+  source: string;
+};
 
 export function AdminProducts() {
   const { products, categories, refetch } = useProducts();
@@ -42,6 +50,7 @@ export function AdminProducts() {
       stock_qty: String(p.stock_qty),
       category_id: p.category_id || "",
       in_stock: p.in_stock,
+      image_url: p.image_url || "",
     });
   };
 
@@ -61,6 +70,7 @@ export function AdminProducts() {
       stock_qty: parseInt(form.stock_qty) || 0,
       category_id: form.category_id || null,
       in_stock: form.in_stock,
+      image_url: form.image_url || null,
     };
 
     if (creating) {
@@ -134,6 +144,11 @@ export function AdminProducts() {
               </div>
             ) : viewMode === "grid" ? (
               <div className="flex flex-col h-full">
+                {(p as any).image_url && (
+                  <div className="w-full h-24 rounded-lg overflow-hidden mb-2 bg-secondary">
+                    <img src={(p as any).image_url} alt={p.name} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                  </div>
+                )}
                 <div className="flex items-start justify-between mb-2">
                   <span className="font-medium text-card-foreground text-sm leading-tight">{p.name}</span>
                   {!p.in_stock && <span className="text-[10px] bg-destructive/15 text-destructive px-1.5 py-0.5 rounded-md shrink-0 ml-1">Sem estoque</span>}
@@ -150,7 +165,16 @@ export function AdminProducts() {
                 </div>
               </div>
             ) : (
-              <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                {(p as any).image_url ? (
+                  <div className="w-12 h-12 rounded-lg overflow-hidden bg-secondary shrink-0">
+                    <img src={(p as any).image_url} alt={p.name} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                  </div>
+                ) : (
+                  <div className="w-12 h-12 rounded-lg bg-secondary flex items-center justify-center shrink-0">
+                    <ImageIcon className="w-5 h-5 text-muted-foreground" />
+                  </div>
+                )}
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <span className="font-medium text-card-foreground">{p.name}</span>
@@ -176,19 +200,142 @@ export function AdminProducts() {
 }
 
 function ProductFormFields({ form, setForm, categories }: { form: ProductForm; setForm: (f: ProductForm) => void; categories: DbCategory[] }) {
+  const [imageResults, setImageResults] = useState<ImageResult[]>([]);
+  const [searchingImages, setSearchingImages] = useState(false);
+  const [showImagePicker, setShowImagePicker] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const searchImages = useCallback(async (query: string) => {
+    if (query.trim().length < 3) {
+      setImageResults([]);
+      setShowImagePicker(false);
+      return;
+    }
+    setSearchingImages(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("search-product-images", {
+        body: { query },
+      });
+      if (!error && data?.images?.length > 0) {
+        setImageResults(data.images);
+        setShowImagePicker(true);
+      } else {
+        setImageResults([]);
+      }
+    } catch {
+      setImageResults([]);
+    } finally {
+      setSearchingImages(false);
+    }
+  }, []);
+
+  const handleNameChange = (name: string) => {
+    setForm({ ...form, name });
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => searchImages(name), 800);
+  };
+
+  const selectImage = (url: string) => {
+    setForm({ ...form, image_url: url });
+    setShowImagePicker(false);
+  };
+
+  const removeImage = () => {
+    setForm({ ...form, image_url: "" });
+  };
+
   return (
-    <div className="grid grid-cols-2 gap-3">
-      <input placeholder="Nome do produto" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="col-span-2 px-3 py-2 rounded-lg bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
-      <input type="number" step="0.01" placeholder="Preço" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} className="px-3 py-2 rounded-lg bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
-      <input type="number" placeholder="Estoque" value={form.stock_qty} onChange={(e) => setForm({ ...form, stock_qty: e.target.value })} className="px-3 py-2 rounded-lg bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
-      <select value={form.category_id} onChange={(e) => setForm({ ...form, category_id: e.target.value })} className="px-3 py-2 rounded-lg bg-secondary border border-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50">
-        <option value="">Sem categoria</option>
-        {categories.map((c) => <option key={c.id} value={c.id}>{c.icon} {c.name}</option>)}
-      </select>
-      <label className="flex items-center gap-2 text-sm text-foreground cursor-pointer">
-        <input type="checkbox" checked={form.in_stock} onChange={(e) => setForm({ ...form, in_stock: e.target.checked })} className="rounded" />
-        Em estoque
-      </label>
+    <div className="space-y-3">
+      <div className="grid grid-cols-2 gap-3">
+        <div className="col-span-2 relative">
+          <input
+            placeholder="Nome do produto"
+            value={form.name}
+            onChange={(e) => handleNameChange(e.target.value)}
+            className="w-full px-3 py-2 rounded-lg bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+          />
+          {searchingImages && (
+            <div className="absolute right-3 top-2.5">
+              <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+            </div>
+          )}
+        </div>
+        <input type="number" step="0.01" placeholder="Preço" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} className="px-3 py-2 rounded-lg bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
+        <input type="number" placeholder="Estoque" value={form.stock_qty} onChange={(e) => setForm({ ...form, stock_qty: e.target.value })} className="px-3 py-2 rounded-lg bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
+        <select value={form.category_id} onChange={(e) => setForm({ ...form, category_id: e.target.value })} className="px-3 py-2 rounded-lg bg-secondary border border-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50">
+          <option value="">Sem categoria</option>
+          {categories.map((c) => <option key={c.id} value={c.id}>{c.icon} {c.name}</option>)}
+        </select>
+        <label className="flex items-center gap-2 text-sm text-foreground cursor-pointer">
+          <input type="checkbox" checked={form.in_stock} onChange={(e) => setForm({ ...form, in_stock: e.target.checked })} className="rounded" />
+          Em estoque
+        </label>
+      </div>
+
+      {/* Image URL manual input */}
+      <div className="flex items-center gap-2">
+        <div className="flex-1 relative">
+          <input
+            placeholder="URL da imagem (opcional)"
+            value={form.image_url}
+            onChange={(e) => setForm({ ...form, image_url: e.target.value })}
+            className="w-full px-3 py-2 pl-8 rounded-lg bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+          />
+          <ImageIcon className="absolute left-2.5 top-2.5 w-4 h-4 text-muted-foreground" />
+        </div>
+        {form.image_url && (
+          <button onClick={removeImage} className="p-2 rounded-lg bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors">
+            <X className="w-4 h-4" />
+          </button>
+        )}
+        {!showImagePicker && form.name.length >= 3 && (
+          <button
+            onClick={() => searchImages(form.name)}
+            className="flex items-center gap-1 px-3 py-2 rounded-lg bg-secondary border border-border text-foreground text-sm hover:bg-accent transition-colors"
+          >
+            <Search className="w-4 h-4" /> Buscar
+          </button>
+        )}
+      </div>
+
+      {/* Image preview */}
+      {form.image_url && (
+        <div className="flex items-center gap-3 p-2 rounded-lg bg-secondary/50 border border-border">
+          <img src={form.image_url} alt="Preview" className="w-16 h-16 rounded-lg object-cover" onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }} />
+          <span className="text-xs text-muted-foreground truncate flex-1">{form.image_url}</span>
+        </div>
+      )}
+
+      {/* Image search results */}
+      {showImagePicker && imageResults.length > 0 && (
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium text-muted-foreground">
+              Imagens encontradas — clique para selecionar
+            </span>
+            <button onClick={() => setShowImagePicker(false)} className="text-xs text-muted-foreground hover:text-foreground">
+              Fechar
+            </button>
+          </div>
+          <div className="grid grid-cols-4 md:grid-cols-6 gap-2 max-h-48 overflow-y-auto p-1">
+            {imageResults.map((img, i) => (
+              <button
+                key={i}
+                onClick={() => selectImage(img.url)}
+                className={`relative group rounded-lg overflow-hidden border-2 transition-all hover:border-primary ${form.image_url === img.url ? "border-primary ring-2 ring-primary/30" : "border-border"}`}
+              >
+                <img
+                  src={img.thumbnail}
+                  alt={img.title}
+                  className="w-full h-16 object-cover"
+                  onError={(e) => { (e.target as HTMLImageElement).parentElement!.style.display = 'none'; }}
+                />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

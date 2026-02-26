@@ -15,6 +15,7 @@ export type DbProduct = {
   price: number;
   stock_qty: number;
   in_stock: boolean;
+  image_url: string | null;
 };
 
 export function useProducts() {
