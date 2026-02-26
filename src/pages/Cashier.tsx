@@ -14,7 +14,7 @@ import { toast } from "sonner";
 
 import type { PaymentMethod } from "@/components/pos/PaymentDialog";
 
-interface PendingOrder {
+interface RawOrder {
   id: string;
   channel: string;
   table_number: number | null;
@@ -27,6 +27,24 @@ interface PendingOrder {
   profiles: { name: string; email: string | null } | null;
 }
 
+/** Consolidated bill for a table (or single order for balcão/delivery) */
+interface ConsolidatedBill {
+  /** All order IDs in this bill */
+  orderIds: string[];
+  channel: string;
+  table_number: number | null;
+  customer_name: string | null;
+  waiterName: string | null;
+  /** All items across all orders */
+  items: { id: string; product_name: string; quantity: number; unit_price: number }[];
+  /** Sum of all order totals */
+  total: number;
+  /** Earliest order time */
+  created_at: string;
+  /** Original orders for reference */
+  orders: RawOrder[];
+}
+
 const channelLabels: Record<string, string> = {
   balcao: "Balcão", garcom: "Garçom", delivery: "Delivery",
 };
@@ -36,21 +54,85 @@ const QUERY_KEY = ["cashier-orders"];
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
 
-function buildReceiptData(order: PendingOrder, paymentMethod?: string): ReceiptData {
+function consolidateOrders(orders: RawOrder[]): { pending: ConsolidatedBill[]; inProgress: ConsolidatedBill[] } {
+  const pendingOrders = orders.filter(o => o.status === "entregue");
+  const progressOrders = orders.filter(o => ["aberto", "preparando", "pronto"].includes(o.status));
+
+  const groupByTable = (list: RawOrder[]): ConsolidatedBill[] => {
+    const tableGroups = new Map<string, RawOrder[]>();
+    const standalone: RawOrder[] = [];
+
+    for (const order of list) {
+      if (order.channel === "garcom" && order.table_number != null) {
+        const key = `mesa-${order.table_number}`;
+        if (!tableGroups.has(key)) tableGroups.set(key, []);
+        tableGroups.get(key)!.push(order);
+      } else {
+        standalone.push(order);
+      }
+    }
+
+    const bills: ConsolidatedBill[] = [];
+
+    // Grouped table bills
+    for (const [, group] of tableGroups) {
+      const allItems = group.flatMap(o => o.order_items);
+      const total = group.reduce((s, o) => s + o.total, 0);
+      const earliest = group.reduce((min, o) => o.created_at < min ? o.created_at : min, group[0].created_at);
+      const waiter = group.find(o => o.profiles)?.profiles;
+
+      bills.push({
+        orderIds: group.map(o => o.id),
+        channel: "garcom",
+        table_number: group[0].table_number,
+        customer_name: group[0].customer_name,
+        waiterName: waiter?.name || null,
+        items: allItems,
+        total,
+        created_at: earliest,
+        orders: group,
+      });
+    }
+
+    // Standalone orders (balcão, delivery, or garcom without table)
+    for (const order of standalone) {
+      bills.push({
+        orderIds: [order.id],
+        channel: order.channel,
+        table_number: order.table_number,
+        customer_name: order.customer_name,
+        waiterName: order.profiles?.name || null,
+        items: order.order_items,
+        total: order.total,
+        created_at: order.created_at,
+        orders: [order],
+      });
+    }
+
+    return bills.sort((a, b) => a.created_at.localeCompare(b.created_at));
+  };
+
   return {
-    orderId: order.id,
-    channel: order.channel,
-    tableNumber: order.table_number,
-    customerName: order.customer_name,
-    waiterName: order.profiles?.name || null,
-    items: order.order_items.map((i) => ({
+    pending: groupByTable(pendingOrders),
+    inProgress: groupByTable(progressOrders),
+  };
+}
+
+function buildReceiptData(bill: ConsolidatedBill, paymentMethod?: string): ReceiptData {
+  return {
+    orderId: bill.orderIds.length === 1 ? bill.orderIds[0] : bill.orderIds.map(id => id.slice(0, 6)).join("/"),
+    channel: bill.channel,
+    tableNumber: bill.table_number,
+    customerName: bill.customer_name,
+    waiterName: bill.waiterName,
+    items: bill.items.map((i) => ({
       product_name: i.product_name,
       quantity: i.quantity,
       unit_price: i.unit_price,
     })),
-    total: order.total,
+    total: bill.total,
     paymentMethod: paymentMethod || null,
-    createdAt: order.created_at,
+    createdAt: bill.created_at,
     paidAt: paymentMethod ? new Date().toISOString() : undefined,
   };
 }
@@ -58,7 +140,7 @@ function buildReceiptData(order: PendingOrder, paymentMethod?: string): ReceiptD
 export default function CashierPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [selectedOrder, setSelectedOrder] = useState<PendingOrder | null>(null);
+  const [selectedBill, setSelectedBill] = useState<ConsolidatedBill | null>(null);
   const [receiptData, setReceiptData] = useState<ReceiptData | null>(null);
   useRealtimeOrdersWithSound(QUERY_KEY);
 
@@ -85,26 +167,28 @@ export default function CashierPage() {
       return (data as any[]).map(o => ({
         ...o,
         profiles: o.user_id ? profilesMap[o.user_id] || null : null,
-      })) as PendingOrder[];
+      })) as RawOrder[];
     },
   });
 
-  const pendingPayment = orders?.filter(o => o.status === "entregue") || [];
-  const inProgress = orders?.filter(o => ["aberto", "preparando", "pronto"].includes(o.status)) || [];
+  const { pending: pendingPayment, inProgress } = orders
+    ? consolidateOrders(orders)
+    : { pending: [], inProgress: [] };
 
-  const handlePrintOrder = (order: PendingOrder, e?: React.MouseEvent) => {
+  const handlePrintBill = (bill: ConsolidatedBill, e?: React.MouseEvent) => {
     e?.stopPropagation();
-    setReceiptData(buildReceiptData(order));
+    setReceiptData(buildReceiptData(bill));
     triggerPrint();
   };
 
   const handlePayment = async (method: PaymentMethod, changeValue?: number) => {
-    if (!selectedOrder) return;
+    if (!selectedBill) return;
 
+    // Update ALL orders in this bill to "pago"
     const { error } = await supabase
       .from("orders")
       .update({ status: "pago" as any, payment_method: method as any })
-      .eq("id", selectedOrder.id);
+      .in("id", selectedBill.orderIds);
 
     if (error) {
       toast.error("Erro ao registrar pagamento");
@@ -112,25 +196,27 @@ export default function CashierPage() {
     }
 
     // Free table if garçom order
-    if (selectedOrder.channel === "garcom" && selectedOrder.table_number) {
+    if (selectedBill.channel === "garcom" && selectedBill.table_number) {
       await supabase
         .from("tables")
-        .update({ status: "livre" as any, current_order_id: null })
-        .eq("number", selectedOrder.table_number);
+        .update({ status: "livre" as any, current_order_id: null, waiter_id: null })
+        .eq("number", selectedBill.table_number);
     }
 
     const changeMsg = method === "dinheiro" && changeValue ? ` • Troco: ${formatCurrency(changeValue)}` : "";
+    const orderCount = selectedBill.orderIds.length;
     toast.success(
-      `Pagamento confirmado! ${formatCurrency(selectedOrder.total)} via ${method.toUpperCase()}${
-        selectedOrder.table_number ? ` • Mesa ${selectedOrder.table_number} liberada` : ""
-      }${changeMsg}`
+      `Pagamento confirmado! ${formatCurrency(selectedBill.total)} via ${method.toUpperCase()}${
+        selectedBill.table_number ? ` • Mesa ${selectedBill.table_number} liberada` : ""
+      }${orderCount > 1 ? ` • ${orderCount} pedidos consolidados` : ""}${changeMsg}`
     );
 
-    setReceiptData(buildReceiptData(selectedOrder, method));
+    setReceiptData(buildReceiptData(selectedBill, method));
     triggerPrint();
 
-    setSelectedOrder(null);
+    setSelectedBill(null);
     queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+    queryClient.invalidateQueries({ queryKey: ["tables-selector"] });
   };
 
   if (isLoading) {
@@ -176,42 +262,47 @@ export default function CashierPage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-              {pendingPayment.map((order) => (
-                <Card key={order.id} className="border bg-card border-orange-500/30 bg-orange-500/5 hover:bg-orange-500/10 transition-colors cursor-pointer" onClick={() => setSelectedOrder(order)}>
+              {pendingPayment.map((bill) => (
+                <Card key={bill.orderIds.join("-")} className="border bg-card border-orange-500/30 bg-orange-500/5 hover:bg-orange-500/10 transition-colors cursor-pointer" onClick={() => setSelectedBill(bill)}>
                   <CardContent className="p-4 space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <Badge variant="outline" className="text-xs">
-                          {channelLabels[order.channel] || order.channel}
+                          {channelLabels[bill.channel] || bill.channel}
                         </Badge>
-                        {order.table_number && (
-                          <span className="text-sm font-bold text-foreground">Mesa {order.table_number}</span>
+                        {bill.table_number && (
+                          <span className="text-sm font-bold text-foreground">Mesa {bill.table_number}</span>
+                        )}
+                        {bill.orderIds.length > 1 && (
+                          <Badge variant="secondary" className="text-[10px]">
+                            {bill.orderIds.length} pedidos
+                          </Badge>
                         )}
                       </div>
                       <div className="flex items-center gap-2">
                         <button
-                          onClick={(e) => handlePrintOrder(order, e)}
+                          onClick={(e) => handlePrintBill(bill, e)}
                           className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
-                          aria-label={`Imprimir comanda ${order.table_number ? `Mesa ${order.table_number}` : ''}`}
-                          title="Imprimir comanda"
+                          aria-label={`Imprimir conta ${bill.table_number ? `Mesa ${bill.table_number}` : ''}`}
+                          title="Imprimir conta"
                         >
                           <Printer className="w-4 h-4" />
                         </button>
                         <span className="text-[10px] text-muted-foreground">
-                          {format(new Date(order.created_at), "HH:mm", { locale: ptBR })}
+                          {format(new Date(bill.created_at), "HH:mm", { locale: ptBR })}
                         </span>
                       </div>
                     </div>
 
-                    {order.profiles && (
-                      <p className="text-xs text-muted-foreground truncate">🧑‍🍳 {order.profiles.name || order.profiles.email}</p>
+                    {bill.waiterName && (
+                      <p className="text-xs text-muted-foreground truncate">🧑‍🍳 {bill.waiterName}</p>
                     )}
-                    {order.customer_name && (
-                      <p className="text-xs text-muted-foreground truncate">👤 {order.customer_name}</p>
+                    {bill.customer_name && (
+                      <p className="text-xs text-muted-foreground truncate">👤 {bill.customer_name}</p>
                     )}
 
-                    <div className="space-y-1">
-                      {order.order_items.map((item) => (
+                    <div className="space-y-1 max-h-40 overflow-y-auto">
+                      {bill.items.map((item) => (
                         <div key={item.id} className="flex justify-between text-xs">
                           <span className="text-foreground">{item.quantity}x {item.product_name}</span>
                           <span className="text-muted-foreground">{formatCurrency(item.quantity * item.unit_price)}</span>
@@ -221,7 +312,7 @@ export default function CashierPage() {
 
                     <div className="flex justify-between items-center pt-2 border-t border-border">
                       <span className="text-xs font-bold text-foreground">Total</span>
-                      <span className="font-mono text-lg font-bold text-primary">{formatCurrency(order.total)}</span>
+                      <span className="font-mono text-lg font-bold text-primary">{formatCurrency(bill.total)}</span>
                     </div>
 
                     <button className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-bold hover:opacity-90 transition-opacity min-h-[44px]">
@@ -248,33 +339,35 @@ export default function CashierPage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
-              {inProgress.map((order) => (
-                <Card key={order.id} className="border bg-card border-border/50">
+              {inProgress.map((bill) => (
+                <Card key={bill.orderIds.join("-")} className="border bg-card border-border/50">
                   <CardContent className="p-3 space-y-2">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <Badge variant="outline" className="text-[10px]">
-                          {channelLabels[order.channel] || order.channel}
+                          {channelLabels[bill.channel] || bill.channel}
                         </Badge>
-                        {order.table_number && (
-                          <span className="text-xs font-semibold text-foreground">Mesa {order.table_number}</span>
+                        {bill.table_number && (
+                          <span className="text-xs font-semibold text-foreground">Mesa {bill.table_number}</span>
                         )}
                       </div>
                       <div className="flex items-center gap-2">
                         <button
-                          onClick={(e) => handlePrintOrder(order, e)}
+                          onClick={(e) => handlePrintBill(bill, e)}
                           className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
                           aria-label="Imprimir comanda"
                           title="Imprimir comanda"
                         >
                           <Printer className="w-3.5 h-3.5" />
                         </button>
-                        <Badge variant="secondary" className="text-[10px]">{order.status}</Badge>
+                        {bill.orderIds.length > 1 && (
+                          <Badge variant="secondary" className="text-[10px]">{bill.orderIds.length} ped.</Badge>
+                        )}
                       </div>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-xs text-muted-foreground">{order.order_items.length} itens</span>
-                      <span className="font-mono text-sm font-bold text-primary">{formatCurrency(order.total)}</span>
+                      <span className="text-xs text-muted-foreground">{bill.items.length} itens</span>
+                      <span className="font-mono text-sm font-bold text-primary">{formatCurrency(bill.total)}</span>
                     </div>
                   </CardContent>
                 </Card>
@@ -284,12 +377,12 @@ export default function CashierPage() {
         </section>
       </main>
 
-      {selectedOrder && (
+      {selectedBill && (
         <PaymentDialog
-          total={selectedOrder.total}
+          total={selectedBill.total}
           onConfirm={handlePayment}
-          onClose={() => setSelectedOrder(null)}
-          channel={selectedOrder.channel}
+          onClose={() => setSelectedBill(null)}
+          channel={selectedBill.channel}
         />
       )}
 
