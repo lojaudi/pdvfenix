@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -130,6 +130,84 @@ export default function DriverPage() {
     enabled: !!driver && tab === "history",
   });
 
+  // Request notification permission on mount
+  useEffect(() => {
+    if ("Notification" in window && Notification.permission === "default") {
+      Notification.requestPermission();
+    }
+  }, []);
+
+  // Play driver notification sound
+  const playDriverSound = useCallback(() => {
+    try {
+      const ctx = new AudioContext();
+      const play = () => {
+        const now = ctx.currentTime;
+        const beep = (freq: number, start: number, end: number) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = "sine";
+          osc.frequency.value = freq;
+          gain.gain.setValueAtTime(0.4, start);
+          gain.gain.exponentialRampToValueAtTime(0.01, end);
+          osc.connect(gain).connect(ctx.destination);
+          osc.start(start);
+          osc.stop(end);
+        };
+        beep(880, now, now + 0.15);
+        beep(1100, now + 0.18, now + 0.33);
+        beep(1320, now + 0.36, now + 0.51);
+        beep(880, now + 0.54, now + 0.69);
+        beep(1320, now + 0.72, now + 0.9);
+        setTimeout(() => ctx.close(), 1500);
+      };
+      if (ctx.state === "suspended") {
+        ctx.resume().then(play).catch(() => {});
+      } else {
+        play();
+      }
+    } catch {}
+  }, []);
+
+  // Send browser push notification (works even with tab in background)
+  const sendPushNotification = useCallback((title: string, body: string) => {
+    if ("Notification" in window && Notification.permission === "granted") {
+      const n = new Notification(title, {
+        body,
+        icon: "/favicon.ico",
+        tag: "driver-delivery",
+        requireInteraction: true,
+      } as NotificationOptions);
+      n.onclick = () => {
+        window.focus();
+        n.close();
+      };
+    }
+  }, []);
+
+  // Track previous pending count to detect new deliveries
+  const prevPendingCountRef = useRef(0);
+
+  useEffect(() => {
+    const currentCount = pendingDeliveries?.length ?? 0;
+    const prevCount = prevPendingCountRef.current;
+
+    if (prevCount > 0 || currentCount > 0) {
+      // New deliveries appeared
+      if (currentCount > prevCount && prevCount >= 0 && prevPendingCountRef.current !== -1) {
+        playDriverSound();
+        const diff = currentCount - prevCount;
+        toast.info(`🛵 ${diff} nova(s) entrega(s) disponível(is)!`, { duration: 6000 });
+        sendPushNotification(
+          "Nova entrega disponível!",
+          `${diff} nova(s) entrega(s) aguardando aceitação.`
+        );
+      }
+    }
+
+    prevPendingCountRef.current = currentCount;
+  }, [pendingDeliveries?.length, playDriverSound, sendPushNotification]);
+
   // Realtime
   useEffect(() => {
     if (!driver) return;
@@ -144,6 +222,10 @@ export default function DriverPage() {
         if (payload.eventType === "UPDATE" && newRow?.driver_id === driver.id && newRow?.delivery_status === "aceito") {
           toast.info("🛵 Nova entrega atribuída a você!");
         }
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, () => {
+        // Re-check pending when order status changes (e.g. to "pronto")
+        queryClient.invalidateQueries({ queryKey: ["driver-pending-deliveries"] });
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
