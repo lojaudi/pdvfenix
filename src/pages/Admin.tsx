@@ -10,9 +10,10 @@ import { AdminDeliveryZones } from "@/components/admin/AdminDeliveryZones";
 import { AdminDrivers } from "@/components/admin/AdminDrivers";
 import { AdminSettings } from "@/components/admin/AdminSettings";
 import { AdminVisualSettings } from "@/components/admin/AdminVisualSettings";
-import { ArrowLeft, Package, Grid3X3, Users, Loader2, ShieldAlert, Truck, Bike, Settings, Palette } from "lucide-react";
+import { AdminNeonBoard } from "@/components/admin/AdminNeonBoard";
+import { ArrowLeft, Package, Grid3X3, Users, Loader2, ShieldAlert, Truck, Bike, Settings, Palette, Zap } from "lucide-react";
 
-type Tab = "products" | "categories" | "users" | "delivery" | "drivers" | "settings" | "visual";
+type Tab = "products" | "categories" | "users" | "delivery" | "drivers" | "settings" | "visual" | "neon";
 
 const tabs: { id: Tab; label: string; icon: typeof Package }[] = [
   { id: "products", label: "Produtos", icon: Package },
@@ -22,6 +23,7 @@ const tabs: { id: Tab; label: string; icon: typeof Package }[] = [
   { id: "drivers", label: "Entregadores", icon: Bike },
   { id: "settings", label: "Config", icon: Settings },
   { id: "visual", label: "Visual", icon: Palette },
+  { id: "neon", label: "Neon", icon: Zap },
 ];
 
 export default function AdminPage() {
@@ -111,6 +113,7 @@ export default function AdminPage() {
         {activeTab === "drivers" && <AdminDrivers />}
         {activeTab === "settings" && <AdminSettings />}
         {activeTab === "visual" && <AdminVisualSettings />}
+        {activeTab === "neon" && <AdminNeonBoard />}
       </main>
     </div>
   );
