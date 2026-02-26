@@ -71,7 +71,7 @@ export function useThemeSettings() {
       if (!overlay) {
         overlay = document.createElement("div");
         overlay.id = "theme-bg-overlay";
-        overlay.style.cssText = "position:fixed;inset:0;z-index:-1;pointer-events:none;background-size:cover;background-position:center;background-repeat:no-repeat;";
+        overlay.style.cssText = "position:fixed;inset:0;z-index:0;pointer-events:none;background-size:cover;background-position:center;background-repeat:no-repeat;";
         document.body.prepend(overlay);
       }
       overlay.style.backgroundImage = `url(${bgUrl})`;
