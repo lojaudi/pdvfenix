@@ -103,7 +103,11 @@ export default function DriverPage() {
         .is("driver_id", null)
         .order("created_at", { ascending: true });
       if (error) throw error;
-      return data as unknown as DeliveryWithOrder[];
+      // Only show deliveries where the order is ready (pronto) - not still being prepared
+      const ready = (data as unknown as DeliveryWithOrder[]).filter(
+        (d) => d.orders?.status === "pronto"
+      );
+      return ready;
     },
     enabled: !!driver,
   });
