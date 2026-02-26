@@ -56,6 +56,9 @@ const COLOR_PRESETS = [
   { label: "Vermelho", primary: "0 75% 55%", background: "0 10% 10%", card: "0 8% 14%", accent: "0 65% 45%", secondary: "0 10% 20%" },
   { label: "Roxo", primary: "270 70% 55%", background: "270 15% 10%", card: "270 12% 14%", accent: "270 60% 45%", secondary: "270 12% 20%" },
   { label: "Rosa", primary: "330 70% 55%", background: "330 12% 10%", card: "330 10% 14%", accent: "330 60% 45%", secondary: "330 10% 20%" },
+  { label: "Noturno", primary: "230 60% 60%", background: "230 25% 6%", card: "230 20% 10%", accent: "230 50% 50%", secondary: "230 18% 14%" },
+  { label: "Tropical", primary: "45 100% 50%", background: "170 30% 8%", card: "170 25% 12%", accent: "25 90% 55%", secondary: "170 20% 16%" },
+  { label: "Café", primary: "30 60% 45%", background: "20 20% 8%", card: "20 18% 12%", accent: "30 50% 35%", secondary: "20 15% 16%" },
 ];
 
 export function AdminVisualSettings() {
