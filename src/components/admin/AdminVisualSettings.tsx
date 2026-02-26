@@ -9,6 +9,46 @@ import { Switch } from "@/components/ui/switch";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
+function hslToHex(hsl: string): string {
+  const parts = hsl.match(/[\d.]+/g);
+  if (!parts || parts.length < 3) return "#ff9900";
+  const h = parseFloat(parts[0]) / 360;
+  const s = parseFloat(parts[1]) / 100;
+  const l = parseFloat(parts[2]) / 100;
+  const hue2rgb = (p: number, q: number, t: number) => {
+    if (t < 0) t += 1; if (t > 1) t -= 1;
+    if (t < 1/6) return p + (q - p) * 6 * t;
+    if (t < 1/2) return q;
+    if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+    return p;
+  };
+  const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+  const p = 2 * l - q;
+  const r = Math.round(hue2rgb(p, q, h + 1/3) * 255);
+  const g = Math.round(hue2rgb(p, q, h) * 255);
+  const b = Math.round(hue2rgb(p, q, h - 1/3) * 255);
+  return `#${[r, g, b].map(x => x.toString(16).padStart(2, "0")).join("")}`;
+}
+
+function hexToHsl(hex: string): string {
+  const r = parseInt(hex.slice(1, 3), 16) / 255;
+  const g = parseInt(hex.slice(3, 5), 16) / 255;
+  const b = parseInt(hex.slice(5, 7), 16) / 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  let h = 0, s = 0;
+  const l = (max + min) / 2;
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+      case g: h = ((b - r) / d + 2) / 6; break;
+      case b: h = ((r - g) / d + 4) / 6; break;
+    }
+  }
+  return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
+}
+
 const COLOR_PRESETS = [
   { label: "Âmbar (Padrão)", primary: "36 95% 55%", background: "220 20% 10%", card: "220 18% 14%", accent: "36 80% 45%", secondary: "220 16% 20%" },
   { label: "Azul Royal", primary: "220 80% 55%", background: "220 20% 8%", card: "220 18% 12%", accent: "220 70% 45%", secondary: "220 16% 18%" },
@@ -239,7 +279,7 @@ export function AdminVisualSettings() {
 
         {/* Individual color inputs */}
         <div className="space-y-3">
-          <p className="text-xs font-semibold text-foreground">Cores individuais (HSL)</p>
+          <p className="text-xs font-semibold text-foreground">Cores individuais</p>
           {[
             { label: "Primária", value: colorPrimary, set: setColorPrimary, placeholder: "36 95% 55%" },
             { label: "Fundo", value: colorBackground, set: setColorBackground, placeholder: "220 20% 10%" },
@@ -247,16 +287,22 @@ export function AdminVisualSettings() {
             { label: "Destaque", value: colorAccent, set: setColorAccent, placeholder: "36 80% 45%" },
             { label: "Secundária", value: colorSecondary, set: setColorSecondary, placeholder: "220 16% 20%" },
           ].map((c) => (
-            <div key={c.label} className="flex items-center gap-2">
-              {hslSwatch(c.value || c.placeholder)}
-              <div className="flex-1">
-                <label className="text-[10px] text-muted-foreground">{c.label}</label>
-                <Input
-                  value={c.value}
-                  onChange={(e) => c.set(e.target.value)}
-                  placeholder={c.placeholder}
-                  className="h-8 text-xs bg-background border-border"
+            <div key={c.label} className="flex items-center gap-3">
+              <div className="relative">
+                <input
+                  type="color"
+                  value={hslToHex(c.value || c.placeholder)}
+                  onChange={(e) => c.set(hexToHsl(e.target.value))}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                 />
+                <div
+                  className="w-9 h-9 rounded-lg border-2 border-border cursor-pointer shadow-sm hover:scale-105 transition-transform"
+                  style={{ backgroundColor: `hsl(${c.value || c.placeholder})` }}
+                />
+              </div>
+              <div className="flex-1">
+                <label className="text-xs font-medium text-foreground">{c.label}</label>
+                <p className="text-[10px] text-muted-foreground">{c.value || c.placeholder}</p>
               </div>
             </div>
           ))}
