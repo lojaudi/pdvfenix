@@ -18,6 +18,7 @@ const CashierPage = React.lazy(() => import("./pages/Cashier"));
 const MenuPage = React.lazy(() => import("./pages/Menu"));
 const DeliveriesPage = React.lazy(() => import("./pages/Deliveries"));
 const TrackingPage = React.lazy(() => import("./pages/Tracking"));
+const DriverPage = React.lazy(() => import("./pages/Driver"));
 const NotFound = React.lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -71,6 +72,7 @@ const App = () => (
             <Route path="/deliveries" element={<ProtectedRoute><DeliveriesPage /></ProtectedRoute>} />
             <Route path="/menu" element={<MenuPage />} />
             <Route path="/rastreio" element={<TrackingPage />} />
+            <Route path="/driver" element={<DriverPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
