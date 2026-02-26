@@ -200,6 +200,10 @@ export default function DriverPage() {
       // New deliveries appeared
       if (currentCount > prevCount && prevCount >= 0 && prevPendingCountRef.current !== -1) {
         if (soundEnabled) playDriverSound();
+        // Vibrate on mobile devices
+        if (navigator.vibrate) {
+          navigator.vibrate([200, 100, 200, 100, 300]);
+        }
         const diff = currentCount - prevCount;
         toast.info(`🛵 ${diff} nova(s) entrega(s) disponível(is)!`, { duration: 6000 });
         sendPushNotification(
