@@ -182,7 +182,8 @@ export default function MenuPage() {
         window.open(`https://wa.me/${whatsappNumber}?text=${text}`, "_blank");
       }
 
-      // 5. Reset state
+      // 5. Reset state and redirect to tracking
+      const trackingUrl = `/rastreio?pedido=${order.id}`;
       setCart([]);
       setCustomerName("");
       setCustomerPhone("");
@@ -190,7 +191,8 @@ export default function MenuPage() {
       setSelectedZone("");
       setNotes("");
       setShowCart(false);
-      toast.success("Pedido registrado com sucesso!");
+      toast.success("Pedido registrado! Redirecionando...");
+      setTimeout(() => { window.location.href = trackingUrl; }, 1500);
     } catch (err: any) {
       console.error("Erro ao criar pedido:", err);
       toast.error("Erro ao enviar pedido. Tente novamente.");
