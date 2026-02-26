@@ -3,7 +3,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Save, Plus, Trash2, Zap, Eye, EyeOff } from "lucide-react";
+import { Save, Plus, Trash2, Zap, Eye, EyeOff, Type, Gauge } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
 
 const NEON_COLORS = [
   { id: "cyan", label: "Ciano", hex: "#00ffff" },
@@ -25,11 +26,23 @@ const ANIMATIONS = [
   { id: "slide", label: "Deslizar", icon: "➡️", desc: "Desliza lateralmente" },
 ];
 
+const FONTS = [
+  { id: "default", label: "Padrão", family: "inherit" },
+  { id: "mono", label: "Monospace", family: "'Courier New', monospace" },
+  { id: "serif", label: "Serif", family: "Georgia, serif" },
+  { id: "cursive", label: "Cursiva", family: "'Segoe Script', cursive" },
+  { id: "impact", label: "Impacto", family: "Impact, sans-serif" },
+  { id: "rounded", label: "Arredondada", family: "'Comic Sans MS', cursive" },
+];
+
 export function AdminNeonBoard() {
   const queryClient = useQueryClient();
   const [messages, setMessages] = useState<string[]>([""]);
   const [color, setColor] = useState("cyan");
   const [animation, setAnimation] = useState("fade");
+  const [fontSize, setFontSize] = useState(16);
+  const [fontFamily, setFontFamily] = useState("default");
+  const [speed, setSpeed] = useState(4000);
   const [enabled, setEnabled] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -39,7 +52,7 @@ export function AdminNeonBoard() {
       const { data } = await supabase
         .from("app_settings")
         .select("key, value")
-        .in("key", ["neon_messages", "neon_color", "neon_enabled", "neon_animation"]);
+        .in("key", ["neon_messages", "neon_color", "neon_enabled", "neon_animation", "neon_font_size", "neon_font_family", "neon_speed"]);
       const map: Record<string, string> = {};
       (data || []).forEach((s) => { map[s.key] = s.value; });
       return map;
@@ -56,6 +69,9 @@ export function AdminNeonBoard() {
       }
       setColor(settings.neon_color || "cyan");
       setAnimation(settings.neon_animation || "fade");
+      setFontSize(Number(settings.neon_font_size) || 16);
+      setFontFamily(settings.neon_font_family || "default");
+      setSpeed(Number(settings.neon_speed) || 4000);
       setEnabled(settings.neon_enabled !== "false");
     }
   }, [settings]);
@@ -75,6 +91,9 @@ export function AdminNeonBoard() {
         { key: "neon_color", value: color, updated_at: now },
         { key: "neon_animation", value: animation, updated_at: now },
         { key: "neon_enabled", value: String(enabled), updated_at: now },
+        { key: "neon_font_size", value: String(fontSize), updated_at: now },
+        { key: "neon_font_family", value: fontFamily, updated_at: now },
+        { key: "neon_speed", value: String(speed), updated_at: now },
       ];
       const { error } = await supabase.from("app_settings").upsert(entries, { onConflict: "key" });
       if (error) throw error;
@@ -120,11 +139,13 @@ export function AdminNeonBoard() {
               }}
             />
             <p
-              className="text-center text-sm font-bold tracking-wide"
+              className="text-center font-bold tracking-wide"
               style={{
                 color: selectedScheme.hex,
                 textShadow: `0 0 7px ${selectedScheme.hex}, 0 0 20px ${selectedScheme.hex}80, 0 0 40px ${selectedScheme.hex}40`,
                 opacity: enabled ? 1 : 0.3,
+                fontSize: `${fontSize}px`,
+                fontFamily: FONTS.find(f => f.id === fontFamily)?.family || "inherit",
               }}
             >
               {enabled ? previewMessage : "Painel desativado"}
@@ -188,6 +209,63 @@ export function AdminNeonBoard() {
                 </div>
               </button>
             ))}
+          </div>
+        </div>
+
+        {/* Font size */}
+        <div>
+          <label className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1.5">
+            <Type className="w-3.5 h-3.5" /> Tamanho da fonte: {fontSize}px
+          </label>
+          <Slider
+            value={[fontSize]}
+            onValueChange={([v]) => setFontSize(v)}
+            min={12}
+            max={32}
+            step={1}
+            className="w-full"
+          />
+          <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
+            <span>12px</span><span>32px</span>
+          </div>
+        </div>
+
+        {/* Font family */}
+        <div>
+          <label className="text-xs font-semibold text-foreground mb-2 block">Fonte</label>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {FONTS.map((f) => (
+              <button
+                key={f.id}
+                onClick={() => setFontFamily(f.id)}
+                className={`px-3 py-2 rounded-lg border text-xs font-semibold transition-all ${
+                  fontFamily === f.id
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-secondary text-secondary-foreground border-border hover:border-primary/40"
+                }`}
+                style={{ fontFamily: f.family }}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Speed */}
+        <div>
+          <label className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1.5">
+            <Gauge className="w-3.5 h-3.5" /> Velocidade: {(speed / 1000).toFixed(1)}s
+          </label>
+          <Slider
+            value={[speed]}
+            onValueChange={([v]) => setSpeed(v)}
+            min={2000}
+            max={10000}
+            step={500}
+            className="w-full"
+          />
+          <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
+            <span>Rápido (2s)</span><span>Lento (10s)</span>
           </div>
         </div>
 
