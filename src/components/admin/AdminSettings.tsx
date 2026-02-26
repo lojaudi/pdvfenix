@@ -1,10 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Save, Phone, Store, Clock, MessageSquare } from "lucide-react";
+import { Save, Phone, Store, Clock, MessageSquare, ImagePlus, Trash2 } from "lucide-react";
+
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
 export function AdminSettings() {
   const queryClient = useQueryClient();
@@ -12,7 +14,10 @@ export function AdminSettings() {
   const [restaurantName, setRestaurantName] = useState("");
   const [openingHours, setOpeningHours] = useState("");
   const [welcomeMessage, setWelcomeMessage] = useState("");
+  const [logoUrl, setLogoUrl] = useState("");
   const [saving, setSaving] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: settings, isLoading } = useQuery({
     queryKey: ["app-settings"],
@@ -30,8 +35,58 @@ export function AdminSettings() {
       setRestaurantName(get("restaurant_name"));
       setOpeningHours(get("opening_hours"));
       setWelcomeMessage(get("welcome_message"));
+      setLogoUrl(get("restaurant_logo"));
     }
   }, [settings]);
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Selecione uma imagem");
+      return;
+    }
+    setUploadingLogo(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `logo.${ext}`;
+      // Remove old logo first
+      await supabase.storage.from("restaurant-assets").remove([path]);
+      const { error } = await supabase.storage
+        .from("restaurant-assets")
+        .upload(path, file, { upsert: true });
+      if (error) throw error;
+      const url = `${SUPABASE_URL}/storage/v1/object/public/restaurant-assets/${path}?t=${Date.now()}`;
+      setLogoUrl(url);
+      // Save to settings
+      await supabase
+        .from("app_settings")
+        .upsert({ key: "restaurant_logo", value: url, updated_at: new Date().toISOString() }, { onConflict: "key" });
+      queryClient.invalidateQueries({ queryKey: ["app-settings"] });
+      queryClient.invalidateQueries({ queryKey: ["menu-settings"] });
+      toast.success("Logo enviado!");
+    } catch {
+      toast.error("Erro ao enviar logo");
+    } finally {
+      setUploadingLogo(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const handleRemoveLogo = async () => {
+    try {
+      await supabase.storage.from("restaurant-assets").remove(["logo.png", "logo.jpg", "logo.jpeg", "logo.webp", "logo.svg"]);
+      await supabase
+        .from("app_settings")
+        .upsert({ key: "restaurant_logo", value: "", updated_at: new Date().toISOString() }, { onConflict: "key" });
+      setLogoUrl("");
+      queryClient.invalidateQueries({ queryKey: ["app-settings"] });
+      queryClient.invalidateQueries({ queryKey: ["menu-settings"] });
+      toast.success("Logo removido!");
+    } catch {
+      toast.error("Erro ao remover logo");
+    }
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -48,6 +103,7 @@ export function AdminSettings() {
         .upsert(entries, { onConflict: "key" });
       if (error) throw error;
       queryClient.invalidateQueries({ queryKey: ["app-settings"] });
+      queryClient.invalidateQueries({ queryKey: ["menu-settings"] });
       toast.success("Configurações salvas!");
     } catch {
       toast.error("Erro ao salvar");
@@ -66,6 +122,40 @@ export function AdminSettings() {
       </div>
 
       <div className="bg-card border border-border rounded-xl p-4 space-y-5 max-w-md">
+        {/* Logo */}
+        <div>
+          <label className="text-xs font-semibold text-foreground mb-1.5 block">Logo do restaurante</label>
+          <div className="flex items-center gap-3">
+            {logoUrl ? (
+              <img src={logoUrl} alt="Logo" className="w-16 h-16 rounded-xl object-cover border border-border" />
+            ) : (
+              <div className="w-16 h-16 rounded-xl bg-secondary flex items-center justify-center">
+                <ImagePlus className="w-6 h-6 text-muted-foreground" />
+              </div>
+            )}
+            <div className="flex flex-col gap-1.5">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploadingLogo}
+                className="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
+              >
+                {uploadingLogo ? "Enviando..." : "Enviar logo"}
+              </button>
+              {logoUrl && (
+                <button
+                  type="button"
+                  onClick={handleRemoveLogo}
+                  className="px-3 py-1.5 rounded-lg bg-destructive/10 text-destructive text-xs font-semibold hover:bg-destructive/20 transition-colors flex items-center gap-1"
+                >
+                  <Trash2 className="w-3 h-3" /> Remover
+                </button>
+              )}
+            </div>
+            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
+          </div>
+        </div>
+
         {/* Restaurant Name */}
         <div>
           <label className="text-xs font-semibold text-foreground mb-1.5 block">Nome do restaurante</label>
