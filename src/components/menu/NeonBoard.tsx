@@ -60,7 +60,7 @@ export function NeonBoard() {
       const { data } = await supabase
         .from("app_settings")
         .select("key, value")
-        .in("key", ["neon_messages", "neon_color", "neon_enabled", "neon_animation"]);
+        .in("key", ["neon_messages", "neon_color", "neon_enabled", "neon_animation", "neon_font_size", "neon_font_family", "neon_speed"]);
       const map: Record<string, string> = {};
       (data || []).forEach((s) => { map[s.key] = s.value; });
       return map;
@@ -70,6 +70,19 @@ export function NeonBoard() {
   const enabled = neonSettings?.neon_enabled !== "false";
   const color = neonSettings?.neon_color || "cyan";
   const animation: AnimationType = (neonSettings?.neon_animation as AnimationType) || "fade";
+  const fontSize = Number(neonSettings?.neon_font_size) || 16;
+  const speed = Number(neonSettings?.neon_speed) || 4000;
+
+  const FONT_MAP: Record<string, string> = {
+    default: "inherit",
+    mono: "'Courier New', monospace",
+    serif: "Georgia, serif",
+    cursive: "'Segoe Script', cursive",
+    impact: "Impact, sans-serif",
+    rounded: "'Comic Sans MS', cursive",
+  };
+  const fontFamily = FONT_MAP[neonSettings?.neon_font_family || "default"] || "inherit";
+
   const messages: string[] = useMemo(() => {
     try {
       const parsed = JSON.parse(neonSettings?.neon_messages || "[]");
@@ -81,7 +94,7 @@ export function NeonBoard() {
 
   useEffect(() => {
     if (messages.length <= 1) return;
-    const delay = animation === "typewriter" ? 6000 : 4000;
+    const delay = animation === "typewriter" ? Math.max(speed, 5000) : speed;
     const interval = setInterval(() => {
       setIsVisible(false);
       setTimeout(() => {
@@ -90,7 +103,7 @@ export function NeonBoard() {
       }, 500);
     }, delay);
     return () => clearInterval(interval);
-  }, [messages.length, animation]);
+  }, [messages.length, animation, speed]);
 
   if (!enabled || messages.length === 0) return null;
 
@@ -166,8 +179,8 @@ export function NeonBoard() {
         />
 
         <div
-          className="text-center text-sm sm:text-base font-bold tracking-wide"
-          style={getAnimationStyle()}
+          className="text-center font-bold tracking-wide"
+          style={{ ...getAnimationStyle(), fontSize: `${fontSize}px`, fontFamily }}
         >
           {animation === "typewriter" ? (
             <TypewriterText
