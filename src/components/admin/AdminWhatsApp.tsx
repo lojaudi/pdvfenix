@@ -76,18 +76,30 @@ export function AdminWhatsApp() {
   // Create instance & get QR
   const createInstanceMutation = useMutation({
     mutationFn: async () => {
-      const result = await callEvolution("create-instance", { instanceName });
-      return result;
+      try {
+        const result = await callEvolution("create-instance", { instanceName });
+        return { source: "create", data: result };
+      } catch (err: any) {
+        // If instance already exists, try to get QR code instead
+        if (err.message?.includes("already in use") || err.message?.includes("403")) {
+          const qrResult = await callEvolution("get-qrcode", { instanceName });
+          return { source: "qrcode", data: qrResult };
+        }
+        throw err;
+      }
     },
-    onSuccess: (data) => {
-      if (data?.qrcode?.base64) {
-        setQrCode(data.qrcode.base64);
+    onSuccess: ({ source, data }) => {
+      const base64 = data?.qrcode?.base64 || data?.base64;
+      if (base64) {
+        setQrCode(base64);
         toast.success("QR Code gerado! Escaneie com o WhatsApp.");
       } else if (data?.instance) {
         toast.success("Instância criada!");
         checkStatus();
       } else {
-        toast.info("Resposta recebida. Verifique o status.");
+        // Instance exists and is already connected
+        toast.info("Instância já existe. Verificando status...");
+        checkStatus();
       }
     },
     onError: (err: Error) => toast.error(err.message),
