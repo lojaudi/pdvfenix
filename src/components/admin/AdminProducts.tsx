@@ -98,32 +98,42 @@ export function AdminProducts() {
   const [exportingPDF, setExportingPDF] = useState(false);
 
   const handleExportProductsPDF = async () => {
-    if (!productsRef.current) return;
     setExportingPDF(true);
     toast.info("Gerando relatório de produtos...");
     try {
-      const html2canvas = (await import("html2canvas")).default;
       const { jsPDF } = await import("jspdf");
-      const canvas = await html2canvas(productsRef.current, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: "#0f1117",
-      });
+      const autoTable = (await import("jspdf-autotable")).default;
       const pdf = new jsPDF("p", "mm", "a4");
-      const imgData = canvas.toDataURL("image/png");
-      const imgWidth = 210;
-      const pageHeight = 297;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
-      let position = 0;
-      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-      while (heightLeft > 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-      }
+
+      pdf.setFontSize(16);
+      pdf.text("Relatório de Produtos", 14, 20);
+      pdf.setFontSize(10);
+      pdf.text(`Data: ${format(new Date(), "dd/MM/yyyy HH:mm")}`, 14, 28);
+      pdf.text(`Total de produtos: ${products.length}`, 14, 34);
+
+      const tableData = products.map((p) => [
+        p.name,
+        p.stock_qty,
+        formatCurrency(p.price),
+        categories.find((c) => c.id === p.category_id)?.name || "Sem categoria",
+        p.in_stock ? "Sim" : "Não",
+      ]);
+
+      autoTable(pdf, {
+        startY: 40,
+        head: [["Produto", "Qtd. Disponível", "Valor", "Categoria", "Em Estoque"]],
+        body: tableData,
+        styles: { fontSize: 9, cellPadding: 3 },
+        headStyles: { fillColor: [36, 36, 36], textColor: [255, 255, 255], fontStyle: "bold" },
+        alternateRowStyles: { fillColor: [245, 245, 245] },
+        columnStyles: {
+          1: { halign: "center" },
+          2: { halign: "right" },
+          3: { halign: "center" },
+          4: { halign: "center" },
+        },
+      });
+
       pdf.save(`produtos_${format(new Date(), "dd-MM-yy")}.pdf`);
       toast.success("Relatório de produtos exportado!");
     } catch {
