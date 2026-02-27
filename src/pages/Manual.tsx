@@ -17,6 +17,22 @@ function SectionCard({ title, children }: { title: string; children: React.React
   );
 }
 
+function ScreenPreview({ src, alt }: { src: string; alt: string }) {
+  return (
+    <div className="mb-6 rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-700 shadow-lg">
+      <div className="bg-zinc-800 px-4 py-2 flex items-center gap-2">
+        <div className="flex gap-1.5">
+          <div className="w-3 h-3 rounded-full bg-red-500" />
+          <div className="w-3 h-3 rounded-full bg-yellow-500" />
+          <div className="w-3 h-3 rounded-full bg-green-500" />
+        </div>
+        <span className="text-xs text-zinc-400 ml-2">{alt}</span>
+      </div>
+      <img src={src} alt={alt} className="w-full" loading="lazy" />
+    </div>
+  );
+}
+
 function Step({ number, title, description }: { number: number; title: string; description: string }) {
   return (
     <div className="flex gap-4 mb-4">
@@ -70,6 +86,7 @@ const sections: Section[] = [
     icon: BookOpen,
     content: (
       <>
+        <ScreenPreview src="/manual/login-screen.jpg" alt="Tela de Login — /auth" />
         <SectionCard title="O que é o PDV Fênix?">
           <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">
             O PDV Fênix é um sistema completo de ponto de venda (PDV) para restaurantes, lanchonetes e similares.
@@ -157,6 +174,7 @@ const sections: Section[] = [
     icon: ShoppingCart,
     content: (
       <>
+        <ScreenPreview src="/manual/pdv-screen.jpg" alt="Tela do PDV — Ponto de Venda" />
         <SectionCard title="Como usar o PDV">
           <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">
             O PDV é a tela principal do sistema, onde os pedidos são registrados. Ele funciona em 3 canais:
@@ -204,6 +222,7 @@ const sections: Section[] = [
     icon: ChefHat,
     content: (
       <>
+        <ScreenPreview src="/manual/tables-screen.jpg" alt="Tela de Gestão de Mesas — /tables" />
         <SectionCard title="Gestão de Mesas">
           <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">
             O módulo de mesas permite visualizar o status de todas as mesas do restaurante em tempo real.
@@ -234,6 +253,7 @@ const sections: Section[] = [
     icon: CreditCard,
     content: (
       <>
+        <ScreenPreview src="/manual/cashier-screen.jpg" alt="Tela do Caixa — /cashier" />
         <SectionCard title="Módulo de Caixa">
           <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">
             O módulo de caixa é responsável pelo fechamento financeiro de pedidos, especialmente de mesas.
@@ -263,6 +283,7 @@ const sections: Section[] = [
     icon: Truck,
     content: (
       <>
+        <ScreenPreview src="/manual/deliveries-screen.jpg" alt="Tela de Entregas — /deliveries" />
         <SectionCard title="Fluxo de Entregas">
           <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">
             O sistema de entregas gerencia todo o ciclo de vida de um pedido delivery.
@@ -308,6 +329,7 @@ const sections: Section[] = [
     icon: Eye,
     content: (
       <>
+        <ScreenPreview src="/manual/menu-screen.jpg" alt="Cardápio Público Online — /menu" />
         <SectionCard title="Cardápio Online">
           <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">
             O cardápio online está disponível em <code className="bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded text-orange-600 dark:text-orange-400">/menu</code> e pode ser acessado por qualquer pessoa sem login.
@@ -326,6 +348,7 @@ const sections: Section[] = [
     icon: Settings,
     content: (
       <>
+        <ScreenPreview src="/manual/admin-screen.jpg" alt="Painel Administrativo — /admin" />
         <SectionCard title="Módulos Administrativos">
           <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">
             O painel admin (<code className="bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded text-orange-600 dark:text-orange-400">/admin</code>) é acessível apenas por usuários com perfil Admin.
@@ -375,6 +398,7 @@ const sections: Section[] = [
     icon: BarChart3,
     content: (
       <>
+        <ScreenPreview src="/manual/reports-screen.jpg" alt="Relatórios de Vendas — /reports" />
         <SectionCard title="Relatórios de Vendas">
           <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">
             O módulo de relatórios (<code className="bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded text-orange-600 dark:text-orange-400">/reports</code>) oferece visão completa das vendas.
