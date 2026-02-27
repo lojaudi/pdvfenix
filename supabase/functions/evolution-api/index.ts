@@ -20,9 +20,7 @@ async function getEvolutionConfig(supabase: any) {
     .select("key, value")
     .in("key", keys);
   const map: Record<string, string> = {};
-  (data || []).forEach((r: any) => {
-    map[r.key] = r.value;
-  });
+  (data || []).forEach((r: any) => { map[r.key] = r.value; });
   return {
     url: map.evolution_api_url || "",
     apiKey: map.evolution_api_key || "",
@@ -42,15 +40,24 @@ async function evolutionFetch(baseUrl: string, apiKey: string, path: string, opt
   });
   const text = await res.text();
   let body;
-  try {
-    body = JSON.parse(text);
-  } catch {
-    body = { raw: text };
-  }
-  if (!res.ok) {
-    throw new Error(`Evolution API [${res.status}]: ${JSON.stringify(body)}`);
-  }
+  try { body = JSON.parse(text); } catch { body = { raw: text }; }
+  if (!res.ok) throw new Error(`Evolution API [${res.status}]: ${JSON.stringify(body)}`);
   return body;
+}
+
+async function sendWhatsApp(config: { url: string; apiKey: string; instanceName: string }, phone: string, message: string) {
+  const cleanPhone = phone.replace(/\D/g, "");
+  if (cleanPhone.length < 10) return { status: "skipped", reason: "phone too short" };
+  await evolutionFetch(config.url, config.apiKey, `/message/sendText/${config.instanceName}`, {
+    method: "POST",
+    body: JSON.stringify({ number: cleanPhone, text: message }),
+  });
+  return { status: "sent" };
+}
+
+function buildTrackingUrl(orderId: string) {
+  // Use a relative path that works with any domain
+  return `/rastreio?pedido=${orderId}`;
 }
 
 Deno.serve(async (req) => {
@@ -83,17 +90,16 @@ Deno.serve(async (req) => {
       return json({ error: "Evolution API não configurada" }, 400);
     }
 
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const adminClient = createClient(supabaseUrl, serviceKey);
+
     switch (action) {
       case "create-instance": {
         const instanceName = params.instanceName || config.instanceName;
         if (!instanceName) return json({ error: "Nome da instância não informado" }, 400);
         const result = await evolutionFetch(config.url, config.apiKey, "/instance/create", {
           method: "POST",
-          body: JSON.stringify({
-            instanceName,
-            integration: "WHATSAPP-BAILEYS",
-            qrcode: true,
-          }),
+          body: JSON.stringify({ instanceName, integration: "WHATSAPP-BAILEYS", qrcode: true }),
         });
         return json(result);
       }
@@ -118,27 +124,18 @@ Deno.serve(async (req) => {
         if (!instanceName || !phone || !message) {
           return json({ error: "Campos obrigatórios: phone, message" }, 400);
         }
-        // Format phone: remove non-digits, ensure country code
         const cleanPhone = phone.replace(/\D/g, "");
         const result = await evolutionFetch(config.url, config.apiKey, `/message/sendText/${instanceName}`, {
           method: "POST",
-          body: JSON.stringify({
-            number: cleanPhone,
-            text: message,
-          }),
+          body: JSON.stringify({ number: cleanPhone, text: message }),
         });
         return json(result);
       }
 
       case "notify-drivers": {
-        // Send WhatsApp to all available drivers about a ready delivery
         const { orderId } = params;
         if (!orderId) return json({ error: "orderId obrigatório" }, 400);
 
-        const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-        const adminClient = createClient(supabaseUrl, serviceKey);
-
-        // Get order + delivery details
         const { data: delivery } = await adminClient
           .from("delivery_details")
           .select("*, orders!delivery_details_order_id_fkey(id, total, customer_name, order_items(product_name, quantity))")
@@ -147,7 +144,6 @@ Deno.serve(async (req) => {
 
         if (!delivery) return json({ error: "Entrega não encontrada" }, 404);
 
-        // Get available drivers
         const { data: drivers } = await adminClient
           .from("delivery_drivers")
           .select("name, phone")
@@ -176,15 +172,94 @@ Deno.serve(async (req) => {
         const results = [];
         for (const driver of drivers) {
           try {
-            const cleanPhone = driver.phone.replace(/\D/g, "");
-            if (cleanPhone.length < 10) continue;
-            await evolutionFetch(config.url, config.apiKey, `/message/sendText/${config.instanceName}`, {
-              method: "POST",
-              body: JSON.stringify({ number: cleanPhone, text: msg }),
-            });
-            results.push({ driver: driver.name, status: "sent" });
+            const r = await sendWhatsApp(config, driver.phone, msg);
+            results.push({ driver: driver.name, ...r });
           } catch (err) {
             results.push({ driver: driver.name, status: "error", error: String(err) });
+          }
+        }
+        return json({ results });
+      }
+
+      case "notify-status-change": {
+        // Notify owner + customer about delivery status changes
+        const { orderId, newStatus, driverName } = params;
+        if (!orderId || !newStatus) return json({ error: "orderId e newStatus obrigatórios" }, 400);
+
+        const { data: delivery } = await adminClient
+          .from("delivery_details")
+          .select("*, orders!delivery_details_order_id_fkey(id, total, customer_name, order_items(product_name, quantity))")
+          .eq("order_id", orderId)
+          .maybeSingle();
+
+        if (!delivery) return json({ error: "Entrega não encontrada" }, 404);
+
+        // Get store domain from app_settings for tracking link
+        const { data: siteSettings } = await adminClient
+          .from("app_settings")
+          .select("key, value")
+          .in("key", ["store_name", "whatsapp"]);
+        const settingsMap: Record<string, string> = {};
+        (siteSettings || []).forEach((s: any) => { settingsMap[s.key] = s.value; });
+        const storeName = settingsMap.store_name || "Estabelecimento";
+
+        const order = delivery.orders as any;
+        const customerName = order?.customer_name || "Cliente";
+        const trackingPath = buildTrackingUrl(orderId);
+
+        const results: any[] = [];
+
+        const statusLabels: Record<string, string> = {
+          aceito: "✅ Pedido aceito",
+          saiu_para_entrega: "🛵 Saiu para entrega",
+          entregue: "📦 Pedido entregue",
+        };
+
+        const statusLabel = statusLabels[newStatus] || newStatus;
+
+        // Message for customer
+        let customerMsg = `${statusLabel}\n\n` +
+          `Olá, ${customerName}! `;
+
+        if (newStatus === "aceito") {
+          customerMsg += `Seu pedido foi aceito pelo entregador *${driverName || ""}* e está sendo preparado para envio.`;
+        } else if (newStatus === "saiu_para_entrega") {
+          customerMsg += `O entregador *${driverName || ""}* saiu para entregar seu pedido!\n\n` +
+            `📍 Acompanhe em tempo real:\n${trackingPath}`;
+        } else if (newStatus === "entregue") {
+          customerMsg += `Seu pedido foi entregue! Obrigado pela preferência! 🙏`;
+        }
+
+        customerMsg += `\n\n_${storeName}_`;
+
+        // Send to customer
+        if (delivery.customer_phone) {
+          try {
+            const r = await sendWhatsApp(config, delivery.customer_phone, customerMsg);
+            results.push({ to: "customer", ...r });
+          } catch (err) {
+            results.push({ to: "customer", status: "error", error: String(err) });
+          }
+        }
+
+        // Message for owner (same WhatsApp instance number)
+        // Get instance info to find owner phone
+        const ownerMsg = `📊 *Atualização de entrega*\n\n` +
+          `${statusLabel}\n` +
+          `👤 Cliente: ${customerName}\n` +
+          `📍 Endereço: ${delivery.delivery_address}\n` +
+          `🛵 Entregador: ${driverName || "N/A"}\n` +
+          `📦 Pedido: ${orderId.slice(0, 8)}...\n\n` +
+          `_${storeName}_`;
+
+        // Get owner phone from whatsapp setting
+        const ownerPhone = settingsMap.whatsapp;
+        if (ownerPhone) {
+          try {
+            const r = await sendWhatsApp(config, ownerPhone, ownerMsg);
+            results.push({ to: "owner", ...r });
+          } catch (err) {
+            results.push({ to: "owner", status: "error", error: String(err) });
           }
         }
 

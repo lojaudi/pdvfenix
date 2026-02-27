@@ -282,7 +282,18 @@ export default function DriverPage() {
     }
   }, [driver, tab, shareLocation]);
 
-  const acceptDelivery = async (deliveryId: string) => {
+  // Notify owner + customer via WhatsApp on status change
+  const notifyStatusChange = async (orderId: string, newStatus: string, driverName: string) => {
+    try {
+      await supabase.functions.invoke("evolution-api", {
+        body: { action: "notify-status-change", orderId, newStatus, driverName },
+      });
+    } catch (err) {
+      console.error("WhatsApp notification error:", err);
+    }
+  };
+
+  const acceptDelivery = async (deliveryId: string, orderId: string) => {
     if (!driver) return;
     const { error } = await supabase
       .from("delivery_details")
@@ -290,6 +301,7 @@ export default function DriverPage() {
       .eq("id", deliveryId);
     if (error) { toast.error("Erro ao aceitar entrega"); return; }
     toast.success("Entrega aceita!");
+    notifyStatusChange(orderId, "aceito", driver.name);
   };
 
   const advanceStatus = async (delivery: DeliveryWithOrder) => {
@@ -304,6 +316,7 @@ export default function DriverPage() {
       await supabase.from("orders").update({ status: "entregue" as any }).eq("id", delivery.order_id);
     }
     toast.success(`Entrega → ${statusConfig[next]?.label}`);
+    notifyStatusChange(delivery.order_id, next, driver?.name || "");
   };
 
   const openMaps = (address: string) => {
@@ -472,7 +485,7 @@ export default function DriverPage() {
                   <DeliveryCard
                     key={d.id}
                     delivery={d}
-                    onAccept={() => acceptDelivery(d.id)}
+                    onAccept={() => acceptDelivery(d.id, d.order_id)}
                     onOpenMaps={() => openMaps(d.delivery_address)}
                   />
                 ))}
