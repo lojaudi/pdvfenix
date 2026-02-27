@@ -455,6 +455,94 @@ const sections: Section[] = [
       </>
     ),
   },
+  {
+    id: "app-garcom",
+    title: "App Garçom",
+    icon: ChefHat,
+    content: (
+      <>
+        <ScreenPreview src="/" alt="PDV no modo Garçom — Canal de Mesas" />
+        <SectionCard title="Como usar o App Garçom">
+          <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">
+            O modo Garçom é otimizado para uso em dispositivos móveis. Permite registrar pedidos diretamente nas mesas do restaurante de forma ágil.
+          </p>
+
+          <h4 className="font-semibold text-zinc-900 dark:text-zinc-100 mb-3">Fluxo de Trabalho</h4>
+          <Step number={1} title="Faça login no sistema" description="Use suas credenciais de garçom para acessar o PDV." />
+          <Step number={2} title="Selecione o canal Garçom" description="No topo da tela, clique no botão 'Garçom' para ativar o modo de mesas." />
+          <Step number={3} title="Escolha a mesa" description="O seletor de mesas aparecerá em formato compacto. Toque na mesa desejada." />
+          <Step number={4} title="Adicione produtos" description="Navegue pelas categorias e toque nos produtos para adicioná-los ao carrinho." />
+          <Step number={5} title="Envie o pedido" description="Clique em 'Enviar Pedido'. Os itens serão registrados na mesa selecionada." />
+          <Tip>Você pode adicionar mais itens à mesma mesa a qualquer momento. O acúmulo é automático — não é necessário fechar o pedido para adicionar novos itens.</Tip>
+          <Warning>O pagamento da mesa é feito no módulo de Caixa, não pelo garçom. O garçom apenas registra os itens consumidos.</Warning>
+        </SectionCard>
+
+        <SectionCard title="Dicas para o Garçom">
+          <div className="grid gap-3">
+            {[
+              "📱 Interface otimizada para celular — use na vertical",
+              "🔄 Mesas atualizam em tempo real — veja quando outros garçons adicionam itens",
+              "🍽️ Cada mesa acumula todos os pedidos até o fechamento no caixa",
+              "⚡ Use as categorias para encontrar produtos rapidamente",
+              "👁️ Acesse /tables para ver o status visual de todas as mesas",
+            ].map((item) => (
+              <div key={item} className="p-3 bg-zinc-50 dark:bg-zinc-800 rounded-xl text-sm text-zinc-700 dark:text-zinc-300">
+                {item}
+              </div>
+            ))}
+          </div>
+        </SectionCard>
+      </>
+    ),
+  },
+  {
+    id: "app-entregador",
+    title: "App Entregador",
+    icon: Bike,
+    content: (
+      <>
+        <ScreenPreview src="/driver" alt="Portal do Entregador — /driver" />
+        <SectionCard title="Como usar o Portal do Entregador">
+          <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">
+            O portal do entregador (<code className="bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded text-orange-600 dark:text-orange-400">/driver</code>) é dedicado aos motoristas cadastrados pelo administrador. Exige autenticação com a conta criada especificamente para o entregador.
+          </p>
+
+          <h4 className="font-semibold text-zinc-900 dark:text-zinc-100 mb-3">Primeiro Acesso</h4>
+          <Step number={1} title="Conta criada pelo Admin" description="O administrador cadastra o entregador em Admin → Entregadores, criando uma conta com email e senha." />
+          <Step number={2} title="Faça login em /driver" description="Acesse a rota /driver e entre com as credenciais fornecidas pelo administrador." />
+          <Step number={3} title="Permita a localização" description="O sistema pedirá acesso à geolocalização do navegador para rastrear suas entregas." />
+          <Tip>Mantenha o GPS ativo e permita o acesso à localização para que o sistema atualize sua posição automaticamente.</Tip>
+        </SectionCard>
+
+        <SectionCard title="Fluxo de Entregas">
+          <h4 className="font-semibold text-zinc-900 dark:text-zinc-100 mb-3">Recebendo e Gerenciando Pedidos</h4>
+          <Step number={1} title="Veja pedidos disponíveis" description="Pedidos com status 'pronto' e sem motorista atribuído aparecerão automaticamente na sua tela." />
+          <Step number={2} title="Aceite a entrega" description="Clique em 'Aceitar' — primeiro entregador a aceitar leva o pedido!" />
+          <Step number={3} title="Navegue até o cliente" description="Use o botão de navegação para abrir o endereço no Google Maps." />
+          <Step number={4} title="Marque 'Saiu para entrega'" description="Ao sair do restaurante, atualize o status para que o cliente acompanhe." />
+          <Step number={5} title="Confirme a entrega" description="Ao chegar no destino, marque como 'Entregue' para finalizar." />
+          <Warning>Após aceitar um pedido, ele fica vinculado a você. Outros entregadores não poderão mais aceitá-lo.</Warning>
+        </SectionCard>
+
+        <SectionCard title="Funcionalidades do Portal">
+          <div className="grid gap-3">
+            {[
+              "📍 Geolocalização automática — sua posição é atualizada em tempo real",
+              "🗺️ Navegação via Google Maps com um toque",
+              "📋 Histórico completo de entregas realizadas",
+              "🔔 Notificação de novos pedidos disponíveis",
+              "📊 Fluxo de status: Aceito → Saiu para Entrega → Entregue",
+              "📱 Interface otimizada para celular — use durante as entregas",
+            ].map((item) => (
+              <div key={item} className="p-3 bg-zinc-50 dark:bg-zinc-800 rounded-xl text-sm text-zinc-700 dark:text-zinc-300">
+                {item}
+              </div>
+            ))}
+          </div>
+        </SectionCard>
+      </>
+    ),
+  },
 ];
 
 export default function ManualPage() {
