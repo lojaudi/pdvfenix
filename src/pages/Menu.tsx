@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { normalizePhone } from "@/lib/phone";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ShoppingCart, Plus, Minus, Trash2, Send, MapPin, Phone, User, MessageSquare, Search, MapPinned } from "lucide-react";
@@ -175,7 +176,7 @@ export default function MenuPage() {
       // 3. Create delivery details
       const { error: deliveryError } = await supabase.from("delivery_details").insert({
         order_id: order.id,
-        customer_phone: customerPhone,
+        customer_phone: normalizePhone(customerPhone),
         delivery_address: deliveryAddress,
         delivery_zone_id: selectedZone || null,
         delivery_fee: deliveryFee,
@@ -441,7 +442,7 @@ export default function MenuPage() {
                     </div>
                     <div className="relative">
                       <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <Input placeholder="WhatsApp (ex: 11999999999)" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} className="pl-10 bg-background border-border" />
+                      <Input placeholder="WhatsApp com DDD (ex: 34999999999)" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value.replace(/\D/g, ""))} className="pl-10 bg-background border-border" maxLength={11} />
                     </div>
                     <div className="relative">
                       <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
