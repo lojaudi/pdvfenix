@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { DriverMap } from "@/components/tracking/DriverMap";
 import type { Database } from "@/integrations/supabase/types";
 
 type DeliveryStatus = Database["public"]["Enums"]["delivery_status"];
@@ -135,15 +134,21 @@ export default function TrackingPage() {
 
         {data && (
           <div className="space-y-4 animate-in fade-in-0 slide-in-from-bottom-4 duration-300">
-            {/* Real-time Map */}
-            {showMap && (
+            {/* Driver info when in transit */}
+            {showMap && data.delivery_drivers && (
               <Card>
                 <CardContent className="p-4">
                   <h2 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-primary" />
-                    Localização do entregador
+                    <Bike className="w-4 h-4 text-primary" />
+                    Entregador a caminho
                   </h2>
-                  <DriverMap driverId={data.driver_id} deliveryAddress={data.delivery_address} />
+                  <div className="flex items-center gap-3 bg-secondary/50 rounded-lg p-3">
+                    <div className="w-10 h-10 rounded-full bg-primary/15 flex items-center justify-center text-lg">🛵</div>
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">{data.delivery_drivers.name}</p>
+                      <p className="text-xs text-muted-foreground">{data.delivery_drivers.phone}</p>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             )}
