@@ -414,6 +414,11 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_anon_delivery_order_ids: { Args: never; Returns: string[] }
+      get_delivery_order_ids_for_driver: {
+        Args: { _user_id: string }
+        Returns: string[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
