@@ -419,6 +419,17 @@ const sections: Section[] = [
           <Step number={4} title="Salve" description="O produto estará disponível imediatamente no PDV e no menu público." />
         </SectionCard>
 
+        <SectionCard title="Exportar Relatório de Produtos em PDF">
+          <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">
+            É possível exportar a lista completa de produtos em formato PDF diretamente do painel administrativo.
+          </p>
+          <Step number={1} title="Acesse Admin → Produtos" description="Navegue até a aba de produtos no painel administrativo." />
+          <Step number={2} title="Clique em 'Exportar PDF'" description="O botão está localizado ao lado dos controles de visualização (lista/grade)." />
+          <Step number={3} title="Aguarde a geração" description="O sistema captura toda a listagem de produtos e gera um arquivo PDF automaticamente." />
+          <Step number={4} title="Download automático" description="O arquivo PDF será baixado com o nome produtos_DD-MM-AA.pdf." />
+          <Tip>O PDF inclui nome, preço, estoque e categoria de cada produto. Use a visualização em lista para um relatório mais limpo.</Tip>
+        </SectionCard>
+
         <SectionCard title="Como atribuir perfis de acesso">
           <Step number={1} title="Acesse Admin → Usuários" description="Veja a lista de todos os usuários cadastrados." />
           <Step number={2} title="Clique no perfil desejado" description="Cada botão de perfil (Admin, Atendente, Garçom) funciona como toggle." />
@@ -451,6 +462,17 @@ const sections: Section[] = [
               </div>
             ))}
           </div>
+        </SectionCard>
+
+        <SectionCard title="Exportar Relatórios em PDF">
+          <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">
+            Todos os dados visíveis na página de relatórios podem ser exportados em um único arquivo PDF.
+          </p>
+          <Step number={1} title="Acesse /reports" description="Navegue até a página de relatórios pelo menu principal." />
+          <Step number={2} title="Selecione o período" description="Use o seletor de datas no canto superior direito para definir o intervalo desejado." />
+          <Step number={3} title="Clique em 'Exportar PDF'" description="O botão está no header, ao lado do filtro de datas." />
+          <Step number={4} title="Download automático" description="O PDF gerado inclui todos os gráficos (vendas diárias, canais, pagamentos), KPIs e tabela de pedidos." />
+          <Tip>O arquivo é nomeado automaticamente com o período selecionado: relatorios_DD-MM-AA_a_DD-MM-AA.pdf</Tip>
         </SectionCard>
       </>
     ),
