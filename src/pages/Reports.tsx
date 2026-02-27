@@ -132,32 +132,85 @@ export default function ReportsPage() {
 
 
   const handleExportPDF = async () => {
-    if (!reportRef.current) return;
     setExporting(true);
     toast.info("Gerando PDF...");
     try {
-      const html2canvas = (await import("html2canvas")).default;
       const { jsPDF } = await import("jspdf");
-      const canvas = await html2canvas(reportRef.current, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: "#0f1117",
-      });
+      const autoTable = (await import("jspdf-autotable")).default;
       const pdf = new jsPDF("p", "mm", "a4");
-      const imgData = canvas.toDataURL("image/png");
-      const imgWidth = 210;
-      const pageHeight = 297;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
-      let position = 0;
-      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-      while (heightLeft > 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
+
+      // Title
+      pdf.setFontSize(16);
+      pdf.text("Relatório de Vendas", 14, 20);
+      pdf.setFontSize(10);
+      pdf.text(`Período: ${format(dateRange.from, "dd/MM/yyyy")} a ${format(dateRange.to, "dd/MM/yyyy")}`, 14, 28);
+
+      // KPIs table
+      autoTable(pdf, {
+        startY: 35,
+        head: [["Receita Total", "Total de Pedidos", "Ticket Médio", "Pedidos Pagos"]],
+        body: [[
+          `R$ ${stats.totalRevenue.toFixed(2)}`,
+          String(stats.totalOrders),
+          `R$ ${stats.avgTicket.toFixed(2)}`,
+          String(stats.paidOrders),
+        ]],
+        styles: { fontSize: 10, cellPadding: 4, halign: "center" },
+        headStyles: { fillColor: [36, 36, 36], textColor: [255, 255, 255], fontStyle: "bold" },
+      });
+
+      // Channel breakdown
+      if (channelData.length > 0) {
+        const lastY = (pdf as any).lastAutoTable?.finalY || 55;
+        pdf.setFontSize(12);
+        pdf.text("Pedidos por Canal", 14, lastY + 10);
+        autoTable(pdf, {
+          startY: lastY + 14,
+          head: [["Canal", "Quantidade"]],
+          body: channelData.map((c) => [c.name, String(c.value)]),
+          styles: { fontSize: 9, cellPadding: 3 },
+          headStyles: { fillColor: [36, 36, 36], textColor: [255, 255, 255] },
+          columnStyles: { 1: { halign: "center" } },
+        });
       }
+
+      // Payment methods
+      if (paymentData.length > 0) {
+        const lastY = (pdf as any).lastAutoTable?.finalY || 80;
+        pdf.setFontSize(12);
+        pdf.text("Formas de Pagamento", 14, lastY + 10);
+        autoTable(pdf, {
+          startY: lastY + 14,
+          head: [["Método", "Quantidade"]],
+          body: paymentData.map((p) => [p.name, String(p.value)]),
+          styles: { fontSize: 9, cellPadding: 3 },
+          headStyles: { fillColor: [36, 36, 36], textColor: [255, 255, 255] },
+          columnStyles: { 1: { halign: "center" } },
+        });
+      }
+
+      // Orders table
+      const lastY = (pdf as any).lastAutoTable?.finalY || 100;
+      pdf.setFontSize(12);
+      pdf.text(`Histórico de Pedidos (${filteredOrders.length})`, 14, lastY + 10);
+      autoTable(pdf, {
+        startY: lastY + 14,
+        head: [["Data", "Canal", "Mesa", "Cliente", "Itens", "Pagamento", "Status", "Total"]],
+        body: filteredOrders.map((o) => [
+          format(new Date(o.created_at), "dd/MM/yy HH:mm"),
+          channelLabels[o.channel] || o.channel,
+          o.table_number ? String(o.table_number) : "—",
+          o.customer_name || "—",
+          o.order_items?.map((i) => `${i.quantity}x ${i.product_name}`).join(", ") || "—",
+          (o.payment_method || "—").toUpperCase(),
+          statusLabels[o.status] || o.status,
+          `R$ ${o.total.toFixed(2)}`,
+        ]),
+        styles: { fontSize: 7, cellPadding: 2 },
+        headStyles: { fillColor: [36, 36, 36], textColor: [255, 255, 255], fontStyle: "bold", fontSize: 8 },
+        columnStyles: { 7: { halign: "right" } },
+      });
+
       pdf.save(`relatorios_${format(dateRange.from, "dd-MM-yy")}_a_${format(dateRange.to, "dd-MM-yy")}.pdf`);
       toast.success("PDF exportado com sucesso!");
     } catch (err) {
