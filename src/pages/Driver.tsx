@@ -295,28 +295,38 @@ export default function DriverPage() {
 
   const acceptDelivery = async (deliveryId: string, orderId: string) => {
     if (!driver) return;
-    const { error } = await supabase
-      .from("delivery_details")
-      .update({ driver_id: driver.id, delivery_status: "aceito" as any })
-      .eq("id", deliveryId);
-    if (error) { toast.error("Erro ao aceitar entrega"); return; }
-    toast.success("Entrega aceita!");
-    notifyStatusChange(orderId, "aceito", driver.name);
+    try {
+      const { error } = await supabase
+        .from("delivery_details")
+        .update({ driver_id: driver.id, delivery_status: "aceito" as any })
+        .eq("id", deliveryId);
+      if (error) { toast.error("Erro ao aceitar entrega"); return; }
+      toast.success("Entrega aceita!");
+      notifyStatusChange(orderId, "aceito", driver.name);
+    } catch (err) {
+      console.error("Erro ao aceitar entrega:", err);
+      toast.error("Erro ao aceitar entrega. Tente novamente.");
+    }
   };
 
   const advanceStatus = async (delivery: DeliveryWithOrder) => {
-    const idx = STATUS_FLOW.indexOf(delivery.delivery_status);
-    if (idx === -1 || idx >= STATUS_FLOW.length - 1) return;
-    const next = STATUS_FLOW[idx + 1];
-    const updateData: any = { delivery_status: next };
-    if (next === "entregue") updateData.delivered_at = new Date().toISOString();
-    const { error } = await supabase.from("delivery_details").update(updateData).eq("id", delivery.id);
-    if (error) { toast.error("Erro ao atualizar"); return; }
-    if (next === "entregue") {
-      await supabase.from("orders").update({ status: "entregue" as any }).eq("id", delivery.order_id);
+    try {
+      const idx = STATUS_FLOW.indexOf(delivery.delivery_status);
+      if (idx === -1 || idx >= STATUS_FLOW.length - 1) return;
+      const next = STATUS_FLOW[idx + 1];
+      const updateData: any = { delivery_status: next };
+      if (next === "entregue") updateData.delivered_at = new Date().toISOString();
+      const { error } = await supabase.from("delivery_details").update(updateData).eq("id", delivery.id);
+      if (error) { toast.error("Erro ao atualizar"); return; }
+      if (next === "entregue") {
+        await supabase.from("orders").update({ status: "entregue" as any }).eq("id", delivery.order_id);
+      }
+      toast.success(`Entrega → ${statusConfig[next]?.label}`);
+      notifyStatusChange(delivery.order_id, next, driver?.name || "");
+    } catch (err) {
+      console.error("Erro ao avançar status:", err);
+      toast.error("Erro ao atualizar status. Tente novamente.");
     }
-    toast.success(`Entrega → ${statusConfig[next]?.label}`);
-    notifyStatusChange(delivery.order_id, next, driver?.name || "");
   };
 
   const openMaps = (address: string) => {
