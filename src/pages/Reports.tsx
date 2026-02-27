@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useOrders } from "@/hooks/useOrders";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
@@ -10,7 +10,7 @@ import {
 } from "recharts";
 import {
   ArrowLeft, Loader2, ShieldAlert, TrendingUp, DollarSign,
-  ShoppingCart, CreditCard, Calendar,
+  ShoppingCart, CreditCard, Calendar, FileDown,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -19,6 +19,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Button } from "@/components/ui/button";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 const statusLabels: Record<string, string> = {
   aberto: "Aberto", preparando: "Preparando", pronto: "Pronto",
@@ -47,6 +48,8 @@ export default function ReportsPage() {
   const { isAdmin, loading: adminLoading } = useIsAdmin();
   const { data: orders, isLoading } = useOrders();
   const navigate = useNavigate();
+  const reportRef = useRef<HTMLDivElement>(null);
+  const [exporting, setExporting] = useState(false);
 
   const [dateRange, setDateRange] = useState<{ from: Date; to: Date }>({
     from: subDays(new Date(), 30),
@@ -127,6 +130,43 @@ export default function ReportsPage() {
     );
   }
 
+
+  const handleExportPDF = async () => {
+    if (!reportRef.current) return;
+    setExporting(true);
+    toast.info("Gerando PDF...");
+    try {
+      const html2canvas = (await import("html2canvas")).default;
+      const { jsPDF } = await import("jspdf");
+      const canvas = await html2canvas(reportRef.current, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#0f1117",
+      });
+      const pdf = new jsPDF("p", "mm", "a4");
+      const imgData = canvas.toDataURL("image/png");
+      const imgWidth = 210;
+      const pageHeight = 297;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+      pdf.save(`relatorios_${format(dateRange.from, "dd-MM-yy")}_a_${format(dateRange.to, "dd-MM-yy")}.pdf`);
+      toast.success("PDF exportado com sucesso!");
+    } catch (err) {
+      toast.error("Erro ao exportar PDF");
+    } finally {
+      setExporting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -144,6 +184,15 @@ export default function ReportsPage() {
 
           {/* Date range picker */}
           <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              className="gap-2 text-sm"
+              onClick={handleExportPDF}
+              disabled={exporting}
+            >
+              {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
+              Exportar PDF
+            </Button>
             <Popover>
               <PopoverTrigger asChild>
                 <Button variant="outline" className="gap-2 text-sm">
@@ -168,7 +217,7 @@ export default function ReportsPage() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto p-6 space-y-6">
+      <main ref={reportRef} className="max-w-7xl mx-auto p-6 space-y-6">
         {/* KPI Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[
