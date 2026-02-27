@@ -19,6 +19,7 @@ const MenuPage = React.lazy(() => import("./pages/Menu"));
 const DeliveriesPage = React.lazy(() => import("./pages/Deliveries"));
 const TrackingPage = React.lazy(() => import("./pages/Tracking"));
 const DriverPage = React.lazy(() => import("./pages/Driver"));
+const ManualPage = React.lazy(() => import("./pages/Manual"));
 const NotFound = React.lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -73,6 +74,7 @@ const App = () => (
             <Route path="/menu" element={<MenuPage />} />
             <Route path="/rastreio" element={<TrackingPage />} />
             <Route path="/driver" element={<DriverPage />} />
+            <Route path="/manual" element={<ManualPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
