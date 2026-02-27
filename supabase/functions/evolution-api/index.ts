@@ -46,13 +46,18 @@ async function evolutionFetch(baseUrl: string, apiKey: string, path: string, opt
 }
 
 async function sendWhatsApp(config: { url: string; apiKey: string; instanceName: string }, phone: string, message: string) {
-  const cleanPhone = phone.replace(/\D/g, "");
+  let cleanPhone = phone.replace(/\D/g, "");
   if (cleanPhone.length < 10) return { status: "skipped", reason: "phone too short" };
+  // Auto-add Brazil country code if missing
+  if (!cleanPhone.startsWith("55")) {
+    cleanPhone = "55" + cleanPhone;
+  }
+  console.log(`[WhatsApp] Sending to ${cleanPhone}`);
   await evolutionFetch(config.url, config.apiKey, `/message/sendText/${config.instanceName}`, {
     method: "POST",
     body: JSON.stringify({ number: cleanPhone, text: message }),
   });
-  return { status: "sent" };
+  return { status: "sent", phone: cleanPhone };
 }
 
 function buildTrackingUrl(orderId: string) {
