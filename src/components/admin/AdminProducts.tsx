@@ -2,7 +2,8 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useProducts, DbCategory } from "@/hooks/useProducts";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Save, X, LayoutGrid, List, Search, ImageIcon, Loader2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Save, X, LayoutGrid, List, Search, ImageIcon, Loader2, FileDown } from "lucide-react";
+import { format } from "date-fns";
 
 type ViewMode = "list" | "grid";
 
@@ -93,11 +94,58 @@ export function AdminProducts() {
     refetch();
   };
 
+  const productsRef = useRef<HTMLDivElement>(null);
+  const [exportingPDF, setExportingPDF] = useState(false);
+
+  const handleExportProductsPDF = async () => {
+    if (!productsRef.current) return;
+    setExportingPDF(true);
+    toast.info("Gerando relatório de produtos...");
+    try {
+      const html2canvas = (await import("html2canvas")).default;
+      const { jsPDF } = await import("jspdf");
+      const canvas = await html2canvas(productsRef.current, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#0f1117",
+      });
+      const pdf = new jsPDF("p", "mm", "a4");
+      const imgData = canvas.toDataURL("image/png");
+      const imgWidth = 210;
+      const pageHeight = 297;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+      pdf.save(`produtos_${format(new Date(), "dd-MM-yy")}.pdf`);
+      toast.success("Relatório de produtos exportado!");
+    } catch {
+      toast.error("Erro ao exportar PDF");
+    } finally {
+      setExportingPDF(false);
+    }
+  };
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" ref={productsRef}>
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-bold text-foreground">Produtos ({products.length})</h2>
         <div className="flex items-center gap-2">
+          <button
+            onClick={handleExportProductsPDF}
+            disabled={exportingPDF}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-secondary text-foreground text-sm font-semibold hover:bg-accent transition-colors disabled:opacity-50"
+          >
+            {exportingPDF ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
+            Exportar PDF
+          </button>
           <div className="flex items-center bg-secondary rounded-lg p-0.5">
             <button
               onClick={() => toggleView("list")}
