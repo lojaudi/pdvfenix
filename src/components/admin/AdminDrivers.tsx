@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { normalizePhone } from "@/lib/phone";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -40,7 +41,7 @@ export function AdminDrivers() {
   const addDriverWithAccount = useMutation({
     mutationFn: async () => {
       const { data, error } = await supabase.functions.invoke("create-driver-account", {
-        body: { email, password, name, phone },
+        body: { email, password, name, phone: normalizePhone(phone) },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
@@ -62,7 +63,7 @@ export function AdminDrivers() {
     mutationFn: async () => {
       const { error } = await supabase
         .from("delivery_drivers")
-        .insert({ name, phone });
+        .insert({ name, phone: normalizePhone(phone) });
       if (error) throw error;
     },
     onSuccess: () => {
@@ -143,9 +144,10 @@ export function AdminDrivers() {
             className="flex-1 min-w-[150px] px-3 py-2 rounded-lg bg-secondary border border-border text-foreground text-sm"
           />
           <input
-            placeholder="Telefone"
+            placeholder="Telefone com DDD (ex: 34999999999)"
             value={phone}
-            onChange={(e) => setPhone(e.target.value)}
+            onChange={(e) => setPhone(e.target.value.replace(/\D/g, ""))}
+            maxLength={11}
             className="flex-1 min-w-[120px] px-3 py-2 rounded-lg bg-secondary border border-border text-foreground text-sm"
           />
         </div>
