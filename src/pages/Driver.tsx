@@ -175,17 +175,21 @@ export default function DriverPage() {
 
   // Send browser push notification (works even with tab in background)
   const sendPushNotification = useCallback((title: string, body: string) => {
-    if ("Notification" in window && Notification.permission === "granted") {
-      const n = new Notification(title, {
-        body,
-        icon: "/favicon.ico",
-        tag: "driver-delivery",
-        requireInteraction: true,
-      } as NotificationOptions);
-      n.onclick = () => {
-        window.focus();
-        n.close();
-      };
+    try {
+      if ("Notification" in window && Notification.permission === "granted") {
+        const n = new Notification(title, {
+          body,
+          icon: "/favicon.ico",
+          tag: "driver-delivery",
+          requireInteraction: true,
+        } as NotificationOptions);
+        n.onclick = () => {
+          window.focus();
+          n.close();
+        };
+      }
+    } catch (err) {
+      console.error("Push notification error:", err);
     }
   }, []);
 

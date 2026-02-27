@@ -53,6 +53,12 @@ Deno.serve(async (req) => {
       email,
     });
 
+    // Assign attendant role so driver can view orders/items via RLS
+    await supabaseAdmin.from("user_roles").upsert({
+      user_id: userId,
+      role: "attendant",
+    }, { onConflict: "user_id" });
+
     // Create driver record linked to user
     const { data: driver, error: driverError } = await supabaseAdmin
       .from("delivery_drivers")
