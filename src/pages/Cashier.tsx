@@ -9,7 +9,7 @@ import { ArrowLeft, Loader2, Wallet, CheckCircle2, Printer } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { PaymentDialog } from "@/components/pos/PaymentDialog";
-import { ReceiptPrint, triggerPrint, type ReceiptData } from "@/components/pos/ReceiptPrint";
+import { ReceiptPrint, triggerPrint, useReceiptSettings, type ReceiptData } from "@/components/pos/ReceiptPrint";
 import { toast } from "sonner";
 
 import type { PaymentMethod } from "@/components/pos/PaymentDialog";
@@ -387,7 +387,18 @@ export default function CashierPage() {
       )}
 
       {/* Hidden receipt for printing */}
-      {receiptData && <ReceiptPrint data={receiptData} />}
+      {receiptData && <ReceiptPrintWrapper data={receiptData} />}
     </div>
+  );
+}
+
+function ReceiptPrintWrapper({ data }: { data: ReceiptData }) {
+  const { data: settings } = useReceiptSettings();
+  return (
+    <ReceiptPrint
+      data={data}
+      headerText={settings?.receipt_header || undefined}
+      footerText={settings?.receipt_footer || undefined}
+    />
   );
 }

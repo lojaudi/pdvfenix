@@ -15,6 +15,8 @@ export function AdminSettings() {
   const [openingHours, setOpeningHours] = useState("");
   const [welcomeMessage, setWelcomeMessage] = useState("");
   const [logoUrl, setLogoUrl] = useState("");
+  const [receiptHeader, setReceiptHeader] = useState("");
+  const [receiptFooter, setReceiptFooter] = useState("");
   const [saving, setSaving] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -36,6 +38,8 @@ export function AdminSettings() {
       setOpeningHours(get("opening_hours"));
       setWelcomeMessage(get("welcome_message"));
       setLogoUrl(get("restaurant_logo"));
+      setReceiptHeader(get("receipt_header"));
+      setReceiptFooter(get("receipt_footer"));
     }
   }, [settings]);
 
@@ -97,6 +101,8 @@ export function AdminSettings() {
         { key: "restaurant_name", value: restaurantName, updated_at: now },
         { key: "opening_hours", value: openingHours, updated_at: now },
         { key: "welcome_message", value: welcomeMessage, updated_at: now },
+        { key: "receipt_header", value: receiptHeader, updated_at: now },
+        { key: "receipt_footer", value: receiptFooter, updated_at: now },
       ];
       const { error } = await supabase
         .from("app_settings")
@@ -213,6 +219,32 @@ export function AdminSettings() {
               rows={2}
             />
           </div>
+        </div>
+
+        {/* Receipt Header */}
+        <div>
+          <label className="text-xs font-semibold text-foreground mb-1.5 block">Cabeçalho da comanda / recibo</label>
+          <p className="text-[10px] text-muted-foreground mb-2">Texto exibido no topo da impressão (ex: nome fantasia, CNPJ, endereço)</p>
+          <Textarea
+            placeholder={"PDV FÊNIX\nCNPJ: 00.000.000/0001-00\nRua Exemplo, 123"}
+            value={receiptHeader}
+            onChange={(e) => setReceiptHeader(e.target.value)}
+            className="bg-background border-border min-h-[70px] font-mono text-xs"
+            rows={3}
+          />
+        </div>
+
+        {/* Receipt Footer */}
+        <div>
+          <label className="text-xs font-semibold text-foreground mb-1.5 block">Rodapé da comanda / recibo</label>
+          <p className="text-[10px] text-muted-foreground mb-2">Texto exibido no final da impressão (ex: agradecimento, redes sociais)</p>
+          <Textarea
+            placeholder={"Obrigado pela preferência!\n@meurestarante • (11) 99999-9999"}
+            value={receiptFooter}
+            onChange={(e) => setReceiptFooter(e.target.value)}
+            className="bg-background border-border min-h-[70px] font-mono text-xs"
+            rows={3}
+          />
         </div>
 
         <button
