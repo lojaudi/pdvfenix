@@ -483,7 +483,7 @@ const sections: Section[] = [
     icon: ChefHat,
     content: (
       <>
-        <ScreenPreview src="/" alt="PDV no modo Garçom — Canal de Mesas" />
+        <ScreenPreview src="/manual/garcom-screen.jpg" alt="PDV no modo Garçom — Canal de Mesas" />
         <SectionCard title="Como usar o App Garçom">
           <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">
             O modo Garçom é otimizado para uso em dispositivos móveis. Permite registrar pedidos diretamente nas mesas do restaurante de forma ágil.
@@ -523,7 +523,7 @@ const sections: Section[] = [
     icon: Bike,
     content: (
       <>
-        <ScreenPreview src="/driver" alt="Portal do Entregador — /driver" />
+        <ScreenPreview src="/manual/driver-screen.jpg" alt="Portal do Entregador — /driver" />
         <SectionCard title="Como usar o Portal do Entregador">
           <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">
             O portal do entregador (<code className="bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded text-orange-600 dark:text-orange-400">/driver</code>) é dedicado aos motoristas cadastrados pelo administrador. Exige autenticação com a conta criada especificamente para o entregador.
