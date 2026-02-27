@@ -230,18 +230,24 @@ export default function DriverPage() {
     const channel = supabase
       .channel("driver-deliveries-rt")
       .on("postgres_changes", { event: "*", schema: "public", table: "delivery_details" }, (payload) => {
-        queryClient.invalidateQueries({ queryKey: ["driver-active-deliveries"] });
-        queryClient.invalidateQueries({ queryKey: ["driver-pending-deliveries"] });
-        queryClient.invalidateQueries({ queryKey: ["driver-history"] });
-        // Notification for new assignment
-        const newRow = payload.new as any;
-        if (payload.eventType === "UPDATE" && newRow?.driver_id === driver.id && newRow?.delivery_status === "aceito") {
-          toast.info("🛵 Nova entrega atribuída a você!");
+        try {
+          queryClient.invalidateQueries({ queryKey: ["driver-active-deliveries"] });
+          queryClient.invalidateQueries({ queryKey: ["driver-pending-deliveries"] });
+          queryClient.invalidateQueries({ queryKey: ["driver-history"] });
+          const newRow = payload.new as any;
+          if (payload.eventType === "UPDATE" && newRow?.driver_id === driver.id && newRow?.delivery_status === "aceito") {
+            toast.info("🛵 Nova entrega atribuída a você!");
+          }
+        } catch (err) {
+          console.error("Realtime handler error:", err);
         }
       })
       .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, () => {
-        // Re-check pending when order status changes (e.g. to "pronto")
-        queryClient.invalidateQueries({ queryKey: ["driver-pending-deliveries"] });
+        try {
+          queryClient.invalidateQueries({ queryKey: ["driver-pending-deliveries"] });
+        } catch (err) {
+          console.error("Realtime orders handler error:", err);
+        }
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };

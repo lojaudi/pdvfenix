@@ -5,8 +5,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Loader2 } from "lucide-react";
-import React, { Suspense } from "react";
+import React, { Suspense, useEffect } from "react";
 import { useThemeSettings } from "@/hooks/useThemeSettings";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 const Index = React.lazy(() => import("./pages/Index"));
 const AuthPage = React.lazy(() => import("./pages/Auth"));
@@ -54,34 +55,50 @@ function ThemeApplier({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function GlobalErrorCatcher({ children }: { children: React.ReactNode }) {
+  useEffect(() => {
+    const handler = (event: PromiseRejectionEvent) => {
+      console.error("Unhandled rejection:", event.reason);
+      event.preventDefault();
+    };
+    window.addEventListener("unhandledrejection", handler);
+    return () => window.removeEventListener("unhandledrejection", handler);
+  }, []);
+  return <>{children}</>;
+}
+
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <ThemeApplier>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Suspense fallback={<PageLoader />}>
-          <Routes>
-            <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-            <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
-            <Route path="/reports" element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
-            <Route path="/orders" element={<ProtectedRoute><ActiveOrdersPage /></ProtectedRoute>} />
-            <Route path="/tables" element={<ProtectedRoute><TablesPage /></ProtectedRoute>} />
-            <Route path="/cashier" element={<ProtectedRoute><CashierPage /></ProtectedRoute>} />
-            <Route path="/auth" element={<AuthRoute><AuthPage /></AuthRoute>} />
-            <Route path="/deliveries" element={<ProtectedRoute><DeliveriesPage /></ProtectedRoute>} />
-            <Route path="/menu" element={<MenuPage />} />
-            <Route path="/rastreio" element={<TrackingPage />} />
-            <Route path="/driver" element={<DriverPage />} />
-            <Route path="/manual" element={<ManualPage />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </Suspense>
-      </BrowserRouter>
-      </ThemeApplier>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <ErrorBoundary>
+    <GlobalErrorCatcher>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <ThemeApplier>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
+                <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
+                <Route path="/reports" element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
+                <Route path="/orders" element={<ProtectedRoute><ActiveOrdersPage /></ProtectedRoute>} />
+                <Route path="/tables" element={<ProtectedRoute><TablesPage /></ProtectedRoute>} />
+                <Route path="/cashier" element={<ProtectedRoute><CashierPage /></ProtectedRoute>} />
+                <Route path="/auth" element={<AuthRoute><AuthPage /></AuthRoute>} />
+                <Route path="/deliveries" element={<ProtectedRoute><DeliveriesPage /></ProtectedRoute>} />
+                <Route path="/menu" element={<MenuPage />} />
+                <Route path="/rastreio" element={<TrackingPage />} />
+                <Route path="/driver" element={<ErrorBoundary><DriverPage /></ErrorBoundary>} />
+                <Route path="/manual" element={<ManualPage />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
+          </BrowserRouter>
+          </ThemeApplier>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </GlobalErrorCatcher>
+  </ErrorBoundary>
 );
 
 export default App;
