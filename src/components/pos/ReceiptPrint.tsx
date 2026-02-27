@@ -1,6 +1,8 @@
 import { forwardRef } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
@@ -24,6 +26,22 @@ export interface ReceiptData {
   paidAt?: string;
 }
 
+export function useReceiptSettings() {
+  return useQuery({
+    queryKey: ["receipt-settings"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("app_settings")
+        .select("key, value")
+        .in("key", ["receipt_header", "receipt_footer", "restaurant_name"]);
+      const map: Record<string, string> = {};
+      (data || []).forEach((s) => { map[s.key] = s.value; });
+      return map;
+    },
+    staleTime: 60_000,
+  });
+}
+
 const channelLabels: Record<string, string> = {
   balcao: "Balcão",
   garcom: "Garçom",
@@ -41,9 +59,12 @@ const paymentLabels: Record<string, string> = {
  * Receipt component optimised for 80mm thermal printers.
  * Rendered off-screen; call window.print() while it's mounted.
  */
-export const ReceiptPrint = forwardRef<HTMLDivElement, { data: ReceiptData }>(
-  ({ data }, ref) => {
+export const ReceiptPrint = forwardRef<HTMLDivElement, { data: ReceiptData; headerText?: string; footerText?: string }>(
+  ({ data, headerText, footerText }, ref) => {
     const now = data.paidAt ? new Date(data.paidAt) : new Date();
+
+    const headerLines = headerText || "PDV FÊNIX";
+    const footerLines = footerText || "Obrigado pela preferência!\nPDV Fênix • Sistema de Gestão";
 
     return (
       <div ref={ref} className="receipt-print-area">
@@ -71,7 +92,11 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, { data: ReceiptData }>(
 
         {/* Header */}
         <div style={{ textAlign: "center", marginBottom: 8 }}>
-          <div style={{ fontSize: 16, fontWeight: "bold" }}>PDV FÊNIX</div>
+          {headerLines.split("\n").map((line, i) => (
+            <div key={i} style={{ fontSize: i === 0 ? 16 : 10, fontWeight: i === 0 ? "bold" : "normal" }}>
+              {line}
+            </div>
+          ))}
           <div style={{ fontSize: 10 }}>
             {format(now, "dd/MM/yyyy HH:mm", { locale: ptBR })}
           </div>
@@ -131,8 +156,9 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, { data: ReceiptData }>(
 
         {/* Footer */}
         <div style={{ textAlign: "center", fontSize: 10 }}>
-          <div>Obrigado pela preferência!</div>
-          <div style={{ marginTop: 2 }}>PDV Fênix • Sistema de Gestão</div>
+          {footerLines.split("\n").map((line, i) => (
+            <div key={i} style={{ marginTop: i > 0 ? 2 : 0 }}>{line}</div>
+          ))}
         </div>
       </div>
     );
