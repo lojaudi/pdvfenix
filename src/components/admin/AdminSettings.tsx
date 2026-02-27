@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Save, Phone, Store, Clock, MessageSquare, ImagePlus, Trash2, Printer } from "lucide-react";
+import { Save, Phone, Store, Clock, MessageSquare, ImagePlus, Trash2, Printer, User, Mail, Lock, Eye, EyeOff } from "lucide-react";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
@@ -20,6 +20,85 @@ export function AdminSettings() {
   const [saving, setSaving] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Profile editing state
+  const [profileName, setProfileName] = useState("");
+  const [profileEmail, setProfileEmail] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showCurrentPw, setShowCurrentPw] = useState(false);
+  const [showNewPw, setShowNewPw] = useState(false);
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [savingPassword, setSavingPassword] = useState(false);
+
+  // Load current user profile
+  useEffect(() => {
+    const loadProfile = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setProfileEmail(user.email ?? "");
+        const { data } = await supabase
+          .from("profiles")
+          .select("name")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        if (data) setProfileName(data.name);
+      }
+    };
+    loadProfile();
+  }, []);
+
+  const handleSaveProfile = async () => {
+    setSavingProfile(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Não autenticado");
+
+      // Update name in profiles table
+      await supabase
+        .from("profiles")
+        .update({ name: profileName })
+        .eq("user_id", user.id);
+
+      // Update email if changed
+      if (profileEmail !== user.email) {
+        const { error } = await supabase.auth.updateUser({ email: profileEmail });
+        if (error) throw error;
+        toast.info("Um email de confirmação foi enviado para o novo endereço.");
+      }
+
+      toast.success("Perfil atualizado!");
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao atualizar perfil");
+    } finally {
+      setSavingProfile(false);
+    }
+  };
+
+  const handleChangePassword = async () => {
+    if (newPassword.length < 6) {
+      toast.error("A nova senha deve ter pelo menos 6 caracteres");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error("As senhas não coincidem");
+      return;
+    }
+    setSavingPassword(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      toast.success("Senha alterada com sucesso!");
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao alterar senha");
+    } finally {
+      setSavingPassword(false);
+    }
+  };
 
   const { data: settings, isLoading } = useQuery({
     queryKey: ["app-settings"],
@@ -306,6 +385,106 @@ export function AdminSettings() {
         >
           <Save className="w-4 h-4" />
           {saving ? "Salvando..." : "Salvar configurações"}
+        </button>
+      </div>
+
+      {/* Profile Editing Section */}
+      <div className="bg-card border border-border rounded-xl p-4 space-y-5 max-w-md">
+        <div>
+          <h3 className="text-base font-bold text-foreground mb-1">Meu Perfil</h3>
+          <p className="text-xs text-muted-foreground">Edite seus dados de acesso</p>
+        </div>
+
+        {/* Name */}
+        <div>
+          <label className="text-xs font-semibold text-foreground mb-1.5 block">Nome</label>
+          <div className="relative">
+            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Seu nome"
+              value={profileName}
+              onChange={(e) => setProfileName(e.target.value)}
+              className="pl-10 bg-background border-border"
+            />
+          </div>
+        </div>
+
+        {/* Email */}
+        <div>
+          <label className="text-xs font-semibold text-foreground mb-1.5 block">Email</label>
+          <div className="relative">
+            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              type="email"
+              placeholder="seu@email.com"
+              value={profileEmail}
+              onChange={(e) => setProfileEmail(e.target.value)}
+              className="pl-10 bg-background border-border"
+            />
+          </div>
+        </div>
+
+        <button
+          onClick={handleSaveProfile}
+          disabled={savingProfile}
+          className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-semibold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50"
+        >
+          <Save className="w-4 h-4" />
+          {savingProfile ? "Salvando..." : "Salvar perfil"}
+        </button>
+      </div>
+
+      {/* Password Change Section */}
+      <div className="bg-card border border-border rounded-xl p-4 space-y-5 max-w-md">
+        <div>
+          <h3 className="text-base font-bold text-foreground mb-1">Alterar Senha</h3>
+          <p className="text-xs text-muted-foreground">Defina uma nova senha de acesso</p>
+        </div>
+
+        {/* New Password */}
+        <div>
+          <label className="text-xs font-semibold text-foreground mb-1.5 block">Nova senha</label>
+          <div className="relative">
+            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              type={showNewPw ? "text" : "password"}
+              placeholder="Mínimo 6 caracteres"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              className="pl-10 pr-10 bg-background border-border"
+            />
+            <button
+              type="button"
+              onClick={() => setShowNewPw(!showNewPw)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            >
+              {showNewPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            </button>
+          </div>
+        </div>
+
+        {/* Confirm Password */}
+        <div>
+          <label className="text-xs font-semibold text-foreground mb-1.5 block">Confirmar nova senha</label>
+          <div className="relative">
+            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              type="password"
+              placeholder="Repita a nova senha"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="pl-10 bg-background border-border"
+            />
+          </div>
+        </div>
+
+        <button
+          onClick={handleChangePassword}
+          disabled={savingPassword || !newPassword}
+          className="w-full py-2.5 rounded-lg bg-destructive text-destructive-foreground text-sm font-semibold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50"
+        >
+          <Lock className="w-4 h-4" />
+          {savingPassword ? "Alterando..." : "Alterar senha"}
         </button>
       </div>
     </div>
