@@ -4,10 +4,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Search, Clock, Package, Bike, CheckCircle2, XCircle, MapPin, Phone, User, ArrowLeft } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { DriverMap } from "@/components/tracking/DriverMap";
 import type { Database } from "@/integrations/supabase/types";
 
 type DeliveryStatus = Database["public"]["Enums"]["delivery_status"];
@@ -19,8 +19,6 @@ const statusSteps: { key: DeliveryStatus; label: string; icon: typeof Clock }[] 
   { key: "entregue", label: "Entregue", icon: CheckCircle2 },
 ];
 
-const cancelledStep = { key: "cancelado" as DeliveryStatus, label: "Cancelado", icon: XCircle };
-
 interface TrackingData {
   delivery_status: DeliveryStatus;
   delivery_address: string;
@@ -29,6 +27,7 @@ interface TrackingData {
   created_at: string;
   delivered_at: string | null;
   notes: string | null;
+  driver_id: string | null;
   orders: {
     id: string;
     total: number;
@@ -59,7 +58,7 @@ export default function TrackingPage() {
 
     const { data: result, error: err } = await supabase
       .from("delivery_details")
-      .select("delivery_status, delivery_address, customer_phone, delivery_fee, created_at, delivered_at, notes, orders!delivery_details_order_id_fkey(id, total, customer_name, status, order_items(id, product_name, quantity, unit_price)), delivery_drivers!delivery_details_driver_id_fkey(name, phone)")
+      .select("delivery_status, delivery_address, customer_phone, delivery_fee, created_at, delivered_at, notes, driver_id, orders!delivery_details_order_id_fkey(id, total, customer_name, status, order_items(id, product_name, quantity, unit_price)), delivery_drivers!delivery_details_driver_id_fkey(name, phone)")
       .eq("order_id", id)
       .maybeSingle();
 
@@ -72,7 +71,6 @@ export default function TrackingPage() {
     setData(result as unknown as TrackingData);
   };
 
-  // Auto-search on mount if ID in URL
   useEffect(() => {
     if (initialId) fetchTracking(initialId);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -96,6 +94,7 @@ export default function TrackingPage() {
 
   const isCancelled = data?.delivery_status === "cancelado";
   const currentIdx = isCancelled ? -1 : statusSteps.findIndex((s) => s.key === data?.delivery_status);
+  const showMap = data && !isCancelled && (data.delivery_status === "saiu_para_entrega" || data.delivery_status === "aceito");
 
   return (
     <div className="min-h-screen bg-background">
@@ -136,6 +135,19 @@ export default function TrackingPage() {
 
         {data && (
           <div className="space-y-4 animate-in fade-in-0 slide-in-from-bottom-4 duration-300">
+            {/* Real-time Map */}
+            {showMap && (
+              <Card>
+                <CardContent className="p-4">
+                  <h2 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-primary" />
+                    Localização do entregador
+                  </h2>
+                  <DriverMap driverId={data.driver_id} deliveryAddress={data.delivery_address} />
+                </CardContent>
+              </Card>
+            )}
+
             {/* Status Timeline */}
             <Card>
               <CardContent className="p-5">
@@ -155,7 +167,6 @@ export default function TrackingPage() {
 
                       return (
                         <div key={step.key} className="flex items-start gap-3">
-                          {/* Vertical line + dot */}
                           <div className="flex flex-col items-center">
                             <div className={cn(
                               "w-8 h-8 rounded-full flex items-center justify-center border-2 transition-colors",
