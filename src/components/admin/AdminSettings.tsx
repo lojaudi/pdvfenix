@@ -252,7 +252,7 @@ export function AdminSettings() {
           <label className="text-xs font-semibold text-foreground mb-1.5 flex items-center gap-1.5">
             <Printer className="w-4 h-4" /> Pré-visualização do recibo
           </label>
-          <div className="bg-white text-black rounded-lg border border-border p-4 font-mono text-[11px] leading-relaxed max-w-[300px] mx-auto shadow-sm">
+          <div className="bg-white rounded-lg border border-border p-4 font-mono text-[11px] leading-relaxed max-w-[300px] mx-auto shadow-sm" style={{ color: "#000" }}>
             {/* Preview Header */}
             <div className="text-center mb-2">
               {(receiptHeader || "PDV FÊNIX").split("\n").map((line, i) => (
