@@ -38,6 +38,8 @@ export default function MenuPage() {
   const [selectedZone, setSelectedZone] = useState<string>("");
   const [notes, setNotes] = useState("");
   const [paymentOnDelivery, setPaymentOnDelivery] = useState(true);
+  const [deliveryPaymentMethod, setDeliveryPaymentMethod] = useState<"dinheiro" | "credito" | "debito" | "pix_maquina">("dinheiro");
+  const [changeFor, setChangeFor] = useState("");
 
   const { data: categories } = useQuery({
     queryKey: ["menu-categories"],
@@ -145,14 +147,24 @@ export default function MenuPage() {
 
     setSending(true);
     try {
+      // Build full notes with change info
+      const methodLabels: Record<string, string> = { dinheiro: "Dinheiro", credito: "Cartão Crédito", debito: "Cartão Débito", pix_maquina: "PIX Máquina" };
+      const changeNote = paymentOnDelivery && deliveryPaymentMethod === "dinheiro" && changeFor.trim()
+        ? `Troco para R$ ${changeFor}`
+        : paymentOnDelivery && deliveryPaymentMethod === "dinheiro"
+        ? "Sem troco (valor exato)"
+        : "";
+      const fullNotes = [notes, changeNote].filter(Boolean).join(" | ") || null;
+
       // 1. Create order
+      const paymentMethod = paymentOnDelivery ? deliveryPaymentMethod : ("pix" as const);
       const { data: order, error: orderError } = await supabase
         .from("orders")
         .insert({
           channel: "delivery" as const,
           customer_name: customerName,
           status: "aberto" as const,
-          payment_method: paymentOnDelivery ? null : ("pix" as const),
+          payment_method: paymentMethod,
           total: grandTotal,
           user_id: null,
         })
@@ -181,14 +193,14 @@ export default function MenuPage() {
         delivery_zone_id: selectedZone || null,
         delivery_fee: deliveryFee,
         payment_on_delivery: paymentOnDelivery,
-        notes: notes || null,
+        notes: fullNotes,
       });
       if (deliveryError) throw deliveryError;
 
       // 4. Send WhatsApp message if number is configured
       if (whatsappNumber) {
         const zoneName = zones?.find((z) => z.id === selectedZone)?.name || "Não selecionada";
-        const payLabel = paymentOnDelivery ? "Na entrega" : "PIX antecipado";
+        const payLabel = paymentOnDelivery ? `Na entrega (${methodLabels[deliveryPaymentMethod]})` : "PIX antecipado";
         const lines = [
           `🛒 *NOVO PEDIDO DELIVERY*`,
           ``,
@@ -197,6 +209,7 @@ export default function MenuPage() {
           `📍 *Endereço:* ${deliveryAddress}`,
           `🏘️ *Região:* ${zoneName}`,
           `💳 *Pagamento:* ${payLabel}`,
+          changeNote ? `💵 *${changeNote}*` : "",
           notes ? `📝 *Obs:* ${notes}` : "",
           ``,
           `*── ITENS ──*`,
@@ -217,6 +230,8 @@ export default function MenuPage() {
       setDeliveryAddress("");
       setSelectedZone("");
       setNotes("");
+      setChangeFor("");
+      setDeliveryPaymentMethod("dinheiro");
       setShowCart(false);
       toast.success("Pedido registrado! Redirecionando...");
       setTimeout(() => { window.location.href = trackingUrl; }, 1500);
@@ -469,28 +484,67 @@ export default function MenuPage() {
                       </div>
                     )}
 
-                    {/* Payment */}
-                    <div>
-                      <label className="text-xs text-muted-foreground mb-1 block">Pagamento</label>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => setPaymentOnDelivery(true)}
-                          className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-colors ${
-                            paymentOnDelivery ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"
-                          }`}
-                        >
-                          Na entrega
-                        </button>
-                        <button
-                          onClick={() => setPaymentOnDelivery(false)}
-                          className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-colors ${
-                            !paymentOnDelivery ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"
-                          }`}
-                        >
-                          PIX antecipado
-                        </button>
-                      </div>
-                    </div>
+                     {/* Payment */}
+                     <div>
+                       <label className="text-xs text-muted-foreground mb-1 block">Pagamento</label>
+                       <div className="flex gap-2">
+                         <button
+                           onClick={() => setPaymentOnDelivery(true)}
+                           className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-colors ${
+                             paymentOnDelivery ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"
+                           }`}
+                         >
+                           Na entrega
+                         </button>
+                         <button
+                           onClick={() => setPaymentOnDelivery(false)}
+                           className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-colors ${
+                             !paymentOnDelivery ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"
+                           }`}
+                         >
+                           PIX antecipado
+                         </button>
+                       </div>
+                     </div>
+
+                     {/* Delivery payment method selection */}
+                     {paymentOnDelivery && (
+                       <div>
+                         <label className="text-xs text-muted-foreground mb-1 block">Forma de pagamento na entrega</label>
+                         <div className="grid grid-cols-2 gap-2">
+                           {([
+                             { id: "dinheiro", label: "💵 Dinheiro" },
+                             { id: "credito", label: "💳 Crédito" },
+                             { id: "debito", label: "📱 Débito" },
+                             { id: "pix_maquina", label: "📲 PIX Máquina" },
+                           ] as const).map((m) => (
+                             <button
+                               key={m.id}
+                               onClick={() => { setDeliveryPaymentMethod(m.id); if (m.id !== "dinheiro") setChangeFor(""); }}
+                               className={`py-2 rounded-lg text-xs font-semibold transition-colors ${
+                                 deliveryPaymentMethod === m.id ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"
+                               }`}
+                             >
+                               {m.label}
+                             </button>
+                           ))}
+                         </div>
+                       </div>
+                     )}
+
+                     {/* Change for cash */}
+                     {paymentOnDelivery && deliveryPaymentMethod === "dinheiro" && (
+                       <div>
+                         <label className="text-xs text-muted-foreground mb-1 block">Precisa de troco? Para quanto?</label>
+                         <Input
+                           placeholder="Ex: 50 (deixe vazio se não precisa)"
+                           value={changeFor}
+                           onChange={(e) => setChangeFor(e.target.value.replace(/[^0-9.,]/g, ""))}
+                           className="bg-background border-border"
+                           inputMode="decimal"
+                         />
+                       </div>
+                     )}
 
                     {/* Notes */}
                     <div className="relative">
