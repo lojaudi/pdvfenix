@@ -72,3 +72,8 @@
     scrollbar-color: hsl(var(--muted)) transparent;
   }
 }
+
+
+#lovable-badge {
+  display: none !important;
+}
