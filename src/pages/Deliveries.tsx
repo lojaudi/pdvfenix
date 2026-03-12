@@ -75,6 +75,8 @@ export default function DeliveriesPage() {
       total: (delivery.orders?.total || 0) + delivery.delivery_fee,
       paymentMethod: delivery.payment_on_delivery ? "Pgto na entrega" : null,
       createdAt: delivery.created_at,
+      deliveryAddress: delivery.delivery_address,
+      customerPhone: delivery.customer_phone,
     });
     triggerPrint();
   };
