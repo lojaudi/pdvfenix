@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useRealtimeOrdersWithSound } from "@/hooks/useRealtimeOrdersWithSound";
+import { useCashSession } from "@/hooks/useCashSession";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { ArrowLeft, Loader2, Wallet, CheckCircle2, Printer } from "lucide-react";
@@ -10,6 +11,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { PaymentDialog } from "@/components/pos/PaymentDialog";
 import { ReceiptPrint, triggerPrint, useReceiptSettings, type ReceiptData } from "@/components/pos/ReceiptPrint";
+import { CashSessionBanner } from "@/components/cashier/CashSessionBanner";
+import { OpenCashDialog } from "@/components/cashier/OpenCashDialog";
+import { CloseCashDialog } from "@/components/cashier/CloseCashDialog";
 import { toast } from "sonner";
 
 import type { PaymentMethod } from "@/components/pos/PaymentDialog";
@@ -142,7 +146,10 @@ export default function CashierPage() {
   const queryClient = useQueryClient();
   const [selectedBill, setSelectedBill] = useState<ConsolidatedBill | null>(null);
   const [receiptData, setReceiptData] = useState<ReceiptData | null>(null);
+  const [showOpenDialog, setShowOpenDialog] = useState(false);
+  const [showCloseDialog, setShowCloseDialog] = useState(false);
   useRealtimeOrdersWithSound(QUERY_KEY);
+  const { activeSession, isLoading: loadingSession, isOpen: cashIsOpen, openSession, closeSession, getPaymentSummary } = useCashSession();
 
   const { data: orders, isLoading } = useQuery({
     queryKey: QUERY_KEY,
@@ -246,7 +253,14 @@ export default function CashierPage() {
         </div>
       </header>
 
-      <main className="p-4 sm:p-6 space-y-8">
+      <main className="p-4 sm:p-6 space-y-6">
+        {/* Cash Session Banner */}
+        <CashSessionBanner
+          session={activeSession ?? null}
+          onOpen={() => setShowOpenDialog(true)}
+          onClose={() => setShowCloseDialog(true)}
+        />
+
         {/* Awaiting Payment Section */}
         <section aria-label="Pedidos aguardando pagamento">
           <div className="flex items-center gap-2 mb-4">
@@ -263,7 +277,7 @@ export default function CashierPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
               {pendingPayment.map((bill) => (
-                <Card key={bill.orderIds.join("-")} className="border bg-card border-orange-500/30 bg-orange-500/5 hover:bg-orange-500/10 transition-colors cursor-pointer" onClick={() => setSelectedBill(bill)}>
+                <Card key={bill.orderIds.join("-")} className="border bg-card border-orange-500/30 bg-orange-500/5 hover:bg-orange-500/10 transition-colors cursor-pointer" onClick={() => cashIsOpen && setSelectedBill(bill)}>
                   <CardContent className="p-4 space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
@@ -315,8 +329,11 @@ export default function CashierPage() {
                       <span className="font-mono text-lg font-bold text-primary">{formatCurrency(bill.total)}</span>
                     </div>
 
-                    <button className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-bold hover:opacity-90 transition-opacity min-h-[44px]">
-                      💳 Receber Pagamento
+                    <button
+                      disabled={!cashIsOpen}
+                      className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-bold hover:opacity-90 transition-opacity min-h-[44px] disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {cashIsOpen ? "💳 Receber Pagamento" : "🔒 Caixa Fechado"}
                     </button>
                   </CardContent>
                 </Card>
@@ -388,6 +405,29 @@ export default function CashierPage() {
 
       {/* Hidden receipt for printing */}
       {receiptData && <ReceiptPrintWrapper data={receiptData} />}
+
+      {/* Cash session dialogs */}
+      <OpenCashDialog
+        open={showOpenDialog}
+        onOpenChange={setShowOpenDialog}
+        onConfirm={(amount) => {
+          openSession.mutate(amount, { onSuccess: () => setShowOpenDialog(false) });
+        }}
+        loading={openSession.isPending}
+      />
+
+      {activeSession && (
+        <CloseCashDialog
+          open={showCloseDialog}
+          onOpenChange={setShowCloseDialog}
+          session={activeSession}
+          onConfirm={(closingAmount, expectedAmount, notes) => {
+            closeSession.mutate({ closingAmount, expectedAmount, notes }, { onSuccess: () => setShowCloseDialog(false) });
+          }}
+          loading={closeSession.isPending}
+          fetchSummary={getPaymentSummary}
+        />
+      )}
     </div>
   );
 }
