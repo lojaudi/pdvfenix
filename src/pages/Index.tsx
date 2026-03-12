@@ -13,7 +13,7 @@ import { TableSelector } from "@/components/pos/TableSelector";
 import { TableOrdersSummary } from "@/components/pos/TableOrdersSummary";
 import { createOrder } from "@/services/orderService";
 import { toast } from "sonner";
-import { Store, LogOut, Loader2, Settings, BarChart3, ClipboardList, LayoutGrid, Wallet, Bike } from "lucide-react";
+import { Store, LogOut, Loader2, Settings, BarChart3, ClipboardList, LayoutGrid, Wallet, Bike, Link2, Check } from "lucide-react";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 
 type OrderChannel = "balcao" | "garcom" | "delivery";
@@ -37,7 +37,21 @@ const Index = () => {
   const [customerName, setCustomerName] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [showMobileCart, setShowMobileCart] = useState(false);
+  const [copiedUrl, setCopiedUrl] = useState(false);
   const cart = useCart();
+
+  const catalogUrl = `${window.location.origin}/menu`;
+
+  const handleCopyUrl = async () => {
+    try {
+      await navigator.clipboard.writeText(catalogUrl);
+      setCopiedUrl(true);
+      toast.success("Link copiado!");
+      setTimeout(() => setCopiedUrl(false), 2000);
+    } catch {
+      toast.error("Não foi possível copiar");
+    }
+  };
 
   useEffect(() => {
     if (isWaiter) setChannel("garcom");
@@ -133,6 +147,21 @@ const Index = () => {
             <NavButton onClick={signOut} title="Sair" icon={LogOut} />
           </nav>
         </header>
+
+        {/* Catalog URL banner */}
+        <div className="px-4 sm:px-6 pt-3">
+          <div className="flex items-center gap-2 bg-secondary/60 border border-border rounded-lg px-3 py-2 text-xs">
+            <Link2 className="w-3.5 h-3.5 text-primary flex-shrink-0" />
+            <span className="text-muted-foreground flex-shrink-0">Catálogo:</span>
+            <span className="font-mono text-foreground truncate">{catalogUrl}</span>
+            <button
+              onClick={handleCopyUrl}
+              className="ml-auto flex-shrink-0 px-2.5 py-1 rounded-md bg-primary/10 text-primary hover:bg-primary/20 font-medium transition-colors flex items-center gap-1"
+            >
+              {copiedUrl ? <><Check className="w-3 h-3" /> Copiado</> : "Copiar"}
+            </button>
+          </div>
+        </div>
 
         {/* Mobile channel selector */}
         <div className="sm:hidden px-4 pt-3">
