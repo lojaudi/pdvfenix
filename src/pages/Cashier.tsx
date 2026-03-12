@@ -146,9 +146,10 @@ export default function CashierPage() {
   const queryClient = useQueryClient();
   const [selectedBill, setSelectedBill] = useState<ConsolidatedBill | null>(null);
   const [receiptData, setReceiptData] = useState<ReceiptData | null>(null);
+  const [showOpenDialog, setShowOpenDialog] = useState(false);
+  const [showCloseDialog, setShowCloseDialog] = useState(false);
   useRealtimeOrdersWithSound(QUERY_KEY);
-
-  const { data: orders, isLoading } = useQuery({
+  const { activeSession, isLoading: loadingSession, isOpen: cashIsOpen, openSession, closeSession, getPaymentSummary } = useCashSession();
     queryKey: QUERY_KEY,
     queryFn: async () => {
       const { data, error } = await supabase
