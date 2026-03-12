@@ -253,7 +253,14 @@ export default function CashierPage() {
         </div>
       </header>
 
-      <main className="p-4 sm:p-6 space-y-8">
+      <main className="p-4 sm:p-6 space-y-6">
+        {/* Cash Session Banner */}
+        <CashSessionBanner
+          session={activeSession ?? null}
+          onOpen={() => setShowOpenDialog(true)}
+          onClose={() => setShowCloseDialog(true)}
+        />
+
         {/* Awaiting Payment Section */}
         <section aria-label="Pedidos aguardando pagamento">
           <div className="flex items-center gap-2 mb-4">
