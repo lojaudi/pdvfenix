@@ -277,7 +277,7 @@ export default function CashierPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
               {pendingPayment.map((bill) => (
-                <Card key={bill.orderIds.join("-")} className="border bg-card border-orange-500/30 bg-orange-500/5 hover:bg-orange-500/10 transition-colors cursor-pointer" onClick={() => setSelectedBill(bill)}>
+                <Card key={bill.orderIds.join("-")} className="border bg-card border-orange-500/30 bg-orange-500/5 hover:bg-orange-500/10 transition-colors cursor-pointer" onClick={() => cashIsOpen && setSelectedBill(bill)}>
                   <CardContent className="p-4 space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
