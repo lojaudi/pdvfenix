@@ -148,6 +148,21 @@ const Index = () => {
           </nav>
         </header>
 
+        {/* Catalog URL banner */}
+        <div className="px-4 sm:px-6 pt-3">
+          <div className="flex items-center gap-2 bg-secondary/60 border border-border rounded-lg px-3 py-2 text-xs">
+            <Link2 className="w-3.5 h-3.5 text-primary flex-shrink-0" />
+            <span className="text-muted-foreground flex-shrink-0">Catálogo:</span>
+            <span className="font-mono text-foreground truncate">{catalogUrl}</span>
+            <button
+              onClick={handleCopyUrl}
+              className="ml-auto flex-shrink-0 px-2.5 py-1 rounded-md bg-primary/10 text-primary hover:bg-primary/20 font-medium transition-colors flex items-center gap-1"
+            >
+              {copiedUrl ? <><Check className="w-3 h-3" /> Copiado</> : "Copiar"}
+            </button>
+          </div>
+        </div>
+
         {/* Mobile channel selector */}
         <div className="sm:hidden px-4 pt-3">
           <ChannelSelector selected={channel} onSelect={setChannel} hiddenChannels={isWaiter ? ["balcao", "delivery"] : []} />
