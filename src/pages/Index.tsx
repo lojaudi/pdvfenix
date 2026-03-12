@@ -37,7 +37,21 @@ const Index = () => {
   const [customerName, setCustomerName] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [showMobileCart, setShowMobileCart] = useState(false);
+  const [copiedUrl, setCopiedUrl] = useState(false);
   const cart = useCart();
+
+  const catalogUrl = `${window.location.origin}/menu`;
+
+  const handleCopyUrl = async () => {
+    try {
+      await navigator.clipboard.writeText(catalogUrl);
+      setCopiedUrl(true);
+      toast.success("Link copiado!");
+      setTimeout(() => setCopiedUrl(false), 2000);
+    } catch {
+      toast.error("Não foi possível copiar");
+    }
+  };
 
   useEffect(() => {
     if (isWaiter) setChannel("garcom");
