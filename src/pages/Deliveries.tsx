@@ -51,6 +51,33 @@ const QUERY_KEY = ["active-deliveries"];
 export default function DeliveriesPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [receiptData, setReceiptData] = useState<ReceiptData | null>(null);
+
+  const handlePrintDelivery = (delivery: DeliveryWithOrder) => {
+    const items = delivery.orders?.order_items?.map((item) => ({
+      product_name: item.product_name,
+      quantity: item.quantity,
+      unit_price: item.unit_price,
+    })) || [];
+
+    // Add delivery fee as a line item
+    if (delivery.delivery_fee > 0) {
+      items.push({ product_name: "Taxa de entrega", quantity: 1, unit_price: delivery.delivery_fee });
+    }
+
+    setReceiptData({
+      orderId: delivery.order_id,
+      channel: "delivery",
+      tableNumber: null,
+      customerName: delivery.orders?.customer_name || null,
+      waiterName: null,
+      items,
+      total: (delivery.orders?.total || 0) + delivery.delivery_fee,
+      paymentMethod: delivery.payment_on_delivery ? "Pgto na entrega" : null,
+      createdAt: delivery.created_at,
+    });
+    triggerPrint();
+  };
 
   // Realtime subscription
   useEffect(() => {
