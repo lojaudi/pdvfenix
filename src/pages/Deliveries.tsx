@@ -1,11 +1,12 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { ArrowLeft, Loader2, Clock, Bike, CheckCircle2, XCircle, Package, User, MapPin, Phone } from "lucide-react";
+import { ArrowLeft, Loader2, Clock, Bike, CheckCircle2, XCircle, Package, User, MapPin, Phone, Printer } from "lucide-react";
+import { ReceiptPrint, triggerPrint, useReceiptSettings, type ReceiptData } from "@/components/pos/ReceiptPrint";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
