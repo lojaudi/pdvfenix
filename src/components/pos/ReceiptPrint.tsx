@@ -113,7 +113,8 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, { data: ReceiptData; head
           {data.tableNumber && <div><strong>Mesa:</strong> {data.tableNumber}</div>}
           {data.waiterName && <div><strong>Garçom:</strong> {data.waiterName}</div>}
           {data.customerName && <div><strong>Cliente:</strong> {data.customerName}</div>}
-        </div>
+          {data.deliveryAddress && <div><strong>Endereço:</strong> {data.deliveryAddress}</div>}
+          {data.customerPhone && <div><strong>Telefone:</strong> {data.customerPhone}</div>}
 
         <div style={{ borderTop: "1px dashed #000", margin: "4px 0" }} />
 
