@@ -294,6 +294,13 @@ export default function DeliveriesPage() {
 
                           {/* Actions */}
                           <div className="flex gap-2 pt-1">
+                            <button
+                              onClick={() => handlePrintDelivery(delivery)}
+                              className="py-2 px-3 rounded-lg bg-secondary text-foreground text-xs font-semibold hover:bg-secondary/80 transition-colors flex items-center gap-1"
+                              title="Imprimir comprovante"
+                            >
+                              <Printer className="w-3.5 h-3.5" />
+                            </button>
                             {canAdvance && delivery.driver_id && (
                               <button
                                 onClick={() => advanceStatus(delivery)}
@@ -321,6 +328,20 @@ export default function DeliveriesPage() {
           })}
         </div>
       </main>
+
+      {/* Hidden receipt for delivery printing */}
+      {receiptData && <DeliveryReceiptWrapper data={receiptData} />}
     </div>
+  );
+}
+
+function DeliveryReceiptWrapper({ data }: { data: ReceiptData }) {
+  const { data: settings } = useReceiptSettings();
+  return (
+    <ReceiptPrint
+      data={data}
+      headerText={settings?.receipt_header || undefined}
+      footerText={settings?.receipt_footer || undefined}
+    />
   );
 }
