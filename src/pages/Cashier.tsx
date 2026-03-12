@@ -329,8 +329,11 @@ export default function CashierPage() {
                       <span className="font-mono text-lg font-bold text-primary">{formatCurrency(bill.total)}</span>
                     </div>
 
-                    <button className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-bold hover:opacity-90 transition-opacity min-h-[44px]">
-                      💳 Receber Pagamento
+                    <button
+                      disabled={!cashIsOpen}
+                      className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-bold hover:opacity-90 transition-opacity min-h-[44px] disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {cashIsOpen ? "💳 Receber Pagamento" : "🔒 Caixa Fechado"}
                     </button>
                   </CardContent>
                 </Card>
