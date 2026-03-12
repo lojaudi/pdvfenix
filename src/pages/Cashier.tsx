@@ -405,6 +405,29 @@ export default function CashierPage() {
 
       {/* Hidden receipt for printing */}
       {receiptData && <ReceiptPrintWrapper data={receiptData} />}
+
+      {/* Cash session dialogs */}
+      <OpenCashDialog
+        open={showOpenDialog}
+        onOpenChange={setShowOpenDialog}
+        onConfirm={(amount) => {
+          openSession.mutate(amount, { onSuccess: () => setShowOpenDialog(false) });
+        }}
+        loading={openSession.isPending}
+      />
+
+      {activeSession && (
+        <CloseCashDialog
+          open={showCloseDialog}
+          onOpenChange={setShowCloseDialog}
+          session={activeSession}
+          onConfirm={(closingAmount, expectedAmount, notes) => {
+            closeSession.mutate({ closingAmount, expectedAmount, notes }, { onSuccess: () => setShowCloseDialog(false) });
+          }}
+          loading={closeSession.isPending}
+          fetchSummary={getPaymentSummary}
+        />
+      )}
     </div>
   );
 }
