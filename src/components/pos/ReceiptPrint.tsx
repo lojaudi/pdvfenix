@@ -24,6 +24,8 @@ export interface ReceiptData {
   paymentMethod: string | null;
   createdAt: string;
   paidAt?: string;
+  deliveryAddress?: string;
+  customerPhone?: string;
 }
 
 export function useReceiptSettings() {
