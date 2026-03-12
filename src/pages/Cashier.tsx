@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useRealtimeOrdersWithSound } from "@/hooks/useRealtimeOrdersWithSound";
+import { useCashSession } from "@/hooks/useCashSession";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { ArrowLeft, Loader2, Wallet, CheckCircle2, Printer } from "lucide-react";
@@ -10,6 +11,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { PaymentDialog } from "@/components/pos/PaymentDialog";
 import { ReceiptPrint, triggerPrint, useReceiptSettings, type ReceiptData } from "@/components/pos/ReceiptPrint";
+import { CashSessionBanner } from "@/components/cashier/CashSessionBanner";
+import { OpenCashDialog } from "@/components/cashier/OpenCashDialog";
+import { CloseCashDialog } from "@/components/cashier/CloseCashDialog";
 import { toast } from "sonner";
 
 import type { PaymentMethod } from "@/components/pos/PaymentDialog";
