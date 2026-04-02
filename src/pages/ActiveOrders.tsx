@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useRealtimeOrdersWithSound } from "@/hooks/useRealtimeOrdersWithSound";
+import { useUserRole } from "@/hooks/useUserRole";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { ArrowLeft, Loader2, Clock, ChefHat, CheckCircle2, Truck, XCircle } from "lucide-react";
@@ -46,6 +47,7 @@ const QUERY_KEY = ["active-orders"];
 
 export default function ActiveOrdersPage() {
   const navigate = useNavigate();
+  const { isAdmin, isKitchen } = useUserRole();
   useRealtimeOrdersWithSound(QUERY_KEY);
 
   const { data: orders, isLoading } = useQuery({
@@ -110,8 +112,8 @@ export default function ActiveOrdersPage() {
     const nextStatus = STATUS_FLOW[idx + 1];
 
     // Block preparando→pronto for non-kitchen/non-admin users
-    if (order.status === "preparando" && nextStatus === "pronto") {
-      toast.error("Apenas a Cozinha pode marcar pedidos como Pronto");
+    if (order.status === "preparando" && nextStatus === "pronto" && !isAdmin && !isKitchen) {
+      toast.error("Apenas a Cozinha ou Admin pode marcar pedidos como Pronto");
       return;
     }
 
