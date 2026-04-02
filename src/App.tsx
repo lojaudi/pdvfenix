@@ -22,6 +22,7 @@ const TrackingPage = React.lazy(() => import("./pages/Tracking"));
 const DriverPage = React.lazy(() => import("./pages/Driver"));
 const ManualPage = React.lazy(() => import("./pages/Manual"));
 const InstitucionalPage = React.lazy(() => import("./pages/Institucional"));
+const KitchenPage = React.lazy(() => import("./pages/Kitchen"));
 const NotFound = React.lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
