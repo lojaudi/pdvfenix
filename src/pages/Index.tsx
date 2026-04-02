@@ -57,6 +57,11 @@ const Index = () => {
     if (isWaiter) setChannel("garcom");
   }, [isWaiter]);
 
+  // Kitchen users are redirected to their dedicated screen
+  useEffect(() => {
+    if (isKitchen) navigate("/kitchen", { replace: true });
+  }, [isKitchen, navigate]);
+
   const filteredProducts =
     selectedCategory === "all"
       ? products
