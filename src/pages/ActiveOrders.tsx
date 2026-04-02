@@ -108,6 +108,13 @@ export default function ActiveOrdersPage() {
     const idx = STATUS_FLOW.indexOf(order.status);
     if (idx === -1 || idx >= STATUS_FLOW.length - 1) return;
     const nextStatus = STATUS_FLOW[idx + 1];
+
+    // Block preparando→pronto for non-kitchen/non-admin users
+    if (order.status === "preparando" && nextStatus === "pronto") {
+      toast.error("Apenas a Cozinha pode marcar pedidos como Pronto");
+      return;
+    }
+
     const { error } = await supabase
       .from("orders")
       .update({ status: nextStatus as any })

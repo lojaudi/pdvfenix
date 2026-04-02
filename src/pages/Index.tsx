@@ -28,7 +28,7 @@ const channelLabels: Record<OrderChannel, string> = {
 const Index = () => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
-  const { isAdmin, isWaiter, isCashier } = useUserRole();
+  const { isAdmin, isWaiter, isCashier, isKitchen } = useUserRole();
   const { categories, products, loading } = useProducts();
   const [channel, setChannel] = useState<OrderChannel>("balcao");
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -56,6 +56,11 @@ const Index = () => {
   useEffect(() => {
     if (isWaiter) setChannel("garcom");
   }, [isWaiter]);
+
+  // Kitchen users are redirected to their dedicated screen
+  useEffect(() => {
+    if (isKitchen) navigate("/kitchen", { replace: true });
+  }, [isKitchen, navigate]);
 
   const filteredProducts =
     selectedCategory === "all"
