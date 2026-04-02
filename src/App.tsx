@@ -91,6 +91,7 @@ const App = () => (
                 <Route path="/menu" element={<MenuPage />} />
                 <Route path="/rastreio" element={<TrackingPage />} />
                 <Route path="/driver" element={<ErrorBoundary><DriverPage /></ErrorBoundary>} />
+                <Route path="/kitchen" element={<ProtectedRoute><KitchenPage /></ProtectedRoute>} />
                 <Route path="/manual" element={<ManualPage />} />
                 <Route path="/oque_sou" element={<InstitucionalPage />} />
                 <Route path="*" element={<NotFound />} />
