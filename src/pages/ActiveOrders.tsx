@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,11 +6,12 @@ import { useRealtimeOrdersWithSound } from "@/hooks/useRealtimeOrdersWithSound";
 import { useUserRole } from "@/hooks/useUserRole";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { ArrowLeft, Loader2, Clock, ChefHat, CheckCircle2, Truck, XCircle } from "lucide-react";
+import { ArrowLeft, Loader2, Clock, ChefHat, CheckCircle2, Truck, XCircle, Printer } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { ReceiptPrint, ReceiptData, useReceiptSettings, triggerPrint } from "@/components/pos/ReceiptPrint";
 
 type OrderStatus = "aberto" | "preparando" | "pronto" | "entregue" | "pago" | "cancelado";
 
@@ -43,11 +44,21 @@ const channelLabels: Record<string, string> = {
   balcao: "Balcão", garcom: "Garçom", delivery: "Delivery",
 };
 
+const paymentLabels: Record<string, string> = {
+  dinheiro: "Dinheiro",
+  credito: "Cartão de Crédito",
+  debito: "Cartão de Débito",
+  pix: "PIX",
+  pix_maquina: "PIX Máquina",
+};
+
 const QUERY_KEY = ["active-orders"];
 
 export default function ActiveOrdersPage() {
   const navigate = useNavigate();
   const { isAdmin, isKitchen } = useUserRole();
+  const { data: receiptSettings } = useReceiptSettings();
+  const [printData, setPrintData] = useState<ReceiptData | null>(null);
   useRealtimeOrdersWithSound(QUERY_KEY);
 
   const { data: orders, isLoading } = useQuery({
@@ -106,6 +117,58 @@ export default function ActiveOrdersPage() {
     }
   };
 
+  const handlePrintOrder = async (order: ActiveOrder) => {
+    // Fetch delivery details if it's a delivery order
+    let deliveryAddress = "";
+    let customerPhone = "";
+    let deliveryFee = 0;
+    let paymentOnDelivery = false;
+    let changeInfo = "";
+
+    if (order.channel === "delivery") {
+      const { data: dd } = await supabase
+        .from("delivery_details")
+        .select("*")
+        .eq("order_id", order.id)
+        .maybeSingle();
+      if (dd) {
+        deliveryAddress = dd.delivery_address || "";
+        customerPhone = dd.customer_phone || "";
+        deliveryFee = dd.delivery_fee || 0;
+        paymentOnDelivery = dd.payment_on_delivery;
+      }
+    }
+
+    // Calculate change if payment is cash and on delivery
+    if (order.payment_method === "dinheiro" && paymentOnDelivery) {
+      changeInfo = `Pagamento na entrega em DINHEIRO - Total: R$ ${(order.total + deliveryFee).toFixed(2)}`;
+    }
+
+    const receipt: ReceiptData = {
+      orderId: order.id,
+      channel: order.channel,
+      tableNumber: order.table_number,
+      customerName: order.customer_name,
+      waiterName: order.profiles?.name || null,
+      items: [
+        ...order.order_items.map(i => ({
+          product_name: i.product_name,
+          quantity: i.quantity,
+          unit_price: i.unit_price,
+        })),
+        ...(deliveryFee > 0 ? [{ product_name: "Taxa de Entrega", quantity: 1, unit_price: deliveryFee }] : []),
+      ],
+      total: order.total + deliveryFee,
+      paymentMethod: order.payment_method,
+      createdAt: order.created_at,
+      deliveryAddress,
+      customerPhone,
+    };
+
+    setPrintData(receipt);
+    setTimeout(() => triggerPrint(), 400);
+  };
+
   const advanceStatus = async (order: ActiveOrder) => {
     const idx = STATUS_FLOW.indexOf(order.status);
     if (idx === -1 || idx >= STATUS_FLOW.length - 1) return;
@@ -125,7 +188,19 @@ export default function ActiveOrdersPage() {
       toast.error("Erro ao atualizar status");
     } else {
       if (nextStatus === "entregue") await setTableAwaitingPayment(order);
-      toast.success(`Pedido movido para ${statusConfig[nextStatus].label}`);
+      
+      // When accepting an order (aberto → preparando), offer to print
+      if (order.status === "aberto" && nextStatus === "preparando") {
+        toast.success("Pedido aceito!", {
+          action: {
+            label: "🖨️ Imprimir",
+            onClick: () => handlePrintOrder(order),
+          },
+          duration: 8000,
+        });
+      } else {
+        toast.success(`Pedido movido para ${statusConfig[nextStatus].label}`);
+      }
 
       // When a delivery order becomes "pronto", notify drivers via WhatsApp
       if (nextStatus === "pronto" && order.channel === "delivery") {
@@ -160,6 +235,14 @@ export default function ActiveOrdersPage() {
       </div>
     );
   }
+
+  // Custom label for the advance button
+  const getAdvanceLabel = (order: ActiveOrder): string | null => {
+    const idx = STATUS_FLOW.indexOf(order.status);
+    if (idx === -1 || idx >= STATUS_FLOW.length - 1) return null;
+    if (order.status === "aberto") return "Aceitar Pedido";
+    return statusConfig[STATUS_FLOW[idx + 1]]?.label || null;
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -199,10 +282,8 @@ export default function ActiveOrdersPage() {
                     </div>
                   )}
                   {list.map((order) => {
-                    const canAdvance = STATUS_FLOW.indexOf(order.status) < STATUS_FLOW.length - 1;
-                    const nextLabel = canAdvance
-                      ? statusConfig[STATUS_FLOW[STATUS_FLOW.indexOf(order.status) + 1]]?.label
-                      : null;
+                    const advanceLabel = getAdvanceLabel(order);
+                    const canAdvance = advanceLabel !== null;
 
                     return (
                       <Card key={order.id} className={cn("border bg-card", cfg.bg)}>
@@ -230,6 +311,13 @@ export default function ActiveOrdersPage() {
                             <p className="text-xs text-muted-foreground truncate">👤 {order.customer_name}</p>
                           )}
 
+                          {/* Payment info for delivery */}
+                          {order.channel === "delivery" && order.payment_method && (
+                            <p className="text-xs text-muted-foreground">
+                              💳 {paymentLabels[order.payment_method] || order.payment_method}
+                            </p>
+                          )}
+
                           {/* Items */}
                           <div className="space-y-1">
                             {order.order_items.map((item) => (
@@ -251,9 +339,24 @@ export default function ActiveOrdersPage() {
                             {canAdvance && (
                               <button
                                 onClick={() => advanceStatus(order)}
-                                className="flex-1 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:opacity-90 transition-opacity"
+                                className={cn(
+                                  "flex-1 py-2 rounded-lg text-xs font-semibold hover:opacity-90 transition-opacity",
+                                  order.status === "aberto"
+                                    ? "bg-green-600 text-white"
+                                    : "bg-primary text-primary-foreground"
+                                )}
                               >
-                                → {nextLabel}
+                                {order.status === "aberto" ? "✓ " : "→ "}{advanceLabel}
+                              </button>
+                            )}
+                            {/* Print button for non-aberto orders */}
+                            {order.status !== "aberto" && (
+                              <button
+                                onClick={() => handlePrintOrder(order)}
+                                className="py-2 px-3 rounded-lg bg-secondary text-foreground text-xs font-semibold hover:bg-secondary/80 transition-colors"
+                                title="Imprimir comanda"
+                              >
+                                <Printer className="w-3.5 h-3.5" />
                               </button>
                             )}
                             {order.status !== "entregue" && (
@@ -275,6 +378,15 @@ export default function ActiveOrdersPage() {
           })}
         </div>
       </main>
+
+      {/* Hidden receipt for printing */}
+      {printData && (
+        <ReceiptPrint
+          data={printData}
+          headerText={receiptSettings?.receipt_header}
+          footerText={receiptSettings?.receipt_footer}
+        />
+      )}
     </div>
   );
 }
