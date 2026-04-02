@@ -50,9 +50,10 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 function AuthRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
+  const { isKitchen, loading: roleLoading } = useUserRole();
 
-  if (loading) return <PageLoader />;
-  if (user) return <Navigate to="/" replace />;
+  if (loading || (user && roleLoading)) return <PageLoader />;
+  if (user) return <Navigate to={isKitchen ? "/kitchen" : "/"} replace />;
   return <>{children}</>;
 }
 
