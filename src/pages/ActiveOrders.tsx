@@ -47,6 +47,7 @@ const QUERY_KEY = ["active-orders"];
 
 export default function ActiveOrdersPage() {
   const navigate = useNavigate();
+  const { isAdmin, isKitchen } = useUserRole();
   useRealtimeOrdersWithSound(QUERY_KEY);
 
   const { data: orders, isLoading } = useQuery({
