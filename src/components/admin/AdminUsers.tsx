@@ -26,6 +26,7 @@ const allRoles: { id: DisplayRole; label: string; icon: typeof Shield; descripti
   { id: "attendant", label: "Atendente (Balcão)", icon: Headphones, description: "PDV e pedidos balcão" },
   { id: "caixa", label: "Atendente (Caixa)", icon: Wallet, description: "Fechamento e relatórios" },
   { id: "waiter", label: "Garçom", icon: Users, description: "Mesas e pedidos garçom" },
+  { id: "kitchen", label: "Cozinha", icon: Headphones, description: "Preparo e marcação de pedidos prontos" },
   { id: "entregador", label: "Entregador", icon: Bike, description: "Entregas e rastreamento" },
 ];
 
