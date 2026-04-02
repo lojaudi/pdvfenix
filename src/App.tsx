@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserRole } from "@/hooks/useUserRole";
 import { Loader2 } from "lucide-react";
 import React, { Suspense, useEffect } from "react";
 import { useThemeSettings } from "@/hooks/useThemeSettings";
@@ -38,17 +39,32 @@ function PageLoader() {
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
+  const { role, isKitchen, loading: roleLoading } = useUserRole();
 
-  if (loading) return <PageLoader />;
+  if (loading || roleLoading) return <PageLoader />;
   if (!user) return <Navigate to="/auth" replace />;
+  // Kitchen-only users are redirected to /kitchen
+  if (isKitchen) return <Navigate to="/kitchen" replace />;
   return <>{children}</>;
 }
 
 function AuthRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
+  const { isKitchen, loading: roleLoading } = useUserRole();
 
-  if (loading) return <PageLoader />;
-  if (user) return <Navigate to="/" replace />;
+  if (loading || (user && roleLoading)) return <PageLoader />;
+  if (user) return <Navigate to={isKitchen ? "/kitchen" : "/"} replace />;
+  return <>{children}</>;
+}
+
+/** Route that only kitchen (and admin) users can access */
+function KitchenRoute({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
+  const { isKitchen, isAdmin, loading: roleLoading } = useUserRole();
+
+  if (loading || roleLoading) return <PageLoader />;
+  if (!user) return <Navigate to="/auth" replace />;
+  if (!isKitchen && !isAdmin) return <Navigate to="/" replace />;
   return <>{children}</>;
 }
 
@@ -91,7 +107,7 @@ const App = () => (
                 <Route path="/menu" element={<MenuPage />} />
                 <Route path="/rastreio" element={<TrackingPage />} />
                 <Route path="/driver" element={<ErrorBoundary><DriverPage /></ErrorBoundary>} />
-                <Route path="/kitchen" element={<ProtectedRoute><KitchenPage /></ProtectedRoute>} />
+                <Route path="/kitchen" element={<KitchenRoute><KitchenPage /></KitchenRoute>} />
                 <Route path="/manual" element={<ManualPage />} />
                 <Route path="/oque_sou" element={<InstitucionalPage />} />
                 <Route path="*" element={<NotFound />} />
