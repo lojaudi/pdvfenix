@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useRealtimeOrdersWithSound } from "@/hooks/useRealtimeOrdersWithSound";
+import { useKitchenRealtime } from "@/hooks/useKitchenRealtime";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { ArrowLeft, Loader2, ChefHat, CheckCircle2, LogOut } from "lucide-react";
@@ -35,7 +35,7 @@ export default function KitchenPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { signOut } = useAuth();
-  useRealtimeOrdersWithSound(QUERY_KEY);
+  useKitchenRealtime(QUERY_KEY);
 
   const { data: orders, isLoading } = useQuery({
     queryKey: QUERY_KEY,
