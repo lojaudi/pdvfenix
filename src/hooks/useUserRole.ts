@@ -24,5 +24,5 @@ export function useUserRole() {
     check();
   }, []);
 
-  return { role, isAdmin: role === "admin", isWaiter: role === "waiter", isCashier: role === "caixa", loading };
+  return { role, isAdmin: role === "admin", isWaiter: role === "waiter", isCashier: role === "caixa", isKitchen: role === "kitchen", loading };
 }
