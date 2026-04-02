@@ -35,7 +35,7 @@ export default function KitchenPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { signOut } = useAuth();
-  useRealtimeOrdersWithSound(QUERY_KEY);
+  useKitchenRealtime(QUERY_KEY);
 
   const { data: orders, isLoading } = useQuery({
     queryKey: QUERY_KEY,
