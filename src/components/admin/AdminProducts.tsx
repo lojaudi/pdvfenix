@@ -49,9 +49,20 @@ export function AdminProducts() {
     localStorage.setItem("admin-products-view", mode);
   };
 
-  const startEdit = (p: any) => {
+  const startEdit = async (p: any) => {
     setEditing(p.id);
     setCreating(false);
+    // Load existing variations
+    const { data: vars } = await supabase
+      .from("product_variations")
+      .select("*")
+      .eq("product_id", p.id)
+      .order("created_at");
+    const variations: VariationForm[] = (vars || []).map((v: any) => ({
+      id: v.id,
+      name: v.name,
+      price: String(v.price),
+    }));
     setForm({
       name: p.name,
       price: String(p.price),
@@ -59,6 +70,7 @@ export function AdminProducts() {
       category_id: p.category_id || "",
       in_stock: p.in_stock,
       image_url: p.image_url || "",
+      variations,
     });
   };
 
