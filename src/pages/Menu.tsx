@@ -278,7 +278,10 @@ export default function MenuPage() {
           notes ? `📝 *Obs:* ${notes}` : "",
           ``,
           `*── ITENS ──*`,
-          ...cart.map((i) => `• ${i.qty}x ${i.name} — ${formatCurrency(i.price * i.qty)}`),
+          ...cart.flatMap((i) => {
+            const line = `• ${i.qty}x ${i.name} — ${formatCurrency(i.price * i.qty)}`;
+            return i.notes ? [line, `  📝 _${i.notes}_`] : [line];
+          }),
           ``,
           `🚚 *Taxa de entrega:* ${formatCurrency(deliveryFee)}`,
           `💰 *TOTAL: ${formatCurrency(grandTotal)}*`,
