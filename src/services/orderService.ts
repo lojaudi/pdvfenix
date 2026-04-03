@@ -9,6 +9,7 @@ interface CartItem {
   quantity: number;
   variationName?: string;
   variationPrice?: number;
+  notes?: string;
 }
 
 export async function createOrder(
