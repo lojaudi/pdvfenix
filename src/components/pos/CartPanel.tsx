@@ -7,6 +7,8 @@ const formatCurrency = (value: number) =>
 export type CartItem = {
   product: DbProduct;
   quantity: number;
+  variationName?: string;
+  variationPrice?: number;
 };
 
 interface CartPanelProps {
