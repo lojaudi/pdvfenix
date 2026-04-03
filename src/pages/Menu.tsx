@@ -420,7 +420,8 @@ export default function MenuPage() {
         {/* Products */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {filteredProducts.map((product) => {
-            const inCart = cart.find((i) => i.id === product.id);
+            const hasVariations = productVariationCounts[product.id] > 0;
+            const inCart = !hasVariations ? cart.find((i) => i.id === product.id) : null;
             return (
               <div
                 key={product.id}
@@ -436,19 +437,21 @@ export default function MenuPage() {
                 )}
                 <div className="flex-1 min-w-0 p-4">
                   <h3 className="text-sm font-semibold text-foreground truncate">{product.name}</h3>
-                  <p className="text-primary font-bold text-sm mt-1">{formatCurrency(product.price)}</p>
+                  <p className="text-primary font-bold text-sm mt-1">
+                    {hasVariations && product.price === 0 ? "Ver opções" : formatCurrency(product.price)}
+                  </p>
                 </div>
                 {inCart ? (
                   <div className="flex items-center gap-2">
                     <button
-                      onClick={() => updateQty(product.id, -1)}
+                      onClick={() => updateQty(inCart.id, -1)}
                       className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center text-foreground"
                     >
                       <Minus className="w-3.5 h-3.5" />
                     </button>
                     <span className="text-sm font-bold text-foreground w-5 text-center">{inCart.qty}</span>
                     <button
-                      onClick={() => updateQty(product.id, 1)}
+                      onClick={() => updateQty(inCart.id, 1)}
                       className="w-8 h-8 rounded-lg bg-primary text-primary-foreground flex items-center justify-center"
                     >
                       <Plus className="w-3.5 h-3.5" />
@@ -456,7 +459,7 @@ export default function MenuPage() {
                   </div>
                 ) : (
                   <button
-                    onClick={() => addToCart(product)}
+                    onClick={() => handleProductClick(product)}
                     className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center hover:bg-primary/20 transition-colors"
                   >
                     <Plus className="w-5 h-5" />
