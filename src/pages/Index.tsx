@@ -285,6 +285,7 @@ const Index = () => {
           total={cart.total}
           onUpdateQuantity={cart.updateQuantity}
           onRemove={cart.removeItem}
+          onUpdateNotes={cart.updateNotes}
           onClear={cart.clearCart}
           onCheckout={handleCheckout}
           channelLabel={channelLabels[channel]}
