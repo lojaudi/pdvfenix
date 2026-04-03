@@ -70,6 +70,34 @@ const Index = () => {
     if (isKitchen) navigate("/kitchen", { replace: true });
   }, [isKitchen, navigate]);
 
+  // Load variation counts for all products
+  useEffect(() => {
+    if (products.length === 0) return;
+    supabase
+      .from("product_variations")
+      .select("product_id")
+      .then(({ data }) => {
+        const counts: Record<string, number> = {};
+        (data || []).forEach((v: any) => {
+          counts[v.product_id] = (counts[v.product_id] || 0) + 1;
+        });
+        setProductVariationCounts(counts);
+      });
+  }, [products]);
+
+  const handleAddProduct = useCallback((product: DbProduct) => {
+    if (productVariationCounts[product.id] > 0) {
+      setVariationProduct(product);
+    } else {
+      cart.addItem(product);
+    }
+  }, [productVariationCounts, cart]);
+
+  const handleVariationSelect = useCallback((product: DbProduct, variationName?: string, variationPrice?: number) => {
+    cart.addItem(product, variationName, variationPrice);
+    setVariationProduct(null);
+  }, [cart]);
+
   const filteredProducts =
     selectedCategory === "all"
       ? products
