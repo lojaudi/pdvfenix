@@ -5,7 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
-import { Loader2 } from "lucide-react";
+import { useSystemUnlocked } from "@/hooks/useSystemUnlocked";
+import { Loader2, Lock } from "lucide-react";
 import React, { Suspense, useEffect } from "react";
 import { useThemeSettings } from "@/hooks/useThemeSettings";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -39,12 +40,26 @@ function PageLoader() {
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
-  const { role, isKitchen, loading: roleLoading } = useUserRole();
+  const { role, isAdmin, isKitchen, loading: roleLoading } = useUserRole();
+  const { unlocked, loading: sysLoading } = useSystemUnlocked();
 
-  if (loading || roleLoading) return <PageLoader />;
+  if (loading || roleLoading || sysLoading) return <PageLoader />;
   if (!user) return <Navigate to="/auth" replace />;
-  // Kitchen-only users are redirected to /kitchen
   if (isKitchen) return <Navigate to="/kitchen" replace />;
+
+  // Non-admin users blocked when system is locked
+  if (!isAdmin && !unlocked) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-background">
+        <div className="text-center space-y-4">
+          <Lock className="w-16 h-16 text-muted-foreground mx-auto" />
+          <h1 className="text-xl font-bold text-foreground">Aguardando liberação do Admin</h1>
+          <p className="text-sm text-muted-foreground">O sistema ainda não foi liberado. Tente novamente mais tarde.</p>
+        </div>
+      </div>
+    );
+  }
+
   return <>{children}</>;
 }
 

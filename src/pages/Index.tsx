@@ -4,6 +4,7 @@ import { useProducts } from "@/hooks/useProducts";
 import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useSystemUnlocked } from "@/hooks/useSystemUnlocked";
 import { CategoryTabs } from "@/components/pos/CategoryTabs";
 import { ProductCard } from "@/components/pos/ProductCard";
 import { CartPanel } from "@/components/pos/CartPanel";
@@ -13,7 +14,7 @@ import { TableSelector } from "@/components/pos/TableSelector";
 import { TableOrdersSummary } from "@/components/pos/TableOrdersSummary";
 import { createOrder } from "@/services/orderService";
 import { toast } from "sonner";
-import { Store, LogOut, Loader2, Settings, BarChart3, ClipboardList, LayoutGrid, Wallet, Bike, Link2, Check } from "lucide-react";
+import { Store, LogOut, Loader2, Settings, BarChart3, ClipboardList, LayoutGrid, Wallet, Bike, Link2, Check, Unlock, Lock } from "lucide-react";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 
 type OrderChannel = "balcao" | "garcom" | "delivery";
@@ -29,6 +30,7 @@ const Index = () => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { isAdmin, isWaiter, isCashier, isKitchen } = useUserRole();
+  const { unlocked, toggle: toggleSystem } = useSystemUnlocked();
   const { categories, products, loading } = useProducts();
   const [channel, setChannel] = useState<OrderChannel>("balcao");
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -152,6 +154,23 @@ const Index = () => {
             <NavButton onClick={signOut} title="Sair" icon={LogOut} />
           </nav>
         </header>
+
+        {/* System unlock toggle (admin only) */}
+        {isAdmin && (
+          <div className="px-4 sm:px-6 pt-3">
+            <button
+              onClick={toggleSystem}
+              className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-semibold transition-all ${
+                unlocked
+                  ? "bg-green-500/15 text-green-600 border border-green-500/30 hover:bg-green-500/25"
+                  : "bg-destructive/15 text-destructive border border-destructive/30 hover:bg-destructive/25"
+              }`}
+            >
+              {unlocked ? <Unlock className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
+              {unlocked ? "Sistema Liberado — Clique para Bloquear" : "Liberar Sistema"}
+            </button>
+          </div>
+        )}
 
         {/* Catalog URL banner */}
         <div className="px-4 sm:px-6 pt-3">
