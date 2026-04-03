@@ -244,6 +244,7 @@ export default function MenuPage() {
         product_name: item.name,
         quantity: item.qty,
         unit_price: item.price,
+        notes: item.notes || null,
       }));
 
       const { error: itemsError } = await supabase.from("order_items").insert(orderItems);
