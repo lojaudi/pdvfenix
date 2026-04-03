@@ -9,6 +9,7 @@ export type CartItem = {
   quantity: number;
   variationName?: string;
   variationPrice?: number;
+  notes?: string;
 };
 
 interface CartPanelProps {
