@@ -20,6 +20,7 @@ interface CartItem {
   price: number;
   qty: number;
   variationName?: string;
+  notes?: string;
 }
 
 type Variation = {
