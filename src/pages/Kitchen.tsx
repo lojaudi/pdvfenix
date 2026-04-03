@@ -42,7 +42,7 @@ export default function KitchenPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("orders")
-        .select("id, channel, table_number, customer_name, status, total, created_at, order_items(id, product_name, quantity, unit_price)")
+        .select("id, channel, table_number, customer_name, status, total, created_at, order_items(id, product_name, quantity, unit_price, notes)")
         .in("status", ["preparando"])
         .order("created_at", { ascending: true });
       if (error) throw error;
