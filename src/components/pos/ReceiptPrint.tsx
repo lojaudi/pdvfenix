@@ -26,6 +26,10 @@ export interface ReceiptData {
   paidAt?: string;
   deliveryAddress?: string;
   customerPhone?: string;
+  deliveryFee?: number;
+  changeFor?: number;
+  changeAmount?: number;
+  deliveryNotes?: string;
 }
 
 export function useReceiptSettings() {
