@@ -30,6 +30,7 @@ export function CartPanel({
   total,
   onUpdateQuantity,
   onRemove,
+  onUpdateNotes,
   onClear,
   onCheckout,
   channelLabel,
