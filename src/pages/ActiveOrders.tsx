@@ -56,7 +56,7 @@ const QUERY_KEY = ["active-orders"];
 
 export default function ActiveOrdersPage() {
   const navigate = useNavigate();
-  const { isAdmin, isKitchen } = useUserRole();
+  const { isAdmin, isKitchen, isCashier } = useUserRole();
   const { data: receiptSettings } = useReceiptSettings();
   const [printData, setPrintData] = useState<ReceiptData | null>(null);
   useRealtimeOrdersWithSound(QUERY_KEY);
@@ -183,9 +183,9 @@ export default function ActiveOrdersPage() {
     const idx = STATUS_FLOW.indexOf(order.status);
     if (idx === -1 || idx >= STATUS_FLOW.length - 1) return false;
     const nextStatus = STATUS_FLOW[idx + 1];
-    // Only kitchen or admin can accept orders (aberto→preparando) or mark as ready (preparando→pronto)
+    // Kitchen, admin, or cashier can accept orders (aberto→preparando) or mark as ready (preparando→pronto)
     if ((order.status === "aberto" && nextStatus === "preparando") || (order.status === "preparando" && nextStatus === "pronto")) {
-      return isAdmin || isKitchen;
+      return isAdmin || isKitchen || isCashier;
     }
     return true;
   };
