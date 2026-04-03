@@ -17,6 +17,7 @@ interface CartPanelProps {
   total: number;
   onUpdateQuantity: (productId: string, qty: number) => void;
   onRemove: (productId: string) => void;
+  onUpdateNotes?: (itemKey: string, notes: string) => void;
   onClear: () => void;
   onCheckout: () => void;
   channelLabel: string;
