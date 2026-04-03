@@ -5,6 +5,7 @@ import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useSystemUnlocked } from "@/hooks/useSystemUnlocked";
+import { useCatalogUnlocked } from "@/hooks/useCatalogUnlocked";
 import { CategoryTabs } from "@/components/pos/CategoryTabs";
 import { ProductCard } from "@/components/pos/ProductCard";
 import { CartPanel } from "@/components/pos/CartPanel";
