@@ -436,6 +436,64 @@ function ProductFormFields({ form, setForm, categories }: { form: ProductForm; s
           </div>
         </div>
       )}
+
+      {/* Variações */}
+      <div className="space-y-2 border-t border-border pt-3">
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-semibold text-foreground">Variações</span>
+          <button
+            type="button"
+            onClick={() =>
+              setForm({
+                ...form,
+                variations: [...form.variations, { name: "", price: "" }],
+              })
+            }
+            className="flex items-center gap-1 px-2 py-1 rounded-lg bg-secondary text-foreground text-xs font-semibold hover:bg-accent transition-colors"
+          >
+            <Plus className="w-3 h-3" /> Adicionar
+          </button>
+        </div>
+        {form.variations.length === 0 && (
+          <p className="text-xs text-muted-foreground">Nenhuma variação adicionada.</p>
+        )}
+        {form.variations.map((v, idx) => (
+          <div key={idx} className="flex items-center gap-2">
+            <input
+              placeholder="Nome da variação (ex: Grande, Pequeno)"
+              value={v.name}
+              onChange={(e) => {
+                const updated = [...form.variations];
+                updated[idx] = { ...updated[idx], name: e.target.value };
+                setForm({ ...form, variations: updated });
+              }}
+              className="flex-1 px-3 py-2 rounded-lg bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+            />
+            <input
+              type="number"
+              step="0.01"
+              placeholder="Preço"
+              value={v.price}
+              onChange={(e) => {
+                const updated = [...form.variations];
+                updated[idx] = { ...updated[idx], price: e.target.value };
+                setForm({ ...form, variations: updated });
+              }}
+              className="w-28 px-3 py-2 rounded-lg bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+            />
+            <button
+              type="button"
+              onClick={() => {
+                const updated = form.variations.filter((_, i) => i !== idx);
+                setForm({ ...form, variations: updated });
+              }}
+              className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
