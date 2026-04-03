@@ -36,6 +36,12 @@ export function useCart() {
     );
   }, []);
 
+  const updateNotes = useCallback((itemKey: string, notes: string) => {
+    setItems((prev) =>
+      prev.map((i) => (getItemKey(i) === itemKey ? { ...i, notes } : i))
+    );
+  }, []);
+
   const clearCart = useCallback(() => setItems([]), []);
 
   const total = items.reduce((sum, i) => {
