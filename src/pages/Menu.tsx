@@ -2,12 +2,13 @@ import { useState, useMemo } from "react";
 import { normalizePhone } from "@/lib/phone";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ShoppingCart, Plus, Minus, Trash2, Send, MapPin, Phone, User, MessageSquare, Search, MapPinned } from "lucide-react";
+import { ShoppingCart, Plus, Minus, Trash2, Send, MapPin, Phone, User, MessageSquare, Search, MapPinned, Lock } from "lucide-react";
 import { NeonBoard } from "@/components/menu/NeonBoard";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { useCatalogUnlocked } from "@/hooks/useCatalogUnlocked";
 
 const formatCurrency = (v: number) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
@@ -28,6 +29,8 @@ interface DeliveryZone {
 
 export default function MenuPage() {
   const navigate = useNavigate();
+  const { unlocked: catalogUnlocked, loading: catalogLoading } = useCatalogUnlocked();
+
   const [cart, setCart] = useState<CartItem[]>([]);
   const [showCart, setShowCart] = useState(false);
   const [search, setSearch] = useState("");
@@ -242,6 +245,28 @@ export default function MenuPage() {
       setSending(false);
     }
   };
+
+  if (catalogLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-background">
+        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!catalogUnlocked) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-background px-4">
+        <div className="text-center space-y-4 max-w-md">
+          <Lock className="w-16 h-16 text-muted-foreground mx-auto" />
+          <h1 className="text-xl font-bold text-foreground">Catálogo Indisponível</h1>
+          <p className="text-sm text-muted-foreground">
+            Não estamos aceitando pedido nesse momento, favor retornar mais tarde.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">

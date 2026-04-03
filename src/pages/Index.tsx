@@ -5,6 +5,7 @@ import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useSystemUnlocked } from "@/hooks/useSystemUnlocked";
+import { useCatalogUnlocked } from "@/hooks/useCatalogUnlocked";
 import { CategoryTabs } from "@/components/pos/CategoryTabs";
 import { ProductCard } from "@/components/pos/ProductCard";
 import { CartPanel } from "@/components/pos/CartPanel";
@@ -31,6 +32,7 @@ const Index = () => {
   const { user, signOut } = useAuth();
   const { isAdmin, isWaiter, isCashier, isKitchen } = useUserRole();
   const { unlocked, toggle: toggleSystem } = useSystemUnlocked();
+  const { unlocked: catalogUnlocked, toggle: toggleCatalog } = useCatalogUnlocked();
   const { categories, products, loading } = useProducts();
   const [channel, setChannel] = useState<OrderChannel>("balcao");
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -168,6 +170,23 @@ const Index = () => {
             >
               {unlocked ? <Unlock className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
               {unlocked ? "Sistema Liberado — Clique para Bloquear" : "Liberar Sistema"}
+            </button>
+          </div>
+        )}
+
+        {/* Catalog unlock toggle (admin only) */}
+        {isAdmin && (
+          <div className="px-4 sm:px-6 pt-3">
+            <button
+              onClick={toggleCatalog}
+              className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-semibold transition-all ${
+                catalogUnlocked
+                  ? "bg-green-500/15 text-green-600 border border-green-500/30 hover:bg-green-500/25"
+                  : "bg-destructive/15 text-destructive border border-destructive/30 hover:bg-destructive/25"
+              }`}
+            >
+              {catalogUnlocked ? <Unlock className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
+              {catalogUnlocked ? "Catálogo/Deliveries Liberado — Clique para Bloquear" : "Liberar Catálogo/Deliveries"}
             </button>
           </div>
         )}
