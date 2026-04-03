@@ -2,11 +2,13 @@ import { useState, useMemo } from "react";
 import { normalizePhone } from "@/lib/phone";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ShoppingCart, Plus, Minus, Trash2, Send, MapPin, Phone, User, MessageSquare, Search, MapPinned } from "lucide-react";
+import { ShoppingCart, Plus, Minus, Trash2, Send, MapPin, Phone, User, MessageSquare, Search, MapPinned, Lock } from "lucide-react";
 import { NeonBoard } from "@/components/menu/NeonBoard";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
+import { useCatalogUnlocked } from "@/hooks/useCatalogUnlocked";
 import { toast } from "sonner";
 
 const formatCurrency = (v: number) =>
