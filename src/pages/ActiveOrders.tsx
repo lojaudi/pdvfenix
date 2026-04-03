@@ -25,7 +25,7 @@ interface ActiveOrder {
   total: number;
   created_at: string;
   user_id: string | null;
-  order_items: { id: string; product_name: string; quantity: number; unit_price: number }[];
+  order_items: { id: string; product_name: string; quantity: number; unit_price: number; notes: string | null }[];
   profiles: { name: string; email: string | null } | null;
 }
 
