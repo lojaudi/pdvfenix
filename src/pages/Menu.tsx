@@ -1,8 +1,8 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { normalizePhone } from "@/lib/phone";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ShoppingCart, Plus, Minus, Trash2, Send, MapPin, Phone, User, MessageSquare, Search, MapPinned, Lock } from "lucide-react";
+import { ShoppingCart, Plus, Minus, Trash2, Send, MapPin, Phone, User, MessageSquare, Search, MapPinned, Lock, X } from "lucide-react";
 import { NeonBoard } from "@/components/menu/NeonBoard";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
@@ -15,10 +15,18 @@ const formatCurrency = (v: number) =>
 
 interface CartItem {
   id: string;
+  productId: string;
   name: string;
   price: number;
   qty: number;
+  variationName?: string;
 }
+
+type Variation = {
+  id: string;
+  name: string;
+  price: number;
+};
 
 interface DeliveryZone {
   id: string;
@@ -119,13 +127,58 @@ export default function MenuPage() {
   const deliveryFee = zones?.find((z) => z.id === selectedZone)?.fee_value || 0;
   const grandTotal = cartTotal + deliveryFee;
 
-  const addToCart = (product: { id: string; name: string; price: number }) => {
+  const [variationProduct, setVariationProduct] = useState<any | null>(null);
+  const [variationsList, setVariationsList] = useState<Variation[]>([]);
+  const [variationsLoading, setVariationsLoading] = useState(false);
+  const [productVariationCounts, setProductVariationCounts] = useState<Record<string, number>>({});
+
+  // Load variation counts
+  useEffect(() => {
+    if (!products || products.length === 0) return;
+    supabase
+      .from("product_variations")
+      .select("product_id")
+      .then(({ data }) => {
+        const counts: Record<string, number> = {};
+        (data || []).forEach((v: any) => {
+          counts[v.product_id] = (counts[v.product_id] || 0) + 1;
+        });
+        setProductVariationCounts(counts);
+      });
+  }, [products]);
+
+  const openVariationPicker = (product: any) => {
+    setVariationProduct(product);
+    setVariationsLoading(true);
+    supabase
+      .from("product_variations")
+      .select("*")
+      .eq("product_id", product.id)
+      .order("created_at")
+      .then(({ data }) => {
+        setVariationsList((data as Variation[]) || []);
+        setVariationsLoading(false);
+      });
+  };
+
+  const handleProductClick = (product: any) => {
+    if (productVariationCounts[product.id] > 0) {
+      openVariationPicker(product);
+    } else {
+      addToCart(product);
+    }
+  };
+
+  const addToCart = (product: { id: string; name: string; price: number }, variationName?: string, variationPrice?: number) => {
+    const cartKey = variationName ? `${product.id}_${variationName}` : product.id;
+    const displayName = variationName ? `${product.name} (${variationName})` : product.name;
+    const finalPrice = variationPrice ?? product.price;
     setCart((prev) => {
-      const existing = prev.find((i) => i.id === product.id);
-      if (existing) return prev.map((i) => (i.id === product.id ? { ...i, qty: i.qty + 1 } : i));
-      return [...prev, { id: product.id, name: product.name, price: product.price, qty: 1 }];
+      const existing = prev.find((i) => i.id === cartKey);
+      if (existing) return prev.map((i) => (i.id === cartKey ? { ...i, qty: i.qty + 1 } : i));
+      return [...prev, { id: cartKey, productId: product.id, name: displayName, price: finalPrice, qty: 1, variationName }];
     });
-    toast.success(`${product.name} adicionado!`, { duration: 1500 });
+    toast.success(`${displayName} adicionado!`, { duration: 1500 });
   };
 
   const updateQty = (id: string, delta: number) => {
@@ -135,6 +188,13 @@ export default function MenuPage() {
   };
 
   const removeItem = (id: string) => setCart((prev) => prev.filter((i) => i.id !== id));
+
+  const handleVariationSelect = (variationName?: string, variationPrice?: number) => {
+    if (variationProduct) {
+      addToCart(variationProduct, variationName, variationPrice);
+      setVariationProduct(null);
+    }
+  };
 
   const [sending, setSending] = useState(false);
 
@@ -179,7 +239,7 @@ export default function MenuPage() {
       // 2. Create order items
       const orderItems = cart.map((item) => ({
         order_id: order.id,
-        product_id: item.id,
+        product_id: item.productId,
         product_name: item.name,
         quantity: item.qty,
         unit_price: item.price,
@@ -360,7 +420,8 @@ export default function MenuPage() {
         {/* Products */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {filteredProducts.map((product) => {
-            const inCart = cart.find((i) => i.id === product.id);
+            const hasVariations = productVariationCounts[product.id] > 0;
+            const inCart = !hasVariations ? cart.find((i) => i.id === product.id) : null;
             return (
               <div
                 key={product.id}
@@ -376,19 +437,21 @@ export default function MenuPage() {
                 )}
                 <div className="flex-1 min-w-0 p-4">
                   <h3 className="text-sm font-semibold text-foreground truncate">{product.name}</h3>
-                  <p className="text-primary font-bold text-sm mt-1">{formatCurrency(product.price)}</p>
+                  <p className="text-primary font-bold text-sm mt-1">
+                    {hasVariations && product.price === 0 ? "Ver opções" : formatCurrency(product.price)}
+                  </p>
                 </div>
                 {inCart ? (
                   <div className="flex items-center gap-2">
                     <button
-                      onClick={() => updateQty(product.id, -1)}
+                      onClick={() => updateQty(inCart.id, -1)}
                       className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center text-foreground"
                     >
                       <Minus className="w-3.5 h-3.5" />
                     </button>
                     <span className="text-sm font-bold text-foreground w-5 text-center">{inCart.qty}</span>
                     <button
-                      onClick={() => updateQty(product.id, 1)}
+                      onClick={() => updateQty(inCart.id, 1)}
                       className="w-8 h-8 rounded-lg bg-primary text-primary-foreground flex items-center justify-center"
                     >
                       <Plus className="w-3.5 h-3.5" />
@@ -396,7 +459,7 @@ export default function MenuPage() {
                   </div>
                 ) : (
                   <button
-                    onClick={() => addToCart(product)}
+                    onClick={() => handleProductClick(product)}
                     className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center hover:bg-primary/20 transition-colors"
                   >
                     <Plus className="w-5 h-5" />
@@ -623,6 +686,51 @@ export default function MenuPage() {
                     <Send className="w-5 h-5" />
                     {sending ? "Enviando..." : "Enviar Pedido via WhatsApp"}
                   </button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Variation Picker Modal */}
+      {variationProduct && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4" onClick={() => setVariationProduct(null)}>
+          <div
+            className="bg-card border border-border rounded-2xl w-full max-w-sm shadow-2xl animate-scale-in"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between p-4 border-b border-border">
+              <h3 className="font-bold text-card-foreground">{variationProduct.name}</h3>
+              <button onClick={() => setVariationProduct(null)} className="p-1 rounded-lg hover:bg-secondary transition-colors">
+                <X className="w-5 h-5 text-muted-foreground" />
+              </button>
+            </div>
+            <div className="p-4 space-y-2">
+              <p className="text-sm text-muted-foreground mb-3">Selecione uma variação:</p>
+              {variationsLoading ? (
+                <p className="text-sm text-muted-foreground text-center py-4">Carregando...</p>
+              ) : (
+                <>
+                  {variationProduct.price > 0 && (
+                    <button
+                      onClick={() => handleVariationSelect()}
+                      className="w-full flex items-center justify-between p-3 rounded-xl border border-border hover:border-primary/50 hover:bg-primary/5 transition-all text-left"
+                    >
+                      <span className="font-medium text-card-foreground text-sm">Padrão</span>
+                      <span className="font-bold text-primary">{formatCurrency(variationProduct.price)}</span>
+                    </button>
+                  )}
+                  {variationsList.map((v) => (
+                    <button
+                      key={v.id}
+                      onClick={() => handleVariationSelect(v.name, v.price)}
+                      className="w-full flex items-center justify-between p-3 rounded-xl border border-border hover:border-primary/50 hover:bg-primary/5 transition-all text-left"
+                    >
+                      <span className="font-medium text-card-foreground text-sm">{v.name}</span>
+                      <span className="font-bold text-primary">{formatCurrency(v.price)}</span>
+                    </button>
+                  ))}
                 </>
               )}
             </div>
