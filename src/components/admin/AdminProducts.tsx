@@ -10,6 +10,12 @@ type ViewMode = "list" | "grid";
 const formatCurrency = (v: number) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
 
+export type VariationForm = {
+  id?: string;
+  name: string;
+  price: string;
+};
+
 type ProductForm = {
   name: string;
   price: string;
@@ -17,9 +23,10 @@ type ProductForm = {
   category_id: string;
   in_stock: boolean;
   image_url: string;
+  variations: VariationForm[];
 };
 
-const emptyForm: ProductForm = { name: "", price: "", stock_qty: "", category_id: "", in_stock: true, image_url: "" };
+const emptyForm: ProductForm = { name: "", price: "", stock_qty: "", category_id: "", in_stock: true, image_url: "", variations: [] };
 
 type ImageResult = {
   url: string;
