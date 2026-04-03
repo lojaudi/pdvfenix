@@ -32,6 +32,7 @@ const Index = () => {
   const { user, signOut } = useAuth();
   const { isAdmin, isWaiter, isCashier, isKitchen } = useUserRole();
   const { unlocked, toggle: toggleSystem } = useSystemUnlocked();
+  const { unlocked: catalogUnlocked, toggle: toggleCatalog } = useCatalogUnlocked();
   const { categories, products, loading } = useProducts();
   const [channel, setChannel] = useState<OrderChannel>("balcao");
   const [selectedCategory, setSelectedCategory] = useState("all");
