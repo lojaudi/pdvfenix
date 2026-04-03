@@ -184,8 +184,13 @@ export default function ActiveOrdersPage() {
     if (idx === -1 || idx >= STATUS_FLOW.length - 1) return false;
     const nextStatus = STATUS_FLOW[idx + 1];
     // Kitchen, admin, or cashier can accept orders (aberto→preparando) or mark as ready (preparando→pronto)
-    if ((order.status === "aberto" && nextStatus === "preparando") || (order.status === "preparando" && nextStatus === "pronto")) {
+    // Aceitar pedido (aberto→preparando): admin, cozinha ou caixa
+    if (order.status === "aberto" && nextStatus === "preparando") {
       return isAdmin || isKitchen || isCashier;
+    }
+    // Marcar como pronto (preparando→pronto): APENAS admin ou cozinha
+    if (order.status === "preparando" && nextStatus === "pronto") {
+      return isAdmin || isKitchen;
     }
     return true;
   };
