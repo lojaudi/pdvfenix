@@ -176,8 +176,8 @@ const Index = () => {
               <ChannelSelector selected={channel} onSelect={setChannel} hiddenChannels={isWaiter ? ["balcao", "delivery"] : []} />
             </div>
             <NavButton onClick={() => navigate("/orders")} title="Pedidos Ativos" icon={ClipboardList} />
-            <NavButton onClick={() => navigate("/deliveries")} title="Entregas" icon={Bike} />
-            <NavButton onClick={() => navigate("/tables")} title="Mesas" icon={LayoutGrid} />
+            {!isWaiter && <NavButton onClick={() => navigate("/deliveries")} title="Entregas" icon={Bike} />}
+            {!isWaiter && <NavButton onClick={() => navigate("/tables")} title="Mesas" icon={LayoutGrid} />}
             {(isAdmin || isCashier) && <NavButton onClick={() => navigate("/cashier")} title="Caixa" icon={Wallet} />}
             {isAdmin && (
               <>
