@@ -108,6 +108,17 @@ export function CartPanel({
                 >
                   <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
                 </button>
+                {onUpdateNotes && (
+                  <div className="w-full mt-2">
+                    <input
+                      type="text"
+                      placeholder="Observação (ex: sem cebola)"
+                      value={item.notes || ""}
+                      onChange={(e) => onUpdateNotes(itemKey, e.target.value)}
+                      className="w-full text-xs bg-background border border-border rounded-md px-2 py-1.5 text-foreground placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-ring"
+                    />
+                  </div>
+                )}
               </li>
               );
             })}

@@ -50,5 +50,5 @@ export function useCart() {
   }, 0);
   const itemCount = items.reduce((sum, i) => sum + i.quantity, 0);
 
-  return { items, addItem, removeItem, updateQuantity, clearCart, total, itemCount };
+  return { items, addItem, removeItem, updateQuantity, updateNotes, clearCart, total, itemCount };
 }
