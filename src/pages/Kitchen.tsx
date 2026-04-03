@@ -20,7 +20,7 @@ interface KitchenOrder {
   status: string;
   total: number;
   created_at: string;
-  order_items: { id: string; product_name: string; quantity: number; unit_price: number }[];
+  order_items: { id: string; product_name: string; quantity: number; unit_price: number; notes: string | null }[];
 }
 
 const channelLabels: Record<string, string> = {
