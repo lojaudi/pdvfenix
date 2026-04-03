@@ -83,10 +83,12 @@ export function AdminProducts() {
   const cancel = () => { setEditing(null); setCreating(false); setForm(emptyForm); };
 
   const handleSave = async () => {
-    if (!form.name || !form.price) { toast.error("Preencha nome e preço"); return; }
+    const hasVariations = form.variations.filter(v => v.name.trim()).length > 0;
+    if (!form.name) { toast.error("Preencha o nome do produto"); return; }
+    if (!hasVariations && !form.price) { toast.error("Preencha o preço ou adicione variações"); return; }
     const payload = {
       name: form.name,
-      price: parseFloat(form.price),
+      price: hasVariations && !form.price ? 0 : parseFloat(form.price),
       stock_qty: parseInt(form.stock_qty) || 0,
       category_id: form.category_id || null,
       in_stock: form.in_stock,
