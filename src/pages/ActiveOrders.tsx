@@ -118,12 +118,12 @@ export default function ActiveOrdersPage() {
   };
 
   const handlePrintOrder = async (order: ActiveOrder) => {
-    // Fetch delivery details if it's a delivery order
     let deliveryAddress = "";
     let customerPhone = "";
     let deliveryFee = 0;
-    let paymentOnDelivery = false;
-    let changeInfo = "";
+    let changeFor = 0;
+    let changeAmount = 0;
+    let deliveryNotes = "";
 
     if (order.channel === "delivery") {
       const { data: dd } = await supabase
@@ -135,13 +135,19 @@ export default function ActiveOrdersPage() {
         deliveryAddress = dd.delivery_address || "";
         customerPhone = dd.customer_phone || "";
         deliveryFee = dd.delivery_fee || 0;
-        paymentOnDelivery = dd.payment_on_delivery;
-      }
-    }
 
-    // Calculate change if payment is cash and on delivery
-    if (order.payment_method === "dinheiro" && paymentOnDelivery) {
-      changeInfo = `Pagamento na entrega em DINHEIRO - Total: R$ ${(order.total + deliveryFee).toFixed(2)}`;
+        // Parse change info from notes
+        const notesStr = dd.notes || "";
+        const changeMatch = notesStr.match(/Troco para R\$\s*([\d.,]+)/);
+        if (changeMatch) {
+          changeFor = parseFloat(changeMatch[1].replace(",", ".")) || 0;
+          changeAmount = changeFor - (order.total + deliveryFee);
+          if (changeAmount < 0) changeAmount = 0;
+        }
+        // Extract user notes (remove change info)
+        const userNotes = notesStr.replace(/\|?\s*Troco para R\$\s*[\d.,]+/g, "").replace(/\|?\s*Sem troco \(valor exato\)/g, "").trim().replace(/^\||\|$/g, "").trim();
+        if (userNotes) deliveryNotes = userNotes;
+      }
     }
 
     const receipt: ReceiptData = {
@@ -163,6 +169,10 @@ export default function ActiveOrdersPage() {
       createdAt: order.created_at,
       deliveryAddress,
       customerPhone,
+      deliveryFee,
+      changeFor: changeFor > 0 ? changeFor : undefined,
+      changeAmount: changeAmount > 0 ? changeAmount : undefined,
+      deliveryNotes: deliveryNotes || undefined,
     };
 
     setPrintData(receipt);

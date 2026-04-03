@@ -26,6 +26,10 @@ export interface ReceiptData {
   paidAt?: string;
   deliveryAddress?: string;
   customerPhone?: string;
+  deliveryFee?: number;
+  changeFor?: number;
+  changeAmount?: number;
+  deliveryNotes?: string;
 }
 
 export function useReceiptSettings() {
@@ -153,6 +157,25 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, { data: ReceiptData; head
         {data.paymentMethod && (
           <div style={{ fontSize: 11, marginTop: 4 }}>
             <strong>Pagamento:</strong> {paymentLabels[data.paymentMethod] || data.paymentMethod}
+          </div>
+        )}
+
+        {/* Change info */}
+        {data.changeFor != null && data.changeFor > 0 && (
+          <div style={{ fontSize: 11, marginTop: 2 }}>
+            <strong>Troco para:</strong> {formatCurrency(data.changeFor)}
+          </div>
+        )}
+        {data.changeAmount != null && data.changeAmount > 0 && (
+          <div style={{ fontSize: 13, fontWeight: "bold", marginTop: 2 }}>
+            TROCO: {formatCurrency(data.changeAmount)}
+          </div>
+        )}
+
+        {/* Delivery notes */}
+        {data.deliveryNotes && (
+          <div style={{ fontSize: 11, marginTop: 4 }}>
+            <strong>Obs:</strong> {data.deliveryNotes}
           </div>
         )}
 

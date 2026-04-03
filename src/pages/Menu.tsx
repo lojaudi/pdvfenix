@@ -534,7 +534,7 @@ export default function MenuPage() {
 
                      {/* Change for cash */}
                      {paymentOnDelivery && deliveryPaymentMethod === "dinheiro" && (
-                       <div>
+                       <div className="space-y-2">
                          <label className="text-xs text-muted-foreground mb-1 block">Precisa de troco? Para quanto?</label>
                          <Input
                            placeholder="Ex: 50 (deixe vazio se não precisa)"
@@ -543,6 +543,21 @@ export default function MenuPage() {
                            className="bg-background border-border"
                            inputMode="decimal"
                          />
+                         {(() => {
+                           const changeForNum = parseFloat(changeFor.replace(",", ".")) || 0;
+                           if (changeForNum > 0) {
+                             const changeAmount = changeForNum - grandTotal;
+                             return (
+                               <div className={`text-center p-2.5 rounded-lg ${changeAmount >= 0 ? "bg-primary/10" : "bg-destructive/10"}`}>
+                                 <p className="text-[10px] text-muted-foreground">Troco calculado</p>
+                                 <p className={`text-lg font-extrabold ${changeAmount >= 0 ? "text-primary" : "text-destructive"}`}>
+                                   {changeAmount >= 0 ? formatCurrency(changeAmount) : "Valor insuficiente"}
+                                 </p>
+                               </div>
+                             );
+                           }
+                           return null;
+                         })()}
                        </div>
                      )}
 
