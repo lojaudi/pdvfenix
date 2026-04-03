@@ -93,15 +93,38 @@ export function AdminProducts() {
       image_url: form.image_url || null,
     };
 
+    let productId: string | null = null;
+
     if (creating) {
-      const { error } = await supabase.from("products").insert(payload);
+      const { data, error } = await supabase.from("products").insert(payload).select("id").single();
       if (error) { toast.error(error.message); return; }
+      productId = data.id;
       toast.success("Produto criado!");
     } else if (editing) {
       const { error } = await supabase.from("products").update(payload).eq("id", editing);
       if (error) { toast.error(error.message); return; }
+      productId = editing;
       toast.success("Produto atualizado!");
     }
+
+    // Save variations
+    if (productId) {
+      // Delete existing variations
+      await supabase.from("product_variations").delete().eq("product_id", productId);
+      // Insert current variations
+      const newVars = form.variations
+        .filter((v) => v.name.trim())
+        .map((v) => ({
+          product_id: productId!,
+          name: v.name.trim(),
+          price: parseFloat(v.price) || 0,
+        }));
+      if (newVars.length > 0) {
+        const { error: varError } = await supabase.from("product_variations").insert(newVars);
+        if (varError) toast.error("Erro ao salvar variações: " + varError.message);
+      }
+    }
+
     cancel();
     refetch();
   };
