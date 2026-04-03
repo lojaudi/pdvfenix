@@ -66,7 +66,7 @@ export default function ActiveOrdersPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("orders")
-        .select("*, order_items(id, product_name, quantity, unit_price)")
+        .select("*, order_items(id, product_name, quantity, unit_price, notes)")
         .in("status", ["aberto", "preparando", "pronto", "entregue"])
         .order("created_at", { ascending: true });
       if (error) throw error;
