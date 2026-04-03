@@ -1,8 +1,8 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { normalizePhone } from "@/lib/phone";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ShoppingCart, Plus, Minus, Trash2, Send, MapPin, Phone, User, MessageSquare, Search, MapPinned, Lock } from "lucide-react";
+import { ShoppingCart, Plus, Minus, Trash2, Send, MapPin, Phone, User, MessageSquare, Search, MapPinned, Lock, X } from "lucide-react";
 import { NeonBoard } from "@/components/menu/NeonBoard";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
