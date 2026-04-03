@@ -245,36 +245,62 @@ const Index = () => {
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 scrollbar-thin">
-          {channel === "garcom" && (
+          {/* Waiter: show full-screen table selector when no table is selected */}
+          {isWaiter && channel === "garcom" && !selectedTable ? (
+            <div className="flex flex-col items-center justify-center h-full gap-6">
+              <div className="text-center space-y-2">
+                <LayoutGrid className="w-10 h-10 text-primary mx-auto" />
+                <h2 className="text-lg font-bold text-foreground">Selecione uma Mesa</h2>
+                <p className="text-sm text-muted-foreground">Toque na mesa para iniciar o pedido</p>
+              </div>
+              <div className="w-full max-w-lg">
+                <TableSelector onSelect={setSelectedTable} selectedTable={selectedTable} currentUserId={user?.id} />
+              </div>
+            </div>
+          ) : (
             <>
-              <TableSelector onSelect={setSelectedTable} selectedTable={selectedTable} currentUserId={user?.id} />
-              {selectedTable && <TableOrdersSummary tableNumber={selectedTable} />}
+              {channel === "garcom" && (
+                <>
+                  <div className="flex items-center gap-2">
+                    <TableSelector onSelect={setSelectedTable} selectedTable={selectedTable} currentUserId={user?.id} />
+                    {isWaiter && selectedTable && (
+                      <button
+                        onClick={() => { setSelectedTable(null); cart.clearCart(); }}
+                        className="flex-shrink-0 px-3 py-2 rounded-lg bg-secondary text-muted-foreground hover:text-foreground text-xs font-semibold border border-border hover:bg-secondary/80 transition-colors"
+                      >
+                        Trocar Mesa
+                      </button>
+                    )}
+                  </div>
+                  {selectedTable && <TableOrdersSummary tableNumber={selectedTable} />}
+                </>
+              )}
+
+              {channel === "delivery" && (
+                <div className="mb-4">
+                  <label htmlFor="customer-name" className="text-sm font-semibold text-muted-foreground block mb-2">
+                    Nome do Cliente
+                  </label>
+                  <input
+                    id="customer-name"
+                    type="text"
+                    placeholder="Digite o nome do cliente..."
+                    value={customerName}
+                    onChange={(e) => setCustomerName(e.target.value)}
+                    className="w-full max-w-sm px-4 py-3 rounded-lg bg-secondary border border-border text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  />
+                </div>
+              )}
+
+              <CategoryTabs categories={categories} selected={selectedCategory} onSelect={setSelectedCategory} />
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3">
+                {filteredProducts.map((product) => (
+                  <ProductCard key={product.id} product={product} onAdd={handleAddProduct} />
+                ))}
+              </div>
             </>
           )}
-
-          {channel === "delivery" && (
-            <div className="mb-4">
-              <label htmlFor="customer-name" className="text-sm font-semibold text-muted-foreground block mb-2">
-                Nome do Cliente
-              </label>
-              <input
-                id="customer-name"
-                type="text"
-                placeholder="Digite o nome do cliente..."
-                value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
-                className="w-full max-w-sm px-4 py-3 rounded-lg bg-secondary border border-border text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-              />
-            </div>
-          )}
-
-          <CategoryTabs categories={categories} selected={selectedCategory} onSelect={setSelectedCategory} />
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3">
-            {filteredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} onAdd={handleAddProduct} />
-            ))}
-          </div>
         </div>
       </div>
 
