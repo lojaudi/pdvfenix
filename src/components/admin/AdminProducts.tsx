@@ -10,6 +10,12 @@ type ViewMode = "list" | "grid";
 const formatCurrency = (v: number) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
 
+export type VariationForm = {
+  id?: string;
+  name: string;
+  price: string;
+};
+
 type ProductForm = {
   name: string;
   price: string;
@@ -17,9 +23,10 @@ type ProductForm = {
   category_id: string;
   in_stock: boolean;
   image_url: string;
+  variations: VariationForm[];
 };
 
-const emptyForm: ProductForm = { name: "", price: "", stock_qty: "", category_id: "", in_stock: true, image_url: "" };
+const emptyForm: ProductForm = { name: "", price: "", stock_qty: "", category_id: "", in_stock: true, image_url: "", variations: [] };
 
 type ImageResult = {
   url: string;
@@ -42,9 +49,20 @@ export function AdminProducts() {
     localStorage.setItem("admin-products-view", mode);
   };
 
-  const startEdit = (p: any) => {
+  const startEdit = async (p: any) => {
     setEditing(p.id);
     setCreating(false);
+    // Load existing variations
+    const { data: vars } = await supabase
+      .from("product_variations")
+      .select("*")
+      .eq("product_id", p.id)
+      .order("created_at");
+    const variations: VariationForm[] = (vars || []).map((v: any) => ({
+      id: v.id,
+      name: v.name,
+      price: String(v.price),
+    }));
     setForm({
       name: p.name,
       price: String(p.price),
@@ -52,6 +70,7 @@ export function AdminProducts() {
       category_id: p.category_id || "",
       in_stock: p.in_stock,
       image_url: p.image_url || "",
+      variations,
     });
   };
 
@@ -74,15 +93,38 @@ export function AdminProducts() {
       image_url: form.image_url || null,
     };
 
+    let productId: string | null = null;
+
     if (creating) {
-      const { error } = await supabase.from("products").insert(payload);
+      const { data, error } = await supabase.from("products").insert(payload).select("id").single();
       if (error) { toast.error(error.message); return; }
+      productId = data.id;
       toast.success("Produto criado!");
     } else if (editing) {
       const { error } = await supabase.from("products").update(payload).eq("id", editing);
       if (error) { toast.error(error.message); return; }
+      productId = editing;
       toast.success("Produto atualizado!");
     }
+
+    // Save variations
+    if (productId) {
+      // Delete existing variations
+      await supabase.from("product_variations").delete().eq("product_id", productId);
+      // Insert current variations
+      const newVars = form.variations
+        .filter((v) => v.name.trim())
+        .map((v) => ({
+          product_id: productId!,
+          name: v.name.trim(),
+          price: parseFloat(v.price) || 0,
+        }));
+      if (newVars.length > 0) {
+        const { error: varError } = await supabase.from("product_variations").insert(newVars);
+        if (varError) toast.error("Erro ao salvar variações: " + varError.message);
+      }
+    }
+
     cancel();
     refetch();
   };
@@ -394,6 +436,64 @@ function ProductFormFields({ form, setForm, categories }: { form: ProductForm; s
           </div>
         </div>
       )}
+
+      {/* Variações */}
+      <div className="space-y-2 border-t border-border pt-3">
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-semibold text-foreground">Variações</span>
+          <button
+            type="button"
+            onClick={() =>
+              setForm({
+                ...form,
+                variations: [...form.variations, { name: "", price: "" }],
+              })
+            }
+            className="flex items-center gap-1 px-2 py-1 rounded-lg bg-secondary text-foreground text-xs font-semibold hover:bg-accent transition-colors"
+          >
+            <Plus className="w-3 h-3" /> Adicionar
+          </button>
+        </div>
+        {form.variations.length === 0 && (
+          <p className="text-xs text-muted-foreground">Nenhuma variação adicionada.</p>
+        )}
+        {form.variations.map((v, idx) => (
+          <div key={idx} className="flex items-center gap-2">
+            <input
+              placeholder="Nome da variação (ex: Grande, Pequeno)"
+              value={v.name}
+              onChange={(e) => {
+                const updated = [...form.variations];
+                updated[idx] = { ...updated[idx], name: e.target.value };
+                setForm({ ...form, variations: updated });
+              }}
+              className="flex-1 px-3 py-2 rounded-lg bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+            />
+            <input
+              type="number"
+              step="0.01"
+              placeholder="Preço"
+              value={v.price}
+              onChange={(e) => {
+                const updated = [...form.variations];
+                updated[idx] = { ...updated[idx], price: e.target.value };
+                setForm({ ...form, variations: updated });
+              }}
+              className="w-28 px-3 py-2 rounded-lg bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+            />
+            <button
+              type="button"
+              onClick={() => {
+                const updated = form.variations.filter((_, i) => i !== idx);
+                setForm({ ...form, variations: updated });
+              }}
+              className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
