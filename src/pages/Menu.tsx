@@ -15,10 +15,18 @@ const formatCurrency = (v: number) =>
 
 interface CartItem {
   id: string;
+  productId: string;
   name: string;
   price: number;
   qty: number;
+  variationName?: string;
 }
+
+type Variation = {
+  id: string;
+  name: string;
+  price: number;
+};
 
 interface DeliveryZone {
   id: string;
