@@ -239,7 +239,7 @@ export default function MenuPage() {
       // 2. Create order items
       const orderItems = cart.map((item) => ({
         order_id: order.id,
-        product_id: item.id,
+        product_id: item.productId,
         product_name: item.name,
         quantity: item.qty,
         unit_price: item.price,
