@@ -179,14 +179,24 @@ export default function ActiveOrdersPage() {
     setTimeout(() => triggerPrint(), 400);
   };
 
+  const canUserAdvance = (order: ActiveOrder): boolean => {
+    const idx = STATUS_FLOW.indexOf(order.status);
+    if (idx === -1 || idx >= STATUS_FLOW.length - 1) return false;
+    const nextStatus = STATUS_FLOW[idx + 1];
+    // Only kitchen or admin can accept orders (aberto→preparando) or mark as ready (preparando→pronto)
+    if ((order.status === "aberto" && nextStatus === "preparando") || (order.status === "preparando" && nextStatus === "pronto")) {
+      return isAdmin || isKitchen;
+    }
+    return true;
+  };
+
   const advanceStatus = async (order: ActiveOrder) => {
     const idx = STATUS_FLOW.indexOf(order.status);
     if (idx === -1 || idx >= STATUS_FLOW.length - 1) return;
     const nextStatus = STATUS_FLOW[idx + 1];
 
-    // Block preparando→pronto for non-kitchen/non-admin users
-    if (order.status === "preparando" && nextStatus === "pronto" && !isAdmin && !isKitchen) {
-      toast.error("Apenas a Cozinha ou Admin pode marcar pedidos como Pronto");
+    if (!canUserAdvance(order)) {
+      toast.error("Apenas a Cozinha ou Admin pode realizar esta ação");
       return;
     }
 
