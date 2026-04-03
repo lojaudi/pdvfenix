@@ -247,14 +247,14 @@ const Index = () => {
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 scrollbar-thin">
           {/* Waiter: show full-screen table selector when no table is selected */}
           {isWaiter && channel === "garcom" && !selectedTable ? (
-            <div className="flex flex-col items-center justify-center h-full gap-6">
+            <div className="flex flex-col items-center justify-center h-full gap-6 py-4">
               <div className="text-center space-y-2">
-                <LayoutGrid className="w-10 h-10 text-primary mx-auto" />
-                <h2 className="text-lg font-bold text-foreground">Selecione uma Mesa</h2>
+                <LayoutGrid className="w-12 h-12 text-primary mx-auto" />
+                <h2 className="text-xl font-bold text-foreground">Selecione uma Mesa</h2>
                 <p className="text-sm text-muted-foreground">Toque na mesa para iniciar o pedido</p>
               </div>
-              <div className="w-full max-w-lg">
-                <TableSelector onSelect={setSelectedTable} selectedTable={selectedTable} currentUserId={user?.id} />
+              <div className="w-full max-w-2xl">
+                <TableSelector onSelect={setSelectedTable} selectedTable={selectedTable} currentUserId={user?.id} fullScreen />
               </div>
             </div>
           ) : (
