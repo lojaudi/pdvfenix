@@ -20,7 +20,7 @@ interface KitchenOrder {
   status: string;
   total: number;
   created_at: string;
-  order_items: { id: string; product_name: string; quantity: number; unit_price: number }[];
+  order_items: { id: string; product_name: string; quantity: number; unit_price: number; notes: string | null }[];
 }
 
 const channelLabels: Record<string, string> = {
@@ -42,7 +42,7 @@ export default function KitchenPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("orders")
-        .select("id, channel, table_number, customer_name, status, total, created_at, order_items(id, product_name, quantity, unit_price)")
+        .select("id, channel, table_number, customer_name, status, total, created_at, order_items(id, product_name, quantity, unit_price, notes)")
         .in("status", ["preparando"])
         .order("created_at", { ascending: true });
       if (error) throw error;
@@ -147,9 +147,14 @@ export default function KitchenPage() {
                   {/* Items - Large and clear for kitchen */}
                   <div className="space-y-2">
                     {order.order_items.map((item) => (
-                      <div key={item.id} className="flex items-center gap-2 text-sm">
-                        <span className="font-bold text-primary text-base min-w-[2rem]">{item.quantity}x</span>
-                        <span className="text-foreground font-medium">{item.product_name}</span>
+                      <div key={item.id} className="flex flex-col gap-0.5">
+                        <div className="flex items-center gap-2 text-sm">
+                          <span className="font-bold text-primary text-base min-w-[2rem]">{item.quantity}x</span>
+                          <span className="text-foreground font-medium">{item.product_name}</span>
+                        </div>
+                        {item.notes && (
+                          <span className="text-xs text-yellow-400 ml-[2.5rem]">📝 {item.notes}</span>
+                        )}
                       </div>
                     ))}
                   </div>

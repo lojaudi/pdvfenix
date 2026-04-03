@@ -9,6 +9,7 @@ interface CartItem {
   quantity: number;
   variationName?: string;
   variationPrice?: number;
+  notes?: string;
 }
 
 export async function createOrder(
@@ -47,6 +48,7 @@ export async function createOrder(
       : item.product.name,
     quantity: item.quantity,
     unit_price: item.variationPrice ?? item.product.price,
+    notes: item.notes || null,
   }));
 
   const { error: itemsError } = await supabase

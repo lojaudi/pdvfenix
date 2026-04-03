@@ -25,7 +25,7 @@ interface ActiveOrder {
   total: number;
   created_at: string;
   user_id: string | null;
-  order_items: { id: string; product_name: string; quantity: number; unit_price: number }[];
+  order_items: { id: string; product_name: string; quantity: number; unit_price: number; notes: string | null }[];
   profiles: { name: string; email: string | null } | null;
 }
 
@@ -66,7 +66,7 @@ export default function ActiveOrdersPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("orders")
-        .select("*, order_items(id, product_name, quantity, unit_price)")
+        .select("*, order_items(id, product_name, quantity, unit_price, notes)")
         .in("status", ["aberto", "preparando", "pronto", "entregue"])
         .order("created_at", { ascending: true });
       if (error) throw error;
@@ -341,9 +341,14 @@ export default function ActiveOrdersPage() {
                           {/* Items */}
                           <div className="space-y-1">
                             {order.order_items.map((item) => (
-                              <div key={item.id} className="flex justify-between text-xs">
-                                <span className="text-foreground">{item.quantity}x {item.product_name}</span>
-                                <span className="text-muted-foreground">R$ {(item.quantity * item.unit_price).toFixed(2)}</span>
+                              <div key={item.id} className="space-y-0.5">
+                                <div className="flex justify-between text-xs">
+                                  <span className="text-foreground">{item.quantity}x {item.product_name}</span>
+                                  <span className="text-muted-foreground">R$ {(item.quantity * item.unit_price).toFixed(2)}</span>
+                                </div>
+                                {item.notes && (
+                                  <p className="text-[10px] text-yellow-400 ml-4">📝 {item.notes}</p>
+                                )}
                               </div>
                             ))}
                           </div>

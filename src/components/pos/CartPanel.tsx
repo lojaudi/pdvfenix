@@ -9,6 +9,7 @@ export type CartItem = {
   quantity: number;
   variationName?: string;
   variationPrice?: number;
+  notes?: string;
 };
 
 interface CartPanelProps {
@@ -16,6 +17,7 @@ interface CartPanelProps {
   total: number;
   onUpdateQuantity: (productId: string, qty: number) => void;
   onRemove: (productId: string) => void;
+  onUpdateNotes?: (itemKey: string, notes: string) => void;
   onClear: () => void;
   onCheckout: () => void;
   channelLabel: string;
@@ -28,6 +30,7 @@ export function CartPanel({
   total,
   onUpdateQuantity,
   onRemove,
+  onUpdateNotes,
   onClear,
   onCheckout,
   channelLabel,
@@ -63,48 +66,59 @@ export function CartPanel({
               return (
               <li
                 key={itemKey}
-                className="flex items-center gap-3 bg-secondary/50 rounded-lg p-3"
+                className="bg-secondary/50 rounded-lg p-3 space-y-2"
               >
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-card-foreground truncate">
-                    {item.product.name}
-                    {item.variationName && (
-                      <span className="text-xs text-muted-foreground ml-1">({item.variationName})</span>
-                    )}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {formatCurrency(unitPrice)} un.
-                  </p>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <button
-                    onClick={() => onUpdateQuantity(itemKey, item.quantity - 1)}
-                    className="w-8 h-8 rounded-md bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/80 focus-visible:ring-2 focus-visible:ring-ring transition-colors"
-                    aria-label={`Diminuir quantidade de ${item.product.name}`}
-                  >
-                    <Minus className="w-3.5 h-3.5" aria-hidden="true" />
-                  </button>
-                  <span className="w-7 text-center text-sm font-semibold text-card-foreground" aria-label={`Quantidade: ${item.quantity}`}>
-                    {item.quantity}
+                <div className="flex items-center gap-3">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-card-foreground truncate">
+                      {item.product.name}
+                      {item.variationName && (
+                        <span className="text-xs text-muted-foreground ml-1">({item.variationName})</span>
+                      )}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {formatCurrency(unitPrice)} un.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => onUpdateQuantity(itemKey, item.quantity - 1)}
+                      className="w-8 h-8 rounded-md bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/80 focus-visible:ring-2 focus-visible:ring-ring transition-colors"
+                      aria-label={`Diminuir quantidade de ${item.product.name}`}
+                    >
+                      <Minus className="w-3.5 h-3.5" aria-hidden="true" />
+                    </button>
+                    <span className="w-7 text-center text-sm font-semibold text-card-foreground" aria-label={`Quantidade: ${item.quantity}`}>
+                      {item.quantity}
+                    </span>
+                    <button
+                      onClick={() => onUpdateQuantity(itemKey, item.quantity + 1)}
+                      className="w-8 h-8 rounded-md bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/80 focus-visible:ring-2 focus-visible:ring-ring transition-colors"
+                      aria-label={`Aumentar quantidade de ${item.product.name}`}
+                    >
+                      <Plus className="w-3.5 h-3.5" aria-hidden="true" />
+                    </button>
+                  </div>
+                  <span className="text-sm font-bold text-primary w-20 text-right">
+                    {formatCurrency(unitPrice * item.quantity)}
                   </span>
                   <button
-                    onClick={() => onUpdateQuantity(itemKey, item.quantity + 1)}
-                    className="w-8 h-8 rounded-md bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/80 focus-visible:ring-2 focus-visible:ring-ring transition-colors"
-                    aria-label={`Aumentar quantidade de ${item.product.name}`}
+                    onClick={() => onRemove(itemKey)}
+                    className="w-8 h-8 rounded-md flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 focus-visible:ring-2 focus-visible:ring-ring transition-colors"
+                    aria-label={`Remover ${item.product.name} do carrinho`}
                   >
-                    <Plus className="w-3.5 h-3.5" aria-hidden="true" />
+                    <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
                   </button>
                 </div>
-                <span className="text-sm font-bold text-primary w-20 text-right">
-                  {formatCurrency(unitPrice * item.quantity)}
-                </span>
-                <button
-                  onClick={() => onRemove(itemKey)}
-                  className="w-8 h-8 rounded-md flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 focus-visible:ring-2 focus-visible:ring-ring transition-colors"
-                  aria-label={`Remover ${item.product.name} do carrinho`}
-                >
-                  <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
-                </button>
+                {onUpdateNotes && (
+                  <input
+                    type="text"
+                    placeholder="Observação (ex: sem cebola)"
+                    value={item.notes || ""}
+                    onChange={(e) => onUpdateNotes(itemKey, e.target.value)}
+                    className="w-full text-xs bg-background border border-border rounded-md px-2 py-1.5 text-foreground placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-ring"
+                  />
+                )}
               </li>
               );
             })}
