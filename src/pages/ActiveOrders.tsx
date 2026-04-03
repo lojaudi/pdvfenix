@@ -144,7 +144,6 @@ export default function ActiveOrdersPage() {
           changeAmount = changeFor - order.total;
           if (changeAmount < 0) changeAmount = 0;
         }
-        }
         // Extract user notes (remove change info)
         const userNotes = notesStr.replace(/\|?\s*Troco para R\$\s*[\d.,]+/g, "").replace(/\|?\s*Sem troco \(valor exato\)/g, "").trim().replace(/^\||\|$/g, "").trim();
         if (userNotes) deliveryNotes = userNotes;
