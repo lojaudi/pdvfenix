@@ -7,6 +7,8 @@ type PaymentMethod = "dinheiro" | "credito" | "debito" | "pix" | "pix_maquina" |
 interface CartItem {
   product: DbProduct;
   quantity: number;
+  variationName?: string;
+  variationPrice?: number;
 }
 
 export async function createOrder(
