@@ -127,22 +127,66 @@ export default function MenuPage() {
   const deliveryFee = zones?.find((z) => z.id === selectedZone)?.fee_value || 0;
   const grandTotal = cartTotal + deliveryFee;
 
-  const addToCart = (product: { id: string; name: string; price: number }) => {
+  const [variationProduct, setVariationProduct] = useState<any | null>(null);
+  const [variationsList, setVariationsList] = useState<Variation[]>([]);
+  const [variationsLoading, setVariationsLoading] = useState(false);
+  const [productVariationCounts, setProductVariationCounts] = useState<Record<string, number>>({});
+
+  // Load variation counts
+  useEffect(() => {
+    if (!products || products.length === 0) return;
+    supabase
+      .from("product_variations")
+      .select("product_id")
+      .then(({ data }) => {
+        const counts: Record<string, number> = {};
+        (data || []).forEach((v: any) => {
+          counts[v.product_id] = (counts[v.product_id] || 0) + 1;
+        });
+        setProductVariationCounts(counts);
+      });
+  }, [products]);
+
+  const openVariationPicker = (product: any) => {
+    setVariationProduct(product);
+    setVariationsLoading(true);
+    supabase
+      .from("product_variations")
+      .select("*")
+      .eq("product_id", product.id)
+      .order("created_at")
+      .then(({ data }) => {
+        setVariationsList((data as Variation[]) || []);
+        setVariationsLoading(false);
+      });
+  };
+
+  const handleProductClick = (product: any) => {
+    if (productVariationCounts[product.id] > 0) {
+      openVariationPicker(product);
+    } else {
+      addToCart(product);
+    }
+  };
+
+  const addToCart = (product: { id: string; name: string; price: number }, variationName?: string, variationPrice?: number) => {
+    const cartKey = variationName ? `${product.id}_${variationName}` : product.id;
+    const displayName = variationName ? `${product.name} (${variationName})` : product.name;
+    const finalPrice = variationPrice ?? product.price;
     setCart((prev) => {
-      const existing = prev.find((i) => i.id === product.id);
-      if (existing) return prev.map((i) => (i.id === product.id ? { ...i, qty: i.qty + 1 } : i));
-      return [...prev, { id: product.id, name: product.name, price: product.price, qty: 1 }];
+      const existing = prev.find((i) => i.id === cartKey);
+      if (existing) return prev.map((i) => (i.id === cartKey ? { ...i, qty: i.qty + 1 } : i));
+      return [...prev, { id: cartKey, productId: product.id, name: displayName, price: finalPrice, qty: 1, variationName }];
     });
-    toast.success(`${product.name} adicionado!`, { duration: 1500 });
+    toast.success(`${displayName} adicionado!`, { duration: 1500 });
   };
 
-  const updateQty = (id: string, delta: number) => {
-    setCart((prev) =>
-      prev.map((i) => (i.id === id ? { ...i, qty: Math.max(0, i.qty + delta) } : i)).filter((i) => i.qty > 0)
-    );
+  const handleVariationSelect = (variationName?: string, variationPrice?: number) => {
+    if (variationProduct) {
+      addToCart(variationProduct, variationName, variationPrice);
+      setVariationProduct(null);
+    }
   };
-
-  const removeItem = (id: string) => setCart((prev) => prev.filter((i) => i.id !== id));
 
   const [sending, setSending] = useState(false);
 
