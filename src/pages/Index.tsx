@@ -174,6 +174,23 @@ const Index = () => {
           </div>
         )}
 
+        {/* Catalog unlock toggle (admin only) */}
+        {isAdmin && (
+          <div className="px-4 sm:px-6 pt-3">
+            <button
+              onClick={toggleCatalog}
+              className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-semibold transition-all ${
+                catalogUnlocked
+                  ? "bg-green-500/15 text-green-600 border border-green-500/30 hover:bg-green-500/25"
+                  : "bg-destructive/15 text-destructive border border-destructive/30 hover:bg-destructive/25"
+              }`}
+            >
+              {catalogUnlocked ? <Unlock className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
+              {catalogUnlocked ? "Catálogo/Deliveries Liberado — Clique para Bloquear" : "Liberar Catálogo/Deliveries"}
+            </button>
+          </div>
+        )}
+
         {/* Catalog URL banner */}
         <div className="px-4 sm:px-6 pt-3">
           <div className="flex items-center gap-2 bg-secondary/60 border border-border rounded-lg px-3 py-2 text-xs">
