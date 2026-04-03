@@ -155,6 +155,23 @@ const Index = () => {
           </nav>
         </header>
 
+        {/* System unlock toggle (admin only) */}
+        {isAdmin && (
+          <div className="px-4 sm:px-6 pt-3">
+            <button
+              onClick={toggleSystem}
+              className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-semibold transition-all ${
+                unlocked
+                  ? "bg-green-500/15 text-green-600 border border-green-500/30 hover:bg-green-500/25"
+                  : "bg-destructive/15 text-destructive border border-destructive/30 hover:bg-destructive/25"
+              }`}
+            >
+              {unlocked ? <Unlock className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
+              {unlocked ? "Sistema Liberado — Clique para Bloquear" : "Liberar Sistema"}
+            </button>
+          </div>
+        )}
+
         {/* Catalog URL banner */}
         <div className="px-4 sm:px-6 pt-3">
           <div className="flex items-center gap-2 bg-secondary/60 border border-border rounded-lg px-3 py-2 text-xs">
