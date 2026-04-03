@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { useProducts } from "@/hooks/useProducts";
+import { useProducts, DbProduct } from "@/hooks/useProducts";
 import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -13,7 +13,9 @@ import { ChannelSelector } from "@/components/pos/ChannelSelector";
 import { PaymentDialog } from "@/components/pos/PaymentDialog";
 import { TableSelector } from "@/components/pos/TableSelector";
 import { TableOrdersSummary } from "@/components/pos/TableOrdersSummary";
+import { VariationPicker } from "@/components/pos/VariationPicker";
 import { createOrder } from "@/services/orderService";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Store, LogOut, Loader2, Settings, BarChart3, ClipboardList, LayoutGrid, Wallet, Bike, Link2, Check, Unlock, Lock } from "lucide-react";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
