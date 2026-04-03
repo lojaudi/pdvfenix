@@ -514,26 +514,35 @@ export default function MenuPage() {
                   {/* Cart items */}
                   <div className="space-y-2">
                     {cart.map((item) => (
-                      <div key={item.id} className="flex items-center gap-3 bg-secondary/50 rounded-lg p-3">
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-foreground truncate">{item.name}</p>
-                          <p className="text-xs text-muted-foreground">{formatCurrency(item.price)} un.</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <button onClick={() => updateQty(item.id, -1)} className="w-7 h-7 rounded bg-secondary flex items-center justify-center">
-                            <Minus className="w-3 h-3 text-foreground" />
+                      <div key={item.id} className="bg-secondary/50 rounded-lg p-3 space-y-2">
+                        <div className="flex items-center gap-3">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-foreground truncate">{item.name}</p>
+                            <p className="text-xs text-muted-foreground">{formatCurrency(item.price)} un.</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <button onClick={() => updateQty(item.id, -1)} className="w-7 h-7 rounded bg-secondary flex items-center justify-center">
+                              <Minus className="w-3 h-3 text-foreground" />
+                            </button>
+                            <span className="text-sm font-bold w-4 text-center text-foreground">{item.qty}</span>
+                            <button onClick={() => updateQty(item.id, 1)} className="w-7 h-7 rounded bg-primary text-primary-foreground flex items-center justify-center">
+                              <Plus className="w-3 h-3" />
+                            </button>
+                          </div>
+                          <span className="text-sm font-bold text-foreground w-20 text-right">
+                            {formatCurrency(item.price * item.qty)}
+                          </span>
+                          <button onClick={() => removeItem(item.id)} className="text-destructive hover:text-destructive/80">
+                            <Trash2 className="w-4 h-4" />
                           </button>
-                          <span className="text-sm font-bold w-4 text-center text-foreground">{item.qty}</span>
-                          <button onClick={() => updateQty(item.id, 1)} className="w-7 h-7 rounded bg-primary text-primary-foreground flex items-center justify-center">
-                            <Plus className="w-3 h-3" />
-                          </button>
                         </div>
-                        <span className="text-sm font-bold text-foreground w-20 text-right">
-                          {formatCurrency(item.price * item.qty)}
-                        </span>
-                        <button onClick={() => removeItem(item.id)} className="text-destructive hover:text-destructive/80">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        <input
+                          type="text"
+                          placeholder="Observação (ex: sem cebola)"
+                          value={item.notes || ""}
+                          onChange={(e) => setCart((prev) => prev.map((i) => i.id === item.id ? { ...i, notes: e.target.value } : i))}
+                          className="w-full text-xs bg-background border border-border rounded-md px-2 py-1.5 text-foreground placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-ring"
+                        />
                       </div>
                     ))}
                   </div>
