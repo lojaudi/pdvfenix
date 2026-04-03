@@ -356,7 +356,7 @@ export default function ActiveOrdersPage() {
 
                           {/* Actions */}
                           <div className="flex gap-2 pt-1">
-                            {canAdvance && (
+                            {canAdvance && canUserAdvance(order) && (
                               <button
                                 onClick={() => advanceStatus(order)}
                                 className={cn(
