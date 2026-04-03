@@ -164,7 +164,7 @@ export default function ActiveOrdersPage() {
         })),
         ...(deliveryFee > 0 ? [{ product_name: "Taxa de Entrega", quantity: 1, unit_price: deliveryFee }] : []),
       ],
-      total: order.total + deliveryFee,
+      total: order.total,
       paymentMethod: order.payment_method,
       createdAt: order.created_at,
       deliveryAddress,
