@@ -141,12 +141,9 @@ export default function ActiveOrdersPage() {
         const changeMatch = notesStr.match(/Troco para R\$\s*([\d.,]+)/);
         if (changeMatch) {
           changeFor = parseFloat(changeMatch[1].replace(",", ".")) || 0;
-          changeAmount = changeFor - (order.total + deliveryFee);
+          changeAmount = changeFor - order.total;
           if (changeAmount < 0) changeAmount = 0;
         }
-        // If no change info found but payment is dinheiro, still show "valor exato"
-        if (!changeMatch && notesStr.includes("Sem troco")) {
-          // No change needed, leave defaults
         }
         // Extract user notes (remove change info)
         const userNotes = notesStr.replace(/\|?\s*Troco para R\$\s*[\d.,]+/g, "").replace(/\|?\s*Sem troco \(valor exato\)/g, "").trim().replace(/^\||\|$/g, "").trim();
