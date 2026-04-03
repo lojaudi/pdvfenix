@@ -29,6 +29,30 @@ interface DeliveryZone {
 
 export default function MenuPage() {
   const navigate = useNavigate();
+  const { unlocked: catalogUnlocked, loading: catalogLoading } = useCatalogUnlocked();
+
+  if (catalogLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-background">
+        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!catalogUnlocked) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-background px-4">
+        <div className="text-center space-y-4 max-w-md">
+          <Lock className="w-16 h-16 text-muted-foreground mx-auto" />
+          <h1 className="text-xl font-bold text-foreground">Catálogo Indisponível</h1>
+          <p className="text-sm text-muted-foreground">
+            Não estamos aceitando pedido nesse momento, favor retornar mais tarde.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   const [cart, setCart] = useState<CartItem[]>([]);
   const [showCart, setShowCart] = useState(false);
   const [search, setSearch] = useState("");
