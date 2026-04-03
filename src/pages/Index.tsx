@@ -325,6 +325,14 @@ const Index = () => {
         </SheetContent>
       </Sheet>
 
+      {variationProduct && (
+        <VariationPicker
+          product={variationProduct}
+          onSelect={handleVariationSelect}
+          onClose={() => setVariationProduct(null)}
+        />
+      )}
+
       {showPayment && (
         <PaymentDialog
           total={cart.total}
