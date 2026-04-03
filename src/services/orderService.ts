@@ -19,7 +19,7 @@ export async function createOrder(
   tableNumber?: number,
   customerName?: string
 ) {
-  const total = items.reduce((sum, i) => sum + i.product.price * i.quantity, 0);
+  const total = items.reduce((sum, i) => sum + (i.variationPrice ?? i.product.price) * i.quantity, 0);
 
   // Create order
   const { data: order, error: orderError } = await supabase
