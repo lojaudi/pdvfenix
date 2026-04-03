@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { useProducts } from "@/hooks/useProducts";
+import { useProducts, DbProduct } from "@/hooks/useProducts";
 import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -13,7 +13,9 @@ import { ChannelSelector } from "@/components/pos/ChannelSelector";
 import { PaymentDialog } from "@/components/pos/PaymentDialog";
 import { TableSelector } from "@/components/pos/TableSelector";
 import { TableOrdersSummary } from "@/components/pos/TableOrdersSummary";
+import { VariationPicker } from "@/components/pos/VariationPicker";
 import { createOrder } from "@/services/orderService";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Store, LogOut, Loader2, Settings, BarChart3, ClipboardList, LayoutGrid, Wallet, Bike, Link2, Check, Unlock, Lock } from "lucide-react";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
@@ -42,6 +44,8 @@ const Index = () => {
   const [submitting, setSubmitting] = useState(false);
   const [showMobileCart, setShowMobileCart] = useState(false);
   const [copiedUrl, setCopiedUrl] = useState(false);
+  const [variationProduct, setVariationProduct] = useState<DbProduct | null>(null);
+  const [productVariationCounts, setProductVariationCounts] = useState<Record<string, number>>({});
   const cart = useCart();
 
   const catalogUrl = `${window.location.origin}/menu`;
@@ -65,6 +69,34 @@ const Index = () => {
   useEffect(() => {
     if (isKitchen) navigate("/kitchen", { replace: true });
   }, [isKitchen, navigate]);
+
+  // Load variation counts for all products
+  useEffect(() => {
+    if (products.length === 0) return;
+    supabase
+      .from("product_variations")
+      .select("product_id")
+      .then(({ data }) => {
+        const counts: Record<string, number> = {};
+        (data || []).forEach((v: any) => {
+          counts[v.product_id] = (counts[v.product_id] || 0) + 1;
+        });
+        setProductVariationCounts(counts);
+      });
+  }, [products]);
+
+  const handleAddProduct = useCallback((product: DbProduct) => {
+    if (productVariationCounts[product.id] > 0) {
+      setVariationProduct(product);
+    } else {
+      cart.addItem(product);
+    }
+  }, [productVariationCounts, cart]);
+
+  const handleVariationSelect = useCallback((product: DbProduct, variationName?: string, variationPrice?: number) => {
+    cart.addItem(product, variationName, variationPrice);
+    setVariationProduct(null);
+  }, [cart]);
 
   const filteredProducts =
     selectedCategory === "all"
@@ -240,7 +272,7 @@ const Index = () => {
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3">
             {filteredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} onAdd={cart.addItem} />
+              <ProductCard key={product.id} product={product} onAdd={handleAddProduct} />
             ))}
           </div>
         </div>
@@ -292,6 +324,14 @@ const Index = () => {
           />
         </SheetContent>
       </Sheet>
+
+      {variationProduct && (
+        <VariationPicker
+          product={variationProduct}
+          onSelect={handleVariationSelect}
+          onClose={() => setVariationProduct(null)}
+        />
+      )}
 
       {showPayment && (
         <PaymentDialog

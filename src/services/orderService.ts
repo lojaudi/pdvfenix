@@ -7,6 +7,8 @@ type PaymentMethod = "dinheiro" | "credito" | "debito" | "pix" | "pix_maquina" |
 interface CartItem {
   product: DbProduct;
   quantity: number;
+  variationName?: string;
+  variationPrice?: number;
 }
 
 export async function createOrder(
@@ -17,7 +19,7 @@ export async function createOrder(
   tableNumber?: number,
   customerName?: string
 ) {
-  const total = items.reduce((sum, i) => sum + i.product.price * i.quantity, 0);
+  const total = items.reduce((sum, i) => sum + (i.variationPrice ?? i.product.price) * i.quantity, 0);
 
   // Create order
   const { data: order, error: orderError } = await supabase
@@ -40,9 +42,11 @@ export async function createOrder(
   const orderItems = items.map((item) => ({
     order_id: order.id,
     product_id: item.product.id,
-    product_name: item.product.name,
+    product_name: item.variationName
+      ? `${item.product.name} (${item.variationName})`
+      : item.product.name,
     quantity: item.quantity,
-    unit_price: item.product.price,
+    unit_price: item.variationPrice ?? item.product.price,
   }));
 
   const { error: itemsError } = await supabase

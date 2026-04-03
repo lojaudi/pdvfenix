@@ -83,10 +83,12 @@ export function AdminProducts() {
   const cancel = () => { setEditing(null); setCreating(false); setForm(emptyForm); };
 
   const handleSave = async () => {
-    if (!form.name || !form.price) { toast.error("Preencha nome e preço"); return; }
+    const hasVariations = form.variations.filter(v => v.name.trim()).length > 0;
+    if (!form.name) { toast.error("Preencha o nome do produto"); return; }
+    if (!hasVariations && !form.price) { toast.error("Preencha o preço ou adicione variações"); return; }
     const payload = {
       name: form.name,
-      price: parseFloat(form.price),
+      price: hasVariations && !form.price ? 0 : parseFloat(form.price),
       stock_qty: parseInt(form.stock_qty) || 0,
       category_id: form.category_id || null,
       in_stock: form.in_stock,
@@ -360,7 +362,7 @@ function ProductFormFields({ form, setForm, categories }: { form: ProductForm; s
             </div>
           )}
         </div>
-        <input type="number" step="0.01" placeholder="Preço" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} className="px-3 py-2 rounded-lg bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
+        <input type="number" step="0.01" placeholder={form.variations.filter(v => v.name.trim()).length > 0 ? "Preço base (opcional)" : "Preço"} value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} className="px-3 py-2 rounded-lg bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
         <input type="number" placeholder="Estoque" value={form.stock_qty} onChange={(e) => setForm({ ...form, stock_qty: e.target.value })} className="px-3 py-2 rounded-lg bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
         <select value={form.category_id} onChange={(e) => setForm({ ...form, category_id: e.target.value })} className="px-3 py-2 rounded-lg bg-secondary border border-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50">
           <option value="">Sem categoria</option>
