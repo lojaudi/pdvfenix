@@ -141,7 +141,7 @@ export default function ActiveOrdersPage() {
         const changeMatch = notesStr.match(/Troco para R\$\s*([\d.,]+)/);
         if (changeMatch) {
           changeFor = parseFloat(changeMatch[1].replace(",", ".")) || 0;
-          changeAmount = changeFor - (order.total + deliveryFee);
+          changeAmount = changeFor - order.total;
           if (changeAmount < 0) changeAmount = 0;
         }
         // Extract user notes (remove change info)
@@ -164,7 +164,7 @@ export default function ActiveOrdersPage() {
         })),
         ...(deliveryFee > 0 ? [{ product_name: "Taxa de Entrega", quantity: 1, unit_price: deliveryFee }] : []),
       ],
-      total: order.total + deliveryFee,
+      total: order.total,
       paymentMethod: order.payment_method,
       createdAt: order.created_at,
       deliveryAddress,
