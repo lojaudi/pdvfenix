@@ -56,7 +56,7 @@ const QUERY_KEY = ["active-orders"];
 
 export default function ActiveOrdersPage() {
   const navigate = useNavigate();
-  const { isAdmin, isKitchen } = useUserRole();
+  const { isAdmin, isKitchen, isCashier } = useUserRole();
   const { data: receiptSettings } = useReceiptSettings();
   const [printData, setPrintData] = useState<ReceiptData | null>(null);
   useRealtimeOrdersWithSound(QUERY_KEY);
