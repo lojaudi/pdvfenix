@@ -272,7 +272,7 @@ const Index = () => {
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3">
             {filteredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} onAdd={cart.addItem} />
+              <ProductCard key={product.id} product={product} onAdd={handleAddProduct} />
             ))}
           </div>
         </div>
