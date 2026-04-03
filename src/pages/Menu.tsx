@@ -181,6 +181,14 @@ export default function MenuPage() {
     toast.success(`${displayName} adicionado!`, { duration: 1500 });
   };
 
+  const updateQty = (id: string, delta: number) => {
+    setCart((prev) =>
+      prev.map((i) => (i.id === id ? { ...i, qty: Math.max(0, i.qty + delta) } : i)).filter((i) => i.qty > 0)
+    );
+  };
+
+  const removeItem = (id: string) => setCart((prev) => prev.filter((i) => i.id !== id));
+
   const handleVariationSelect = (variationName?: string, variationPrice?: number) => {
     if (variationProduct) {
       addToCart(variationProduct, variationName, variationPrice);
