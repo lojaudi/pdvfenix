@@ -212,7 +212,7 @@ export default function ActiveOrdersPage() {
     if (error) {
       toast.error("Erro ao atualizar status");
     } else {
-      if (nextStatus === "entregue") await setTableAwaitingPayment(order);
+      // Table status is NOT changed automatically here — only the waiter triggers "Pedir Conta" manually
       
       // When accepting an order (aberto → preparando), offer to print
       if (order.status === "aberto" && nextStatus === "preparando") {
