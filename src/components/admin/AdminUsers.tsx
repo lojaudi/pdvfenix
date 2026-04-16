@@ -223,10 +223,18 @@ export function AdminUsers() {
       ) : (
         <div className="space-y-3">
           {filteredUsers.map((u) => (
-            <div key={u.user_id} className="bg-card border border-border rounded-xl p-4">
+            <div key={u.user_id} className={`bg-card border rounded-xl p-4 ${u.email.toLowerCase() === SUPER_ADMIN_EMAIL ? "border-primary/50 ring-1 ring-primary/20" : "border-border"}`}>
               <div className="flex items-center justify-between mb-3">
                 <div className="min-w-0 flex-1">
-                  <p className="font-medium text-card-foreground truncate">{u.name || "Sem nome"}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="font-medium text-card-foreground truncate">{u.name || "Sem nome"}</p>
+                    {u.email.toLowerCase() === SUPER_ADMIN_EMAIL && (
+                      <span className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-primary text-primary-foreground">
+                        <Shield className="w-3 h-3" />
+                        Super Admin
+                      </span>
+                    )}
+                  </div>
                   <p className="text-sm text-muted-foreground truncate">{u.email}</p>
                 </div>
                 <div className="flex items-center gap-1 ml-2">
