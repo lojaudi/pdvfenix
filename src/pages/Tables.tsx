@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useRealtimeTables } from "@/hooks/useRealtimeTables";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
-import { ArrowLeft, Loader2, Plus, Minus, Users, CreditCard, CheckCircle2, Unlock } from "lucide-react";
+import { ArrowLeft, Loader2, Plus, Minus, Users, CreditCard, CheckCircle2, Unlock, Store } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -205,6 +205,17 @@ export default function TablesPage() {
               </button>
             </div>
           )}
+        </div>
+
+        {/* Quick shortcut: jump to PDV to keep launching orders */}
+        <div className="mt-3">
+          <button
+            onClick={() => navigate("/")}
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-colors shadow-sm"
+          >
+            <Store className="w-4 h-4" />
+            Ir para o PDV
+          </button>
         </div>
       </header>
 
