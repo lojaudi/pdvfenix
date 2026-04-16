@@ -26,6 +26,18 @@ Deno.serve(async (req) => {
     const { data: isAdmin } = await supabaseAdmin.rpc("is_admin", { _user_id: caller.id });
     if (!isAdmin) throw new Error("Sem permissão de administrador");
 
+    // Helper: protect super admin from other admins
+    const ensureNotProtected = async (targetUserId: string) => {
+      const { data: targetProfile } = await supabaseAdmin
+        .from("profiles")
+        .select("email")
+        .eq("user_id", targetUserId)
+        .maybeSingle();
+      if (targetProfile?.email?.toLowerCase() === SUPER_ADMIN_EMAIL && caller.email?.toLowerCase() !== SUPER_ADMIN_EMAIL) {
+        throw new Error("Sem permissão para modificar o administrador principal");
+      }
+    };
+
     const { action, ...payload } = await req.json();
 
     if (action === "create") {
