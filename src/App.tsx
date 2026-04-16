@@ -77,6 +77,29 @@ function AuthRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+/** Route that only waiter (and admin) users can access */
+function WaiterRoute({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
+  const { isWaiter, isAdmin, loading: roleLoading } = useUserRole();
+  const { unlocked, loading: sysLoading } = useSystemUnlocked();
+
+  if (loading || roleLoading || sysLoading) return <PageLoader />;
+  if (!user) return <Navigate to="/auth" replace />;
+  if (!isWaiter && !isAdmin) return <Navigate to="/" replace />;
+  if (!isAdmin && !unlocked) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-background">
+        <div className="text-center space-y-4">
+          <Lock className="w-16 h-16 text-muted-foreground mx-auto" />
+          <h1 className="text-xl font-bold text-foreground">Aguardando liberação do Admin</h1>
+          <p className="text-sm text-muted-foreground">O sistema ainda não foi liberado. Tente novamente mais tarde.</p>
+        </div>
+      </div>
+    );
+  }
+  return <>{children}</>;
+}
+
 /** Route that only kitchen (and admin) users can access */
 function KitchenRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
