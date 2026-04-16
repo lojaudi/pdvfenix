@@ -103,8 +103,8 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, { data: ReceiptData; head
               {line}
             </div>
           ))}
-          <div style={{ fontSize: 10 }}>
-            {format(now, "dd/MM/yyyy HH:mm", { locale: ptBR })}
+          <div style={{ fontSize: 13, fontWeight: "bold", marginTop: 4, letterSpacing: 0.5 }}>
+            {format(now, "dd/MM/yyyy  HH:mm", { locale: ptBR })}
           </div>
         </div>
 
