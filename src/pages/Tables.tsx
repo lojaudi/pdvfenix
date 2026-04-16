@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useState } from "react";
+import { InstallAppBanner } from "@/components/InstallAppBanner";
 
 type TableStatus = "livre" | "ocupada" | "aguardando_pagamento";
 
@@ -240,6 +241,7 @@ export default function TablesPage() {
           })}
         </div>
       </main>
+      <InstallAppBanner appName="Garçom" />
     </div>
   );
 }
