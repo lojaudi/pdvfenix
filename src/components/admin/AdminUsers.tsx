@@ -76,7 +76,12 @@ export function AdminUsers() {
     setLoading(false);
   };
 
-  useEffect(() => { fetchUsers(); }, []);
+  useEffect(() => {
+    fetchUsers();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) setCurrentUserEmail(user.email || "");
+    });
+  }, []);
 
   const openCreateDialog = () => {
     setEditingUser(null);
