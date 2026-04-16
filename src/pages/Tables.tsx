@@ -290,12 +290,51 @@ export default function TablesPage() {
                     </button>
                   )}
                 </div>
+
+                {/* Admin: forçar liberação de mesa travada */}
+                {isAdmin && table.status !== "livre" && (
+                  <button
+                    onClick={() => setForceFreeTable(table)}
+                    className="w-full mt-1 py-1.5 rounded-lg bg-destructive/15 text-destructive text-[10px] font-bold hover:bg-destructive/25 transition-colors flex items-center justify-center gap-1"
+                    title="Forçar liberação (admin)"
+                  >
+                    <Unlock className="w-3 h-3" />
+                    Forçar Liberar
+                  </button>
+                )}
               </div>
             );
           })}
         </div>
       </main>
       <InstallAppBanner appName="Garçom" />
+
+      <AlertDialog open={!!forceFreeTable} onOpenChange={(open) => !open && setForceFreeTable(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Forçar liberação da Mesa {forceFreeTable?.number}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação irá <strong>cancelar todos os pedidos ativos</strong> desta mesa e
+              liberá-la imediatamente. Use apenas em casos de mesa travada (ex: garçom
+              desconectado, pedido órfão). Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (forceFreeTable) {
+                  handleForceFree(forceFreeTable);
+                  setForceFreeTable(null);
+                }
+              }}
+            >
+              Sim, forçar liberação
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
