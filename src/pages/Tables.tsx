@@ -3,12 +3,22 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useRealtimeTables } from "@/hooks/useRealtimeTables";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
-import { ArrowLeft, Loader2, Plus, Minus, Users, CreditCard, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Loader2, Plus, Minus, Users, CreditCard, CheckCircle2, Unlock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useState } from "react";
 import { InstallAppBanner } from "@/components/InstallAppBanner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 type TableStatus = "livre" | "ocupada" | "aguardando_pagamento";
 
