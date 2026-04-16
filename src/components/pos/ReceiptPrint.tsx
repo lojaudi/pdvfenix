@@ -125,7 +125,11 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, { data: ReceiptData; head
           {data.channel === "garcom" && data.tableNumber && (
             <div style={{ fontSize: 14, fontWeight: "bold" }}>Mesa: {data.tableNumber}</div>
           )}
-          {data.waiterName && <div><strong>Garçom:</strong> {data.waiterName}</div>}
+          {data.waiterName && (
+            <div style={{ fontSize: 14, fontWeight: "bold", marginTop: 4, padding: "3px 0", borderBottom: "1px dashed #000" }}>
+              GARÇOM: {data.waiterName.toUpperCase()}
+            </div>
+          )}
           {data.customerName && <div><strong>Cliente:</strong> {data.customerName}</div>}
           {data.deliveryAddress && <div><strong>Endereço:</strong> {data.deliveryAddress}</div>}
           {data.customerPhone && <div><strong>Telefone:</strong> {data.customerPhone}</div>}
