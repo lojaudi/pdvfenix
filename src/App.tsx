@@ -40,13 +40,12 @@ function PageLoader() {
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
-  const { role, isAdmin, isKitchen, isWaiter, loading: roleLoading } = useUserRole();
+  const { isAdmin, isKitchen, loading: roleLoading } = useUserRole();
   const { unlocked, loading: sysLoading } = useSystemUnlocked();
 
   if (loading || roleLoading || sysLoading) return <PageLoader />;
   if (!user) return <Navigate to="/auth" replace />;
   if (isKitchen) return <Navigate to="/kitchen" replace />;
-  if (isWaiter) return <Navigate to="/tables" replace />;
 
   // Non-admin users blocked when system is locked
   if (!isAdmin && !unlocked) {
@@ -66,12 +65,11 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 function AuthRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
-  const { isKitchen, isWaiter, loading: roleLoading } = useUserRole();
+  const { isKitchen, loading: roleLoading } = useUserRole();
 
   if (loading || (user && roleLoading)) return <PageLoader />;
   if (user) {
     if (isKitchen) return <Navigate to="/kitchen" replace />;
-    if (isWaiter) return <Navigate to="/tables" replace />;
     return <Navigate to="/" replace />;
   }
   return <>{children}</>;
