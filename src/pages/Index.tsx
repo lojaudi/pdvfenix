@@ -177,7 +177,7 @@ const Index = () => {
             </div>
             <NavButton onClick={() => navigate("/orders")} title="Pedidos Ativos" icon={ClipboardList} />
             {!isWaiter && <NavButton onClick={() => navigate("/deliveries")} title="Entregas" icon={Bike} />}
-            {!isWaiter && <NavButton onClick={() => navigate("/tables")} title="Mesas" icon={LayoutGrid} />}
+            <NavButton onClick={() => navigate("/tables")} title="Mesas" icon={LayoutGrid} />
             {(isAdmin || isCashier) && <NavButton onClick={() => navigate("/cashier")} title="Caixa" icon={Wallet} />}
             {isAdmin && (
               <>
@@ -242,6 +242,29 @@ const Index = () => {
         <div className="sm:hidden px-4 pt-3">
           <ChannelSelector selected={channel} onSelect={setChannel} hiddenChannels={isWaiter ? ["balcao", "delivery"] : []} />
         </div>
+
+        {/* Active table banner — sticky shortcut between PDV and Mesas */}
+        {isWaiter && channel === "garcom" && selectedTable && (
+          <div className="px-4 sm:px-6 pt-3">
+            <div className="flex items-center gap-3 bg-primary/10 border border-primary/30 rounded-xl px-3 py-2.5">
+              <div className="w-10 h-10 rounded-lg bg-primary text-primary-foreground flex items-center justify-center font-extrabold text-lg flex-shrink-0">
+                {selectedTable}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-[11px] uppercase tracking-wide text-primary/80 font-bold">Mesa ativa</p>
+                <p className="text-xs text-muted-foreground truncate">Lançando pedidos para a Mesa {selectedTable}</p>
+              </div>
+              <button
+                onClick={() => navigate("/tables")}
+                className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 transition-colors"
+                title="Ver todas as mesas"
+              >
+                <LayoutGrid className="w-3.5 h-3.5" />
+                Mesas
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 scrollbar-thin">
