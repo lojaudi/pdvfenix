@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+const SUPER_ADMIN_EMAIL = "admin@pdvexpress.com";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -24,6 +25,18 @@ Deno.serve(async (req) => {
 
     const { data: isAdmin } = await supabaseAdmin.rpc("is_admin", { _user_id: caller.id });
     if (!isAdmin) throw new Error("Sem permissão de administrador");
+
+    // Helper: protect super admin from other admins
+    const ensureNotProtected = async (targetUserId: string) => {
+      const { data: targetProfile } = await supabaseAdmin
+        .from("profiles")
+        .select("email")
+        .eq("user_id", targetUserId)
+        .maybeSingle();
+      if (targetProfile?.email?.toLowerCase() === SUPER_ADMIN_EMAIL && caller.email?.toLowerCase() !== SUPER_ADMIN_EMAIL) {
+        throw new Error("Sem permissão para modificar o administrador principal");
+      }
+    };
 
     const { action, ...payload } = await req.json();
 
@@ -71,7 +84,7 @@ Deno.serve(async (req) => {
     if (action === "update") {
       const { userId, name, email, password } = payload;
       if (!userId) throw new Error("userId é obrigatório");
-
+      await ensureNotProtected(userId);
       const updateData: any = {};
       if (email) updateData.email = email;
       if (password) updateData.password = password;
@@ -99,6 +112,7 @@ Deno.serve(async (req) => {
       const { userId } = payload;
       if (!userId) throw new Error("userId é obrigatório");
       if (userId === caller.id) throw new Error("Não é possível excluir a si mesmo");
+      await ensureNotProtected(userId);
 
       // Remove delivery_drivers record
       await supabaseAdmin.from("delivery_drivers").delete().eq("user_id", userId);
@@ -118,7 +132,7 @@ Deno.serve(async (req) => {
     if (action === "sync_roles") {
       const { userId, roles, phone } = payload;
       if (!userId) throw new Error("userId é obrigatório");
-
+      await ensureNotProtected(userId);
       // Get current roles
       const { data: currentRoles } = await supabaseAdmin
         .from("user_roles")

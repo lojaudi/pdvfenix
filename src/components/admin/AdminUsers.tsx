@@ -30,8 +30,11 @@ const allRoles: { id: DisplayRole; label: string; icon: typeof Shield; descripti
   { id: "entregador", label: "Entregador", icon: Bike, description: "Entregas e rastreamento" },
 ];
 
+const SUPER_ADMIN_EMAIL = "admin@pdvexpress.com";
+
 export function AdminUsers() {
   const [users, setUsers] = useState<UserWithRole[]>([]);
+  const [currentUserEmail, setCurrentUserEmail] = useState("");
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -73,7 +76,12 @@ export function AdminUsers() {
     setLoading(false);
   };
 
-  useEffect(() => { fetchUsers(); }, []);
+  useEffect(() => {
+    fetchUsers();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) setCurrentUserEmail(user.email || "");
+    });
+  }, []);
 
   const openCreateDialog = () => {
     setEditingUser(null);
@@ -177,11 +185,16 @@ export function AdminUsers() {
     }
   };
 
-  const filteredUsers = users.filter(
-    (u) =>
+  const isSuperAdmin = currentUserEmail.toLowerCase() === SUPER_ADMIN_EMAIL;
+
+  const filteredUsers = users.filter((u) => {
+    // Hide super admin from other admins
+    if (!isSuperAdmin && u.email.toLowerCase() === SUPER_ADMIN_EMAIL) return false;
+    return (
       u.name.toLowerCase().includes(search.toLowerCase()) ||
       u.email.toLowerCase().includes(search.toLowerCase())
-  );
+    );
+  });
 
   return (
     <div className="space-y-4">
