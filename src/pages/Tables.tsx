@@ -80,9 +80,25 @@ export default function TablesPage() {
       .eq("id", table.id);
     if (error) {
       toast.error("Erro ao atualizar mesa");
-    } else {
-      toast.success(`Mesa ${table.number} → ${statusConfig[newStatus].label}`);
+      return;
     }
+
+    // When requesting the bill, also mark all active orders of this table
+    // as "entregue" so they appear in the cashier panel for payment.
+    if (newStatus === "aguardando_pagamento") {
+      const { error: ordersError } = await supabase
+        .from("orders")
+        .update({ status: "entregue" as any })
+        .eq("table_number", table.number)
+        .in("status", ["aberto", "preparando", "pronto"]);
+      if (ordersError) {
+        toast.error("Mesa atualizada, mas falha ao enviar pedidos ao caixa");
+        return;
+      }
+      queryClient.invalidateQueries({ queryKey: ["cashier-orders"] });
+    }
+
+    toast.success(`Mesa ${table.number} → ${statusConfig[newStatus].label}`);
   };
 
   const addTable = async () => {
