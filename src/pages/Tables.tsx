@@ -133,6 +133,33 @@ export default function TablesPage() {
     else toast.success(`Mesa ${last.number} removida`);
   };
 
+  // Força a liberação da mesa: cancela todos os pedidos ativos e reseta o estado.
+  // Uso administrativo para mesas travadas (ex: pedidos órfãos, garçom desconectado).
+  const handleForceFree = async (table: TableItem) => {
+    try {
+      // Cancela pedidos ativos da mesa
+      const { error: ordersError } = await supabase
+        .from("orders")
+        .update({ status: "cancelado" as any })
+        .eq("table_number", table.number)
+        .in("status", ["aberto", "preparando", "pronto", "entregue"]);
+      if (ordersError) throw ordersError;
+
+      // Reseta a mesa
+      const { error: tableError } = await supabase
+        .from("tables")
+        .update({ status: "livre" as any, current_order_id: null, waiter_id: null })
+        .eq("id", table.id);
+      if (tableError) throw tableError;
+
+      toast.success(`Mesa ${table.number} liberada com sucesso`);
+      queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: ["cashier-orders"] });
+    } catch {
+      toast.error("Erro ao liberar mesa");
+    }
+  };
+
   const summary = {
     livre: tables?.filter((t) => t.status === "livre").length || 0,
     ocupada: tables?.filter((t) => t.status === "ocupada").length || 0,
