@@ -40,12 +40,13 @@ function PageLoader() {
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
-  const { role, isAdmin, isKitchen, loading: roleLoading } = useUserRole();
+  const { role, isAdmin, isKitchen, isWaiter, loading: roleLoading } = useUserRole();
   const { unlocked, loading: sysLoading } = useSystemUnlocked();
 
   if (loading || roleLoading || sysLoading) return <PageLoader />;
   if (!user) return <Navigate to="/auth" replace />;
   if (isKitchen) return <Navigate to="/kitchen" replace />;
+  if (isWaiter) return <Navigate to="/tables" replace />;
 
   // Non-admin users blocked when system is locked
   if (!isAdmin && !unlocked) {
@@ -65,10 +66,14 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 function AuthRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
-  const { isKitchen, loading: roleLoading } = useUserRole();
+  const { isKitchen, isWaiter, loading: roleLoading } = useUserRole();
 
   if (loading || (user && roleLoading)) return <PageLoader />;
-  if (user) return <Navigate to={isKitchen ? "/kitchen" : "/"} replace />;
+  if (user) {
+    if (isKitchen) return <Navigate to="/kitchen" replace />;
+    if (isWaiter) return <Navigate to="/tables" replace />;
+    return <Navigate to="/" replace />;
+  }
   return <>{children}</>;
 }
 
@@ -115,7 +120,7 @@ const App = () => (
                 <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
                 <Route path="/reports" element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
                 <Route path="/orders" element={<ProtectedRoute><ActiveOrdersPage /></ProtectedRoute>} />
-                <Route path="/tables" element={<ProtectedRoute><TablesPage /></ProtectedRoute>} />
+                <Route path="/tables" element={<WaiterRoute><TablesPage /></WaiterRoute>} />
                 <Route path="/cashier" element={<ProtectedRoute><CashierPage /></ProtectedRoute>} />
                 <Route path="/auth" element={<AuthRoute><AuthPage /></AuthRoute>} />
                 <Route path="/deliveries" element={<ProtectedRoute><DeliveriesPage /></ProtectedRoute>} />
