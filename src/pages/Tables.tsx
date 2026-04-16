@@ -48,6 +48,7 @@ export default function TablesPage() {
   const { isAdmin } = useIsAdmin();
   const queryClient = useQueryClient();
   useRealtimeTables(QUERY_KEY);
+  const [forceFreeTable, setForceFreeTable] = useState<TableItem | null>(null);
 
   const { data: tables, isLoading } = useQuery({
     queryKey: QUERY_KEY,
