@@ -3,12 +3,22 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useRealtimeTables } from "@/hooks/useRealtimeTables";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
-import { ArrowLeft, Loader2, Plus, Minus, Users, CreditCard, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Loader2, Plus, Minus, Users, CreditCard, CheckCircle2, Unlock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useState } from "react";
 import { InstallAppBanner } from "@/components/InstallAppBanner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 type TableStatus = "livre" | "ocupada" | "aguardando_pagamento";
 
@@ -38,6 +48,7 @@ export default function TablesPage() {
   const { isAdmin } = useIsAdmin();
   const queryClient = useQueryClient();
   useRealtimeTables(QUERY_KEY);
+  const [forceFreeTable, setForceFreeTable] = useState<TableItem | null>(null);
 
   const { data: tables, isLoading } = useQuery({
     queryKey: QUERY_KEY,
@@ -120,6 +131,33 @@ export default function TablesPage() {
     const { error } = await supabase.from("tables").delete().eq("id", last.id);
     if (error) toast.error("Erro ao remover mesa");
     else toast.success(`Mesa ${last.number} removida`);
+  };
+
+  // Força a liberação da mesa: cancela todos os pedidos ativos e reseta o estado.
+  // Uso administrativo para mesas travadas (ex: pedidos órfãos, garçom desconectado).
+  const handleForceFree = async (table: TableItem) => {
+    try {
+      // Cancela pedidos ativos da mesa
+      const { error: ordersError } = await supabase
+        .from("orders")
+        .update({ status: "cancelado" as any })
+        .eq("table_number", table.number)
+        .in("status", ["aberto", "preparando", "pronto", "entregue"]);
+      if (ordersError) throw ordersError;
+
+      // Reseta a mesa
+      const { error: tableError } = await supabase
+        .from("tables")
+        .update({ status: "livre" as any, current_order_id: null, waiter_id: null })
+        .eq("id", table.id);
+      if (tableError) throw tableError;
+
+      toast.success(`Mesa ${table.number} liberada com sucesso`);
+      queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: ["cashier-orders"] });
+    } catch {
+      toast.error("Erro ao liberar mesa");
+    }
   };
 
   const summary = {
@@ -252,12 +290,51 @@ export default function TablesPage() {
                     </button>
                   )}
                 </div>
+
+                {/* Admin: forçar liberação de mesa travada */}
+                {isAdmin && table.status !== "livre" && (
+                  <button
+                    onClick={() => setForceFreeTable(table)}
+                    className="w-full mt-1 py-1.5 rounded-lg bg-destructive/15 text-destructive text-[10px] font-bold hover:bg-destructive/25 transition-colors flex items-center justify-center gap-1"
+                    title="Forçar liberação (admin)"
+                  >
+                    <Unlock className="w-3 h-3" />
+                    Forçar Liberar
+                  </button>
+                )}
               </div>
             );
           })}
         </div>
       </main>
       <InstallAppBanner appName="Garçom" />
+
+      <AlertDialog open={!!forceFreeTable} onOpenChange={(open) => !open && setForceFreeTable(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Forçar liberação da Mesa {forceFreeTable?.number}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação irá <strong>cancelar todos os pedidos ativos</strong> desta mesa e
+              liberá-la imediatamente. Use apenas em casos de mesa travada (ex: garçom
+              desconectado, pedido órfão). Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (forceFreeTable) {
+                  handleForceFree(forceFreeTable);
+                  setForceFreeTable(null);
+                }
+              }}
+            >
+              Sim, forçar liberação
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
