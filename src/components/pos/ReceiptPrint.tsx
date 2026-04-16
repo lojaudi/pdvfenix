@@ -110,11 +110,21 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, { data: ReceiptData; head
 
         <div style={{ borderTop: "1px dashed #000", margin: "4px 0" }} />
 
+        {/* Channel identification banner */}
+        <div style={{ textAlign: "center", margin: "6px 0", padding: "4px 0", border: "2px solid #000" }}>
+          <div style={{ fontSize: 16, fontWeight: "bold", letterSpacing: 1 }}>
+            {data.channel === "delivery" && "★ PEDIDO DELIVERY ★"}
+            {data.channel === "balcao" && "★ PEDIDO BALCÃO ★"}
+            {data.channel === "garcom" && `★ PEDIDO MESA ${data.tableNumber || ""} ★`}
+          </div>
+        </div>
+
         {/* Order info */}
         <div style={{ fontSize: 11, marginBottom: 4 }}>
           <div><strong>Pedido:</strong> #{data.orderId.slice(0, 8).toUpperCase()}</div>
-          <div><strong>Canal:</strong> {channelLabels[data.channel] || data.channel}</div>
-          {data.tableNumber && <div><strong>Mesa:</strong> {data.tableNumber}</div>}
+          {data.channel === "garcom" && data.tableNumber && (
+            <div style={{ fontSize: 14, fontWeight: "bold" }}>Mesa: {data.tableNumber}</div>
+          )}
           {data.waiterName && <div><strong>Garçom:</strong> {data.waiterName}</div>}
           {data.customerName && <div><strong>Cliente:</strong> {data.customerName}</div>}
           {data.deliveryAddress && <div><strong>Endereço:</strong> {data.deliveryAddress}</div>}
