@@ -112,6 +112,7 @@ Deno.serve(async (req) => {
       const { userId } = payload;
       if (!userId) throw new Error("userId é obrigatório");
       if (userId === caller.id) throw new Error("Não é possível excluir a si mesmo");
+      await ensureNotProtected(userId);
 
       // Remove delivery_drivers record
       await supabaseAdmin.from("delivery_drivers").delete().eq("user_id", userId);
@@ -131,7 +132,7 @@ Deno.serve(async (req) => {
     if (action === "sync_roles") {
       const { userId, roles, phone } = payload;
       if (!userId) throw new Error("userId é obrigatório");
-
+      await ensureNotProtected(userId);
       // Get current roles
       const { data: currentRoles } = await supabaseAdmin
         .from("user_roles")
