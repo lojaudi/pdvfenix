@@ -62,7 +62,9 @@ export function TableSelector({ onSelect, selectedTable, currentUserId, fullScre
       <div className={gridClass} role="radiogroup" aria-label="Mesas disponíveis">
         {tableList.map((table) => {
           const isOccupied = table.status !== "livre";
-          const isMyTable = isOccupied && table.waiter_id === currentUserId;
+          // Mesa ocupada sem garçom atribuído (órfã) pode ser assumida por qualquer garçom.
+          const isOrphan = isOccupied && !table.waiter_id;
+          const isMyTable = isOccupied && (table.waiter_id === currentUserId || isOrphan);
           const isBlocked = isOccupied && !isMyTable;
           const isSelected = selectedTable === table.number;
 
