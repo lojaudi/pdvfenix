@@ -30,8 +30,11 @@ const allRoles: { id: DisplayRole; label: string; icon: typeof Shield; descripti
   { id: "entregador", label: "Entregador", icon: Bike, description: "Entregas e rastreamento" },
 ];
 
+const SUPER_ADMIN_EMAIL = "admin@pdvexpress.com";
+
 export function AdminUsers() {
   const [users, setUsers] = useState<UserWithRole[]>([]);
+  const [currentUserEmail, setCurrentUserEmail] = useState("");
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
