@@ -84,7 +84,7 @@ Deno.serve(async (req) => {
     if (action === "update") {
       const { userId, name, email, password } = payload;
       if (!userId) throw new Error("userId é obrigatório");
-
+      await ensureNotProtected(userId);
       const updateData: any = {};
       if (email) updateData.email = email;
       if (password) updateData.password = password;
