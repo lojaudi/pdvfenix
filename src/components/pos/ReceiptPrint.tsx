@@ -86,7 +86,7 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, { data: ReceiptData; head
           @media print {
             @page {
               size: ${width} auto;
-              margin: 0;
+              margin: 0 !important;
             }
             html, body {
               width: ${width} !important;
@@ -114,7 +114,9 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, { data: ReceiptData; head
               width: ${width} !important;
               padding: ${padding} !important;
               margin: 0 !important;
-              font-family: 'Courier New', monospace !important;
+              box-sizing: border-box !important;
+              font-family: 'Courier New', Courier, monospace !important;
+              text-align: left !important;
               font-size: ${baseFontSize} !important;
               line-height: 1.2 !important;
               color: #000 !important;
@@ -154,13 +156,17 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, { data: ReceiptData; head
         `}</style>
 
         {/* Header */}
-        <div style={{ textAlign: "center", marginBottom: isSmall ? 4 : 8 }}>
+        <div style={{ textAlign: "center", marginBottom: isSmall ? 4 : 8, width: "100%" }}>
           {headerLines.split("\n").map((line, i) => (
-            <div key={i} style={{ fontSize: i === 0 ? (isSmall ? 13 : 16) : (isSmall ? 9 : 10), fontWeight: i === 0 ? "bold" : "normal" }}>
+            <div key={i} style={{ 
+              fontSize: i === 0 ? (isSmall ? 13 : 16) : (isSmall ? 9 : 10), 
+              fontWeight: i === 0 ? "bold" : "normal",
+              textAlign: "center"
+            }}>
               {line}
             </div>
           ))}
-          <div style={{ fontSize: isSmall ? 10 : 13, fontWeight: "bold", marginTop: 4, letterSpacing: 0.5 }}>
+          <div style={{ fontSize: isSmall ? 10 : 13, fontWeight: "bold", marginTop: 4, letterSpacing: 0.5, textAlign: "center" }}>
             {format(now, "dd/MM/yyyy  HH:mm", { locale: ptBR })}
           </div>
         </div>
@@ -168,8 +174,8 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, { data: ReceiptData; head
         <div style={{ borderTop: "1px dashed #000", margin: "4px 0" }} />
 
         {/* Channel identification banner */}
-        <div style={{ textAlign: "center", margin: isSmall ? "4px 0" : "6px 0", padding: "4px 0", border: "2px solid #000" }}>
-          <div style={{ fontSize: isSmall ? 13 : 16, fontWeight: "bold", letterSpacing: 1 }}>
+        <div style={{ textAlign: "center", margin: isSmall ? "4px 0" : "6px 0", padding: "4px 0", border: "2px solid #000", width: "100%", boxSizing: "border-box" }}>
+          <div style={{ fontSize: isSmall ? 13 : 16, fontWeight: "bold", letterSpacing: 1, textAlign: "center" }}>
             {data.channel === "delivery" && "★ DELIVERY ★"}
             {data.channel === "balcao" && "★ BALCÃO ★"}
             {data.channel === "garcom" && `★ MESA ${data.tableNumber || ""} ★`}
@@ -255,9 +261,9 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, { data: ReceiptData; head
         <div style={{ borderTop: "1px dashed #000", margin: "8px 0" }} />
 
         {/* Footer */}
-        <div style={{ textAlign: "center", fontSize: isSmall ? 8 : 10 }}>
+        <div style={{ textAlign: "center", fontSize: isSmall ? 8 : 10, width: "100%" }}>
           {footerLines.split("\n").map((line, i) => (
-            <div key={i} style={{ marginTop: i > 0 ? 2 : 0 }}>{line}</div>
+            <div key={i} style={{ marginTop: i > 0 ? 2 : 0, textAlign: "center" }}>{line}</div>
           ))}
         </div>
       </div>
