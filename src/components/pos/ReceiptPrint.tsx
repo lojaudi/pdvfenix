@@ -167,17 +167,19 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, { data: ReceiptData; head
         <table style={{ width: "100%", fontSize: isSmall ? 9 : 11, borderCollapse: "collapse" }}>
           <thead>
             <tr>
-              <th style={{ textAlign: "left", paddingBottom: 2 }}>Item</th>
-              <th style={{ textAlign: "center", paddingBottom: 2 }}>Qtd</th>
-              <th style={{ textAlign: "right", paddingBottom: 2 }}>Valor</th>
+              <th style={{ textAlign: "left", paddingBottom: 2, width: "60%" }}>Item</th>
+              <th style={{ textAlign: "center", paddingBottom: 2, width: "15%" }}>Qtd</th>
+              <th style={{ textAlign: "right", paddingBottom: 2, width: "25%" }}>Valor</th>
             </tr>
           </thead>
           <tbody>
             {data.items.map((item, i) => (
               <tr key={i}>
-                <td style={{ paddingTop: 1, paddingBottom: 1, paddingRight: 4 }}>{item.product_name}</td>
-                <td style={{ textAlign: "center", verticalAlign: "top" }}>{item.quantity}</td>
-                <td style={{ textAlign: "right", verticalAlign: "top" }}>
+                <td style={{ paddingTop: 2, paddingBottom: 2, paddingRight: 4, wordWrap: "break-word", overflowWrap: "break-word" }}>
+                  {item.product_name}
+                </td>
+                <td style={{ textAlign: "center", verticalAlign: "top", paddingTop: 2 }}>{item.quantity}</td>
+                <td style={{ textAlign: "right", verticalAlign: "top", paddingTop: 2 }}>
                   {formatCurrency(item.quantity * item.unit_price)}
                 </td>
               </tr>
