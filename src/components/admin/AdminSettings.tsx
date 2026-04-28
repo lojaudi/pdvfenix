@@ -420,9 +420,11 @@ export function AdminSettings() {
             <div style={{
               marginTop: `${marginTop}px`,
               marginLeft: `${marginLeft}px`,
-              transform: `translate(${offsetX}px, ${offsetY}px)`,
+              paddingLeft: `${offsetX}px`,
+              paddingTop: `${offsetY}px`,
               padding: paperWidth === "58" ? "4px" : "12px",
-              border: "1px dashed #eee"
+              border: "1px dashed #eee",
+              boxSizing: "border-box"
             }}>
             {/* Preview Header */}
             <div className="text-center mb-2">
