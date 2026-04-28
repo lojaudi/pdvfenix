@@ -390,14 +390,16 @@ export function AdminSettings() {
         {/* Calibration Settings */}
         <div className="grid grid-cols-2 gap-4 border-t border-border pt-4">
           <div className="col-span-2">
-            <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Calibração de Alinhamento (mm)</h4>
+            <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">
+              Calibração {paperWidth}mm (mm)
+            </h4>
           </div>
           <div>
             <label className="text-[10px] font-semibold text-foreground mb-1 block">Margem Topo</label>
             <Input
               type="number"
-              value={marginTop}
-              onChange={(e) => setMarginTop(e.target.value)}
+              value={presets[paperWidth as "58" | "80"].marginTop}
+              onChange={(e) => updatePreset(paperWidth as "58" | "80", "marginTop", e.target.value)}
               className="bg-background border-border h-8 text-xs"
             />
           </div>
@@ -405,8 +407,8 @@ export function AdminSettings() {
             <label className="text-[10px] font-semibold text-foreground mb-1 block">Margem Esquerda</label>
             <Input
               type="number"
-              value={marginLeft}
-              onChange={(e) => setMarginLeft(e.target.value)}
+              value={presets[paperWidth as "58" | "80"].marginLeft}
+              onChange={(e) => updatePreset(paperWidth as "58" | "80", "marginLeft", e.target.value)}
               className="bg-background border-border h-8 text-xs"
             />
           </div>
@@ -414,8 +416,8 @@ export function AdminSettings() {
             <label className="text-[10px] font-semibold text-foreground mb-1 block">Deslocamento X</label>
             <Input
               type="number"
-              value={offsetX}
-              onChange={(e) => setOffsetX(e.target.value)}
+              value={presets[paperWidth as "58" | "80"].offsetX}
+              onChange={(e) => updatePreset(paperWidth as "58" | "80", "offsetX", e.target.value)}
               className="bg-background border-border h-8 text-xs"
             />
           </div>
@@ -423,8 +425,8 @@ export function AdminSettings() {
             <label className="text-[10px] font-semibold text-foreground mb-1 block">Deslocamento Y</label>
             <Input
               type="number"
-              value={offsetY}
-              onChange={(e) => setOffsetY(e.target.value)}
+              value={presets[paperWidth as "58" | "80"].offsetY}
+              onChange={(e) => updatePreset(paperWidth as "58" | "80", "offsetY", e.target.value)}
               className="bg-background border-border h-8 text-xs"
             />
           </div>
