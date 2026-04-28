@@ -40,27 +40,29 @@ export function useReceiptSettings() {
         .from("app_settings")
         .select("key, value");
       
-      const map: Record<string, string> = {};
-      (data || []).forEach((s) => { map[s.key] = s.value; });
+      const settingsMap: Record<string, string> = {};
+      (data || []).forEach((s) => { settingsMap[s.key] = s.value; });
 
-      // Logic to pick correct calibration based on paper_width
-      const paperWidth = map["paper_width"] || "80";
+      const paperWidth = settingsMap["paper_width"] || "80";
       const is58 = paperWidth === "58";
       
       return {
-        ...map,
-        effective_margin_top: is58 
-          ? (map["paper_width_58_margin_top"] || map["receipt_margin_top"] || "0")
-          : (map["paper_width_80_margin_top"] || map["receipt_margin_top"] || "0"),
-        effective_margin_left: is58
-          ? (map["paper_width_58_margin_left"] || map["receipt_margin_left"] || "0")
-          : (map["paper_width_80_margin_left"] || map["receipt_margin_left"] || "0"),
-        effective_offset_x: is58
-          ? (map["paper_width_58_offset_x"] || map["receipt_offset_x"] || "0")
-          : (map["paper_width_80_offset_x"] || map["receipt_offset_x"] || "0"),
-        effective_offset_y: is58
-          ? (map["paper_width_58_offset_y"] || map["receipt_offset_y"] || "0")
-          : (map["paper_width_80_offset_y"] || map["receipt_offset_y"] || "0"),
+        receipt_header: settingsMap["receipt_header"],
+        receipt_footer: settingsMap["receipt_footer"],
+        restaurant_name: settingsMap["restaurant_name"],
+        paper_width: paperWidth,
+        receipt_margin_top: is58 
+          ? (settingsMap["paper_width_58_margin_top"] || settingsMap["receipt_margin_top"] || "0")
+          : (settingsMap["paper_width_80_margin_top"] || settingsMap["receipt_margin_top"] || "0"),
+        receipt_margin_left: is58
+          ? (settingsMap["paper_width_58_margin_left"] || settingsMap["receipt_margin_left"] || "0")
+          : (settingsMap["paper_width_80_margin_left"] || settingsMap["receipt_margin_left"] || "0"),
+        receipt_offset_x: is58
+          ? (settingsMap["paper_width_58_offset_x"] || settingsMap["receipt_offset_x"] || "0")
+          : (settingsMap["paper_width_80_offset_x"] || settingsMap["receipt_offset_x"] || "0"),
+        receipt_offset_y: is58
+          ? (settingsMap["paper_width_58_offset_y"] || settingsMap["receipt_offset_y"] || "0")
+          : (settingsMap["paper_width_80_offset_y"] || settingsMap["receipt_offset_y"] || "0"),
       };
     },
     staleTime: 60_000,
