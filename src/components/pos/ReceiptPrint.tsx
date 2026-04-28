@@ -65,8 +65,8 @@ const paymentLabels: Record<string, string> = {
  * Receipt component optimised for 80mm thermal printers.
  * Rendered off-screen; call window.print() while it's mounted.
  */
-export const ReceiptPrint = forwardRef<HTMLDivElement, { data: ReceiptData; headerText?: string; footerText?: string; paperWidth?: string }>(
-  ({ data, headerText, footerText, paperWidth = "80" }, ref) => {
+export const ReceiptPrint = forwardRef<HTMLDivElement, { data: ReceiptData; headerText?: string; footerText?: string; paperWidth?: string; isPreview?: boolean }>(
+  ({ data, headerText, footerText, paperWidth = "80", isPreview = false }, ref) => {
     const now = data.paidAt ? new Date(data.paidAt) : new Date();
 
     const headerLines = headerText || "PDV FÊNIX";
@@ -77,24 +77,37 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, { data: ReceiptData; head
     const padding = isSmall ? "1mm" : "3mm";
 
     return (
-      <div ref={ref} className="receipt-print-area">
+      <div ref={ref} className={`receipt-print-area ${isPreview ? "no-print" : ""}`}>
         <style>{`
           @page {
             size: ${width} auto;
             margin: 0;
           }
           @media print {
+            @page {
+              size: ${width} auto;
+              margin: 0;
+            }
             html, body {
               width: ${width} !important;
               margin: 0 !important;
               padding: 0 !important;
               overflow: visible !important;
+              background-color: #ffffff !important;
               -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
             }
-            body * { visibility: hidden !important; }
-            .receipt-print-area,
-            .receipt-print-area * { visibility: visible !important; }
+            /* Hide everything except the root and the print area */
+            body > *:not(#root) {
+              display: none !important;
+            }
+            #root {
+              display: block !important;
+              visibility: hidden !important;
+            }
             .receipt-print-area {
+              visibility: visible !important;
+              display: block !important;
               position: absolute !important;
               left: 0 !important;
               top: 0 !important;
@@ -106,19 +119,37 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, { data: ReceiptData; head
               line-height: 1.2 !important;
               color: #000 !important;
               background: #fff !important;
-              overflow: visible !important;
-              display: block !important;
+              box-shadow: none !important;
+            }
+            .receipt-print-area * {
+              visibility: visible !important;
+            }
+            /* Specifically hide known UI overlays */
+            .sonner-toast, [data-radix-portal], header, nav, aside, .no-print {
+              display: none !important;
             }
             /* Force table widths */
             .receipt-print-area table {
               width: 100% !important;
               table-layout: fixed !important;
+              border-collapse: collapse !important;
             }
-            /* Hide UI elements */
-            #root, .sonner-toast, [data-radix-portal] { display: none !important; }
           }
           @media screen {
-            .receipt-print-area { display: none; }
+            .receipt-print-area { 
+              display: ${isPreview ? "block" : "none"};
+              ${isPreview ? `
+                width: ${width};
+                padding: ${padding};
+                background: #fff;
+                color: #000;
+                font-family: 'Courier New', monospace;
+                font-size: ${baseFontSize};
+                border: 1px solid #ccc;
+                box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+                margin: 0 auto;
+              ` : ""}
+            }
           }
         `}</style>
 
@@ -238,8 +269,9 @@ ReceiptPrint.displayName = "ReceiptPrint";
 
 /** Triggers print dialog for the receipt */
 export function triggerPrint() {
-  // Small delay to ensure the receipt DOM is rendered and settings are applied
+  // Increased delay to ensure the receipt DOM is rendered, settings are applied,
+  // and fonts/styles are fully loaded before opening the print dialog.
   setTimeout(() => {
     window.print();
-  }, 500);
+  }, 1000);
 }
