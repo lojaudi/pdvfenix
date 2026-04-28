@@ -84,16 +84,29 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, { data: ReceiptData; head
             margin: 0;
           }
           @media print {
+            @page {
+              size: ${width} auto;
+              margin: 0;
+            }
             html, body {
               width: ${width} !important;
               margin: 0 !important;
               padding: 0 !important;
               overflow: visible !important;
+              background-color: #ffffff !important;
               -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
             }
-            body * { visibility: hidden !important; }
+            /* Hide everything by default */
+            body * {
+              visibility: hidden !important;
+            }
+            /* Show only the receipt area and its children */
             .receipt-print-area,
-            .receipt-print-area * { visibility: visible !important; }
+            .receipt-print-area * {
+              visibility: visible !important;
+            }
+            /* Position the receipt area at the top left */
             .receipt-print-area {
               position: absolute !important;
               left: 0 !important;
@@ -108,14 +121,22 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, { data: ReceiptData; head
               background: #fff !important;
               overflow: visible !important;
               display: block !important;
+              box-shadow: none !important;
+            }
+            /* Ensure parents are not hidden with display:none */
+            #root, div[role="region"], main {
+              display: block !important;
+            }
+            /* Specifically hide known UI overlays that might interfere */
+            .sonner-toast, [data-radix-portal], header, nav, aside {
+              display: none !important;
             }
             /* Force table widths */
             .receipt-print-area table {
               width: 100% !important;
               table-layout: fixed !important;
+              border-collapse: collapse !important;
             }
-            /* Hide UI elements */
-            #root, .sonner-toast, [data-radix-portal] { display: none !important; }
           }
           @media screen {
             .receipt-print-area { display: none; }
