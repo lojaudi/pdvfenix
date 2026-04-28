@@ -29,6 +29,8 @@ const channelLabels: Record<OrderChannel, string> = {
   delivery: "Delivery",
 };
 
+import { ReceiptPrint, triggerPrint, useReceiptSettings, type ReceiptData } from "@/components/pos/ReceiptPrint";
+
 const Index = () => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
@@ -36,6 +38,7 @@ const Index = () => {
   const { unlocked, toggle: toggleSystem } = useSystemUnlocked();
   const { unlocked: catalogUnlocked, toggle: toggleCatalog } = useCatalogUnlocked();
   const { categories, products, loading } = useProducts();
+  const { data: settings } = useReceiptSettings();
   const [channel, setChannel] = useState<OrderChannel>("balcao");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [showPayment, setShowPayment] = useState(false);
@@ -46,6 +49,7 @@ const Index = () => {
   const [copiedUrl, setCopiedUrl] = useState(false);
   const [variationProduct, setVariationProduct] = useState<DbProduct | null>(null);
   const [productVariationCounts, setProductVariationCounts] = useState<Record<string, number>>({});
+  const [printData, setPrintData] = useState<ReceiptData | null>(null);
   const cart = useCart();
 
   const catalogUrl = `${window.location.origin}/menu`;
