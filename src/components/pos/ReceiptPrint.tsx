@@ -91,8 +91,10 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, {
         <div className="receipt-content-wrapper" style={{
           marginTop: `${marginTop}px`,
           marginLeft: `${marginLeft}px`,
-          transform: `translate(${offsetX}px, ${offsetY}px)`,
-          width: "100%"
+          paddingLeft: `${offsetX}px`,
+          paddingTop: `${offsetY}px`,
+          width: "100%",
+          boxSizing: "border-box"
         }}>
         <style>{`
           @page {
