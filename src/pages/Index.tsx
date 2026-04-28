@@ -116,8 +116,32 @@ const Index = () => {
       if (!user) return;
       setSubmitting(true);
       try {
-        await createOrder(cart.items, channel, undefined as any, user.id, selectedTable ?? undefined);
+        const order = await createOrder(cart.items, channel, undefined as any, user.id, selectedTable ?? undefined);
+        
+        // Prepare for printing
+        const receiptItems = cart.items.map(item => ({
+          product_name: item.variationName 
+            ? `${item.product.name} (${item.variationName})`
+            : item.product.name,
+          quantity: item.quantity,
+          unit_price: item.variationPrice ?? item.product.price
+        }));
+
+        setPrintData({
+          orderId: order.id,
+          channel: channel,
+          tableNumber: selectedTable,
+          customerName: null,
+          waiterName: user.email,
+          items: receiptItems,
+          total: cart.total,
+          paymentMethod: null,
+          createdAt: new Date().toISOString()
+        });
+
         toast.success(`Pedido enviado para Mesa ${selectedTable}!`);
+        triggerPrint();
+        
         cart.clearCart();
         setSelectedTable(null);
         setShowMobileCart(false);
@@ -135,10 +159,36 @@ const Index = () => {
     if (!user) return;
     setSubmitting(true);
     try {
-      await createOrder(cart.items, channel, method, user.id, selectedTable ?? undefined, customerName || undefined);
+      const order = await createOrder(cart.items, channel, method, user.id, selectedTable ?? undefined, customerName || undefined);
+      
+      // Prepare for printing
+      const receiptItems = cart.items.map(item => ({
+        product_name: item.variationName 
+          ? `${item.product.name} (${item.variationName})`
+          : item.product.name,
+        quantity: item.quantity,
+        unit_price: item.variationPrice ?? item.product.price
+      }));
+
+      setPrintData({
+        orderId: order.id,
+        channel: channel,
+        tableNumber: selectedTable,
+        customerName: customerName || null,
+        waiterName: user.email,
+        items: receiptItems,
+        total: cart.total,
+        paymentMethod: method,
+        createdAt: new Date().toISOString(),
+        paidAt: new Date().toISOString()
+      });
+
       toast.success(
         `Pedido finalizado! Pagamento via ${method.toUpperCase()} • ${channelLabels[channel]}${selectedTable ? ` • Mesa ${selectedTable}` : ""}`
       );
+      
+      triggerPrint();
+
       cart.clearCart();
       setShowPayment(false);
       setSelectedTable(null);
