@@ -29,6 +29,7 @@ export function AdminSettings() {
   const [saving, setSaving] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showTestContent, setShowTestContent] = useState(false);
 
   // Profile editing state
   const [profileName, setProfileName] = useState("");
@@ -434,9 +435,17 @@ export function AdminSettings() {
 
         {/* Receipt Live Preview */}
         <div>
-          <label className="text-xs font-semibold text-foreground mb-1.5 flex items-center gap-1.5">
-            <Printer className="w-4 h-4" /> Pré-visualização ({paperWidth}mm)
-          </label>
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+              <Printer className="w-4 h-4" /> Pré-visualização ({paperWidth}mm)
+            </label>
+            <button
+              onClick={() => setShowTestContent(!showTestContent)}
+              className="text-[10px] font-bold text-primary hover:underline"
+            >
+              {showTestContent ? "Ver comanda real" : "Ver teste de alinhamento"}
+            </button>
+          </div>
           <div 
             className="bg-white rounded-lg border border-border font-mono leading-relaxed mx-auto shadow-sm transition-all overflow-hidden relative" 
             style={{ 
@@ -469,51 +478,78 @@ export function AdminSettings() {
               boxSizing: "border-box",
               position: "relative"
             }}>
-            {/* Preview Header */}
-            <div className="text-center mb-2">
-              {(receiptHeader || "PDV FÊNIX").split("\n").map((line, i) => (
-                <div key={i} style={{ fontSize: i === 0 ? (paperWidth === "58" ? "12px" : "14px") : (paperWidth === "58" ? "8px" : "10px"), fontWeight: i === 0 ? "bold" : "normal" }}>
-                  {line}
+            {showTestContent ? (
+              /* Calibration Test Pattern */
+              <div className="space-y-2 text-center">
+                <div className="font-bold border-b border-black pb-1">TESTE DE ALINHAMENTO {paperWidth}mm</div>
+                <div className="text-[10px] bg-black text-white py-0.5">MARGEM ESQUERDA ◀▶ MARGEM DIREITA</div>
+                <div className="flex justify-between border-x border-black px-1 text-[8px]">
+                  <span>| 0mm</span>
+                  <span>CENTRO</span>
+                  <span>{paperWidth}mm |</span>
                 </div>
-              ))}
-              <div style={{ fontSize: paperWidth === "58" ? "8px" : "10px" }} className="text-gray-500">27/02/2026 14:30</div>
-            </div>
-            <div className="border-t border-dashed border-gray-400 my-1" />
-            {/* Preview Order Info */}
-            <div style={{ fontSize: paperWidth === "58" ? "9px" : "11px" }} className="mb-1 space-y-0.5">
-              <div><strong>Pedido:</strong> #A1B2C3D4</div>
-              <div><strong>Canal:</strong> Balcão</div>
-            </div>
-            <div className="border-t border-dashed border-gray-400 my-1" />
-            {/* Preview Items */}
-            <table className="w-full" style={{ fontSize: paperWidth === "58" ? "9px" : "11px" }}>
-              <thead>
-                <tr>
-                  <th className="text-left pb-0.5">Item</th>
-                  <th className="text-center pb-0.5">Qtd</th>
-                  <th className="text-right pb-0.5">Valor</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr><td>X-Burger</td><td className="text-center">2</td><td className="text-right">R$ 39,80</td></tr>
-                <tr><td>Coca-Cola</td><td className="text-center">2</td><td className="text-right">R$ 14,00</td></tr>
-                <tr><td>Batata Frita</td><td className="text-center">1</td><td className="text-right">R$ 12,00</td></tr>
-              </tbody>
-            </table>
-            <div className="border-t border-dashed border-gray-400 my-1" />
-            {/* Preview Total */}
-            <div className="flex justify-between font-bold" style={{ fontSize: paperWidth === "58" ? "10px" : "12px" }}>
-              <span>TOTAL</span>
-              <span>R$ 65,80</span>
-            </div>
-            <div style={{ fontSize: paperWidth === "58" ? "9px" : "11px" }} className="mt-1"><strong>Pagamento:</strong> PIX</div>
-            <div className="border-t border-dashed border-gray-400 my-2" />
-            {/* Preview Footer */}
-            <div className="text-center" style={{ fontSize: paperWidth === "58" ? "8px" : "10px" }}>
-              {(receiptFooter || "Obrigado pela preferência!\nPDV Fênix • Sistema de Gestão").split("\n").map((line, i) => (
-                <div key={i}>{line}</div>
-              ))}
-            </div>
+                <div className="py-2 space-y-1">
+                  <div className="w-full bg-gray-200 h-4 flex items-center justify-center text-[8px] font-bold">BLOCO TOTAL LARGURA</div>
+                  <div className="flex gap-1">
+                    <div className="flex-1 bg-gray-300 h-4 flex items-center justify-center text-[7px]">ESQ</div>
+                    <div className="flex-1 bg-gray-300 h-4 flex items-center justify-center text-[7px]">DIR</div>
+                  </div>
+                </div>
+                <div className="text-[7px] leading-tight opacity-50">
+                  {"LINHA DE TESTE REPETIDA PARA CALIBRAÇÃO ".repeat(3)}
+                  {"LINHA DE TESTE REPETIDA PARA CALIBRAÇÃO ".repeat(3)}
+                </div>
+                <div className="border-t border-black pt-1 font-bold">FIM DO TESTE</div>
+              </div>
+            ) : (
+              <>
+                {/* Preview Header */}
+                <div className="text-center mb-2">
+                  {(receiptHeader || "PDV FÊNIX").split("\n").map((line, i) => (
+                    <div key={i} style={{ fontSize: i === 0 ? (paperWidth === "58" ? "12px" : "14px") : (paperWidth === "58" ? "8px" : "10px"), fontWeight: i === 0 ? "bold" : "normal" }}>
+                      {line}
+                    </div>
+                  ))}
+                  <div style={{ fontSize: paperWidth === "58" ? "8px" : "10px" }} className="text-gray-500">27/02/2026 14:30</div>
+                </div>
+                <div className="border-t border-dashed border-gray-400 my-1" />
+                {/* Preview Order Info */}
+                <div style={{ fontSize: paperWidth === "58" ? "9px" : "11px" }} className="mb-1 space-y-0.5">
+                  <div><strong>Pedido:</strong> #A1B2C3D4</div>
+                  <div><strong>Canal:</strong> Balcão</div>
+                </div>
+                <div className="border-t border-dashed border-gray-400 my-1" />
+                {/* Preview Items */}
+                <table className="w-full" style={{ fontSize: paperWidth === "58" ? "9px" : "11px" }}>
+                  <thead>
+                    <tr>
+                      <th className="text-left pb-0.5">Item</th>
+                      <th className="text-center pb-0.5">Qtd</th>
+                      <th className="text-right pb-0.5">Valor</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr><td>X-Burger</td><td className="text-center">2</td><td className="text-right">R$ 39,80</td></tr>
+                    <tr><td>Coca-Cola</td><td className="text-center">2</td><td className="text-right">R$ 14,00</td></tr>
+                    <tr><td>Batata Frita</td><td className="text-center">1</td><td className="text-right">R$ 12,00</td></tr>
+                  </tbody>
+                </table>
+                <div className="border-t border-dashed border-gray-400 my-1" />
+                {/* Preview Total */}
+                <div className="flex justify-between font-bold" style={{ fontSize: paperWidth === "58" ? "10px" : "12px" }}>
+                  <span>TOTAL</span>
+                  <span>R$ 65,80</span>
+                </div>
+                <div style={{ fontSize: paperWidth === "58" ? "9px" : "11px" }} className="mt-1"><strong>Pagamento:</strong> PIX</div>
+                <div className="border-t border-dashed border-gray-400 my-2" />
+                {/* Preview Footer */}
+                <div className="text-center" style={{ fontSize: paperWidth === "58" ? "8px" : "10px" }}>
+                  {(receiptFooter || "Obrigado pela preferência!\nPDV Fênix • Sistema de Gestão").split("\n").map((line, i) => (
+                    <div key={i}>{line}</div>
+                  ))}
+                </div>
+              </>
+            )}
             </div>
           </div>
         </div>
