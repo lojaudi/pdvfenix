@@ -18,19 +18,31 @@ export function ProductCard({ product, onAdd }: ProductCardProps) {
       aria-label={`Adicionar ${product.name} - ${formatCurrency(product.price)}${!product.in_stock ? " (indisponível)" : ""}`}
     >
       {product.image_url && (
-        <div className="w-full aspect-square bg-muted overflow-hidden">
+        <div className="relative w-full aspect-square bg-muted overflow-hidden">
           <img
             src={product.image_url}
             alt={product.name}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             loading="lazy"
           />
+          {!product.in_stock && (
+            <div className="absolute inset-0 flex items-center justify-center bg-background/70 backdrop-blur-[1px]">
+              <span className="px-3 py-1.5 rounded-md bg-destructive text-destructive-foreground text-xs font-extrabold uppercase tracking-wide shadow-lg">
+                Estoque zerado
+              </span>
+            </div>
+          )}
         </div>
       )}
       <div className="p-3 sm:p-4 flex flex-col flex-1">
         <div className="flex items-start justify-between mb-2">
           <h3 className="font-semibold text-card-foreground text-sm leading-tight pr-2">
             {product.name}
+            {!product.in_stock && (
+              <span className="ml-1.5 inline-block align-middle text-[10px] font-bold uppercase text-destructive">
+                • Indisponível
+              </span>
+            )}
           </h3>
           <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center sm:opacity-0 sm:group-hover:opacity-100 transition-opacity" aria-hidden="true">
             <Plus className="w-4 h-4" />
