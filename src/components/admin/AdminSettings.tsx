@@ -408,15 +408,27 @@ export function AdminSettings() {
             <Printer className="w-4 h-4" /> Pré-visualização ({paperWidth}mm)
           </label>
           <div 
-            className="bg-white rounded-lg border border-border font-mono leading-relaxed mx-auto shadow-sm transition-all overflow-hidden" 
+            className="bg-white rounded-lg border border-border font-mono leading-relaxed mx-auto shadow-sm transition-all overflow-hidden relative" 
             style={{ 
               color: "#000",
               width: paperWidth === "58" ? "200px" : "280px",
               fontSize: paperWidth === "58" ? "9px" : "11px",
               padding: "4px",
-              position: "relative"
             }}
           >
+            {/* Linhas-guia e Régua */}
+            <div className="absolute top-0 left-0 w-full h-1 bg-primary/20 flex justify-between px-1 pointer-events-none">
+              {[...Array(11)].map((_, i) => (
+                <div key={i} className="h-full w-px bg-primary/40" />
+              ))}
+            </div>
+            <div className="absolute top-0 left-0 h-full w-1 bg-primary/20 flex flex-col justify-between py-1 pointer-events-none">
+              {[...Array(15)].map((_, i) => (
+                <div key={i} className="w-full h-px bg-primary/40" />
+              ))}
+            </div>
+            <div className="absolute top-0 left-1/2 h-full w-px bg-red-500/30 border-l border-dashed border-red-500/50 pointer-events-none z-10" />
+
             <div style={{
               marginTop: `${marginTop}px`,
               marginLeft: `${marginLeft}px`,
@@ -424,7 +436,8 @@ export function AdminSettings() {
               paddingTop: `${offsetY}px`,
               padding: paperWidth === "58" ? "4px" : "12px",
               border: "1px dashed #eee",
-              boxSizing: "border-box"
+              boxSizing: "border-box",
+              position: "relative"
             }}>
             {/* Preview Header */}
             <div className="text-center mb-2">
