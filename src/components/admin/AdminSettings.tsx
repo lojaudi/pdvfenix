@@ -408,13 +408,22 @@ export function AdminSettings() {
             <Printer className="w-4 h-4" /> Pré-visualização ({paperWidth}mm)
           </label>
           <div 
-            className="bg-white rounded-lg border border-border p-4 font-mono leading-relaxed mx-auto shadow-sm transition-all" 
+            className="bg-white rounded-lg border border-border font-mono leading-relaxed mx-auto shadow-sm transition-all overflow-hidden" 
             style={{ 
               color: "#000",
               width: paperWidth === "58" ? "200px" : "280px",
-              fontSize: paperWidth === "58" ? "9px" : "11px"
+              fontSize: paperWidth === "58" ? "9px" : "11px",
+              padding: "4px",
+              position: "relative"
             }}
           >
+            <div style={{
+              marginTop: `${marginTop}px`,
+              marginLeft: `${marginLeft}px`,
+              transform: `translate(${offsetX}px, ${offsetY}px)`,
+              padding: paperWidth === "58" ? "4px" : "12px",
+              border: "1px dashed #eee"
+            }}>
             {/* Preview Header */}
             <div className="text-center mb-2">
               {(receiptHeader || "PDV FÊNIX").split("\n").map((line, i) => (
