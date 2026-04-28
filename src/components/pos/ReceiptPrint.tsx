@@ -115,7 +115,8 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, { data: ReceiptData; head
               padding: ${padding} !important;
               margin: 0 !important;
               box-sizing: border-box !important;
-              font-family: 'Courier New', monospace !important;
+              font-family: 'Courier New', Courier, monospace !important;
+              text-align: left !important;
               font-size: ${baseFontSize} !important;
               line-height: 1.2 !important;
               color: #000 !important;
