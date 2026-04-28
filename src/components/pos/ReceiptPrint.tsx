@@ -39,7 +39,7 @@ export function useReceiptSettings() {
       const { data } = await supabase
         .from("app_settings")
         .select("key, value")
-        .in("key", ["receipt_header", "receipt_footer", "restaurant_name"]);
+        .in("key", ["receipt_header", "receipt_footer", "restaurant_name", "paper_width"]);
       const map: Record<string, string> = {};
       (data || []).forEach((s) => { map[s.key] = s.value; });
       return map;
