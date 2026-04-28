@@ -12,7 +12,8 @@ import { AdminSettings } from "@/components/admin/AdminSettings";
 import { AdminVisualSettings } from "@/components/admin/AdminVisualSettings";
 import { AdminNeonBoard } from "@/components/admin/AdminNeonBoard";
 import { AdminWhatsApp } from "@/components/admin/AdminWhatsApp";
-import { ArrowLeft, Package, Grid3X3, Users, Loader2, ShieldAlert, Truck, Bike, Settings, Palette, Zap, MessageSquare } from "lucide-react";
+import { AdminPrintTest } from "@/components/admin/AdminPrintTest";
+import { ArrowLeft, Package, Grid3X3, Users, Loader2, ShieldAlert, Truck, Bike, Settings, Palette, Zap, MessageSquare, Printer } from "lucide-react";
 
 type Tab = "products" | "categories" | "users" | "delivery" | "drivers" | "settings" | "visual" | "neon" | "whatsapp";
 
