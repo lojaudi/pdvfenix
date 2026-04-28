@@ -19,6 +19,10 @@ export function AdminSettings() {
   const [receiptHeader, setReceiptHeader] = useState("");
   const [receiptFooter, setReceiptFooter] = useState("");
   const [paperWidth, setPaperWidth] = useState("80");
+  const [marginTop, setMarginTop] = useState("0");
+  const [marginLeft, setMarginLeft] = useState("0");
+  const [offsetX, setOffsetX] = useState("0");
+  const [offsetY, setOffsetY] = useState("0");
   const [saving, setSaving] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
