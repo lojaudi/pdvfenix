@@ -86,7 +86,7 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, { data: ReceiptData; head
           @media print {
             @page {
               size: ${width} auto;
-              margin: 0;
+              margin: 0 !important;
             }
             html, body {
               width: ${width} !important;
@@ -114,6 +114,7 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, { data: ReceiptData; head
               width: ${width} !important;
               padding: ${padding} !important;
               margin: 0 !important;
+              box-sizing: border-box !important;
               font-family: 'Courier New', monospace !important;
               font-size: ${baseFontSize} !important;
               line-height: 1.2 !important;
