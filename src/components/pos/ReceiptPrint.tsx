@@ -77,7 +77,7 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, { data: ReceiptData; head
     const padding = isSmall ? "1mm" : "3mm";
 
     return (
-      <div ref={ref} className="receipt-print-area">
+      <div ref={ref} className={`receipt-print-area ${isPreview ? "no-print" : ""}`}>
         <style>{`
           @page {
             size: ${width} auto;
