@@ -97,17 +97,17 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, { data: ReceiptData; head
               -webkit-print-color-adjust: exact !important;
               print-color-adjust: exact !important;
             }
-            /* Hide everything by default */
-            body * {
+            /* Hide everything except the root and the print area */
+            body > *:not(#root) {
+              display: none !important;
+            }
+            #root {
+              display: block !important;
               visibility: hidden !important;
             }
-            /* Show only the receipt area and its children */
-            .receipt-print-area,
-            .receipt-print-area * {
-              visibility: visible !important;
-            }
-            /* Position the receipt area at the top left */
             .receipt-print-area {
+              visibility: visible !important;
+              display: block !important;
               position: absolute !important;
               left: 0 !important;
               top: 0 !important;
@@ -119,15 +119,12 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, { data: ReceiptData; head
               line-height: 1.2 !important;
               color: #000 !important;
               background: #fff !important;
-              overflow: visible !important;
-              display: block !important;
               box-shadow: none !important;
             }
-            /* Ensure parents are not hidden with display:none */
-            #root, div[role="region"], main {
-              display: block !important;
+            .receipt-print-area * {
+              visibility: visible !important;
             }
-            /* Specifically hide known UI overlays that might interfere */
+            /* Specifically hide known UI overlays */
             .sonner-toast, [data-radix-portal], header, nav, aside {
               display: none !important;
             }
