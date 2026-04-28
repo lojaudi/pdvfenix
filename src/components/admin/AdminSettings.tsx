@@ -460,10 +460,10 @@ export function AdminSettings() {
             <div className="absolute top-0 left-1/2 h-full w-px bg-red-500/30 border-l border-dashed border-red-500/50 pointer-events-none z-10" />
 
             <div style={{
-              marginTop: `${marginTop}px`,
-              marginLeft: `${marginLeft}px`,
-              paddingLeft: `${offsetX}px`,
-              paddingTop: `${offsetY}px`,
+              marginTop: `${presets[paperWidth as "58" | "80"].marginTop}px`,
+              marginLeft: `${presets[paperWidth as "58" | "80"].marginLeft}px`,
+              paddingLeft: `${presets[paperWidth as "58" | "80"].offsetX}px`,
+              paddingTop: `${presets[paperWidth as "58" | "80"].offsetY}px`,
               padding: paperWidth === "58" ? "4px" : "12px",
               border: "1px dashed #eee",
               boxSizing: "border-box",
