@@ -84,7 +84,14 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, { data: ReceiptData; head
             margin: 0;
           }
           @media print {
-            body * { visibility: hidden !important; overflow: visible !important; }
+            html, body {
+              width: ${width} !important;
+              margin: 0 !important;
+              padding: 0 !important;
+              overflow: visible !important;
+              -webkit-print-color-adjust: exact !important;
+            }
+            body * { visibility: hidden !important; }
             .receipt-print-area,
             .receipt-print-area * { visibility: visible !important; }
             .receipt-print-area {
@@ -100,9 +107,15 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, { data: ReceiptData; head
               color: #000 !important;
               background: #fff !important;
               overflow: visible !important;
+              display: block !important;
             }
-            /* Hide UI elements that might appear */
-            #root, .sonner-toast { display: none !important; }
+            /* Force table widths */
+            .receipt-print-area table {
+              width: 100% !important;
+              table-layout: fixed !important;
+            }
+            /* Hide UI elements */
+            #root, .sonner-toast, [data-radix-portal] { display: none !important; }
           }
           @media screen {
             .receipt-print-area { display: none; }
