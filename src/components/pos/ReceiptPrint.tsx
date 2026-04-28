@@ -156,13 +156,17 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, { data: ReceiptData; head
         `}</style>
 
         {/* Header */}
-        <div style={{ textAlign: "center", marginBottom: isSmall ? 4 : 8 }}>
+        <div style={{ textAlign: "center", marginBottom: isSmall ? 4 : 8, width: "100%" }}>
           {headerLines.split("\n").map((line, i) => (
-            <div key={i} style={{ fontSize: i === 0 ? (isSmall ? 13 : 16) : (isSmall ? 9 : 10), fontWeight: i === 0 ? "bold" : "normal" }}>
+            <div key={i} style={{ 
+              fontSize: i === 0 ? (isSmall ? 13 : 16) : (isSmall ? 9 : 10), 
+              fontWeight: i === 0 ? "bold" : "normal",
+              textAlign: "center"
+            }}>
               {line}
             </div>
           ))}
-          <div style={{ fontSize: isSmall ? 10 : 13, fontWeight: "bold", marginTop: 4, letterSpacing: 0.5 }}>
+          <div style={{ fontSize: isSmall ? 10 : 13, fontWeight: "bold", marginTop: 4, letterSpacing: 0.5, textAlign: "center" }}>
             {format(now, "dd/MM/yyyy  HH:mm", { locale: ptBR })}
           </div>
         </div>
