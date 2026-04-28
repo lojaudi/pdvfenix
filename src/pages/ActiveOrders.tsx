@@ -416,6 +416,10 @@ export default function ActiveOrdersPage() {
           headerText={receiptSettings?.receipt_header}
           footerText={receiptSettings?.receipt_footer}
           paperWidth={receiptSettings?.paper_width}
+          marginTop={receiptSettings?.receipt_margin_top}
+          marginLeft={receiptSettings?.receipt_margin_left}
+          offsetX={receiptSettings?.receipt_offset_x}
+          offsetY={receiptSettings?.receipt_offset_y}
         />
       )}
     </div>
