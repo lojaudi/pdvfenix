@@ -12,9 +12,10 @@ import { AdminSettings } from "@/components/admin/AdminSettings";
 import { AdminVisualSettings } from "@/components/admin/AdminVisualSettings";
 import { AdminNeonBoard } from "@/components/admin/AdminNeonBoard";
 import { AdminWhatsApp } from "@/components/admin/AdminWhatsApp";
-import { ArrowLeft, Package, Grid3X3, Users, Loader2, ShieldAlert, Truck, Bike, Settings, Palette, Zap, MessageSquare } from "lucide-react";
+import { AdminPrintTest } from "@/components/admin/AdminPrintTest";
+import { ArrowLeft, Package, Grid3X3, Users, Loader2, ShieldAlert, Truck, Bike, Settings, Palette, Zap, MessageSquare, Printer } from "lucide-react";
 
-type Tab = "products" | "categories" | "users" | "delivery" | "drivers" | "settings" | "visual" | "neon" | "whatsapp";
+type Tab = "products" | "categories" | "users" | "delivery" | "drivers" | "settings" | "visual" | "neon" | "whatsapp" | "print_test";
 
 const tabs: { id: Tab; label: string; icon: typeof Package }[] = [
   { id: "products", label: "Produtos", icon: Package },
@@ -24,6 +25,7 @@ const tabs: { id: Tab; label: string; icon: typeof Package }[] = [
   { id: "drivers", label: "Entregadores", icon: Bike },
   { id: "whatsapp", label: "WhatsApp", icon: MessageSquare },
   { id: "settings", label: "Config", icon: Settings },
+  { id: "print_test", label: "Teste Comanda", icon: Printer },
   { id: "visual", label: "Visual", icon: Palette },
   { id: "neon", label: "Neon", icon: Zap },
 ];
@@ -114,6 +116,7 @@ export default function AdminPage() {
         {activeTab === "delivery" && <AdminDeliveryZones />}
         {activeTab === "drivers" && <AdminDrivers />}
         {activeTab === "settings" && <AdminSettings />}
+        {activeTab === "print_test" && <AdminPrintTest />}
         {activeTab === "visual" && <AdminVisualSettings />}
         {activeTab === "neon" && <AdminNeonBoard />}
         {activeTab === "whatsapp" && <AdminWhatsApp />}
