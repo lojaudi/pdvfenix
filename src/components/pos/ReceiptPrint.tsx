@@ -71,28 +71,38 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, { data: ReceiptData; head
 
     const headerLines = headerText || "PDV FÊNIX";
     const footerLines = footerText || "Obrigado pela preferência!\nPDV Fênix • Sistema de Gestão";
-    const width = paperWidth === "58" ? "58mm" : "80mm";
-    const fontSize = paperWidth === "58" ? "10px" : "12px";
-    const padding = paperWidth === "58" ? "2mm" : "4mm";
+    const isSmall = paperWidth === "58";
+    const width = isSmall ? "58mm" : "80mm";
+    const baseFontSize = isSmall ? "10px" : "12px";
+    const padding = isSmall ? "1mm" : "3mm";
 
     return (
       <div ref={ref} className="receipt-print-area">
         <style>{`
+          @page {
+            size: ${width} auto;
+            margin: 0;
+          }
           @media print {
-            body * { visibility: hidden !important; }
+            body * { visibility: hidden !important; overflow: visible !important; }
             .receipt-print-area,
             .receipt-print-area * { visibility: visible !important; }
             .receipt-print-area {
-              position: fixed !important;
+              position: absolute !important;
               left: 0 !important;
               top: 0 !important;
               width: ${width} !important;
               padding: ${padding} !important;
+              margin: 0 !important;
               font-family: 'Courier New', monospace !important;
-              font-size: ${fontSize} !important;
+              font-size: ${baseFontSize} !important;
+              line-height: 1.2 !important;
               color: #000 !important;
               background: #fff !important;
+              overflow: visible !important;
             }
+            /* Hide UI elements that might appear */
+            #root, .sonner-toast { display: none !important; }
           }
           @media screen {
             .receipt-print-area { display: none; }
