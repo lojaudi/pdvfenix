@@ -65,12 +65,15 @@ const paymentLabels: Record<string, string> = {
  * Receipt component optimised for 80mm thermal printers.
  * Rendered off-screen; call window.print() while it's mounted.
  */
-export const ReceiptPrint = forwardRef<HTMLDivElement, { data: ReceiptData; headerText?: string; footerText?: string }>(
-  ({ data, headerText, footerText }, ref) => {
+export const ReceiptPrint = forwardRef<HTMLDivElement, { data: ReceiptData; headerText?: string; footerText?: string; paperWidth?: string }>(
+  ({ data, headerText, footerText, paperWidth = "80" }, ref) => {
     const now = data.paidAt ? new Date(data.paidAt) : new Date();
 
     const headerLines = headerText || "PDV FÊNIX";
     const footerLines = footerText || "Obrigado pela preferência!\nPDV Fênix • Sistema de Gestão";
+    const width = paperWidth === "58" ? "58mm" : "80mm";
+    const fontSize = paperWidth === "58" ? "10px" : "12px";
+    const padding = paperWidth === "58" ? "2mm" : "4mm";
 
     return (
       <div ref={ref} className="receipt-print-area">
@@ -83,10 +86,10 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, { data: ReceiptData; head
               position: fixed !important;
               left: 0 !important;
               top: 0 !important;
-              width: 80mm !important;
-              padding: 4mm !important;
+              width: ${width} !important;
+              padding: ${padding} !important;
               font-family: 'Courier New', monospace !important;
-              font-size: 12px !important;
+              font-size: ${fontSize} !important;
               color: #000 !important;
               background: #fff !important;
             }
