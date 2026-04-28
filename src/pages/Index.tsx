@@ -446,6 +446,15 @@ const Index = () => {
           channel={channel}
         />
       )}
+
+      {printData && (
+        <ReceiptPrint
+          data={printData}
+          headerText={settings?.receipt_header}
+          footerText={settings?.receipt_footer}
+          paperWidth={settings?.paper_width}
+        />
+      )}
     </main>
   );
 };
