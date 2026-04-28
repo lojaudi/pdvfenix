@@ -19,6 +19,10 @@ export function AdminSettings() {
   const [receiptHeader, setReceiptHeader] = useState("");
   const [receiptFooter, setReceiptFooter] = useState("");
   const [paperWidth, setPaperWidth] = useState("80");
+  const [marginTop, setMarginTop] = useState("0");
+  const [marginLeft, setMarginLeft] = useState("0");
+  const [offsetX, setOffsetX] = useState("0");
+  const [offsetY, setOffsetY] = useState("0");
   const [saving, setSaving] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -122,6 +126,10 @@ export function AdminSettings() {
       setReceiptHeader(get("receipt_header"));
       setReceiptFooter(get("receipt_footer"));
       setPaperWidth(get("paper_width") || "80");
+      setMarginTop(get("receipt_margin_top") || "0");
+      setMarginLeft(get("receipt_margin_left") || "0");
+      setOffsetX(get("receipt_offset_x") || "0");
+      setOffsetY(get("receipt_offset_y") || "0");
     }
   }, [settings]);
 
@@ -186,6 +194,10 @@ export function AdminSettings() {
         { key: "receipt_header", value: receiptHeader, updated_at: now },
         { key: "receipt_footer", value: receiptFooter, updated_at: now },
         { key: "paper_width", value: paperWidth, updated_at: now },
+        { key: "receipt_margin_top", value: marginTop, updated_at: now },
+        { key: "receipt_margin_left", value: marginLeft, updated_at: now },
+        { key: "receipt_offset_x", value: offsetX, updated_at: now },
+        { key: "receipt_offset_y", value: offsetY, updated_at: now },
       ];
       const { error } = await supabase
         .from("app_settings")
@@ -347,19 +359,73 @@ export function AdminSettings() {
           </div>
         </div>
 
+        {/* Calibration Settings */}
+        <div className="grid grid-cols-2 gap-4 border-t border-border pt-4">
+          <div className="col-span-2">
+            <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Calibração de Alinhamento (mm)</h4>
+          </div>
+          <div>
+            <label className="text-[10px] font-semibold text-foreground mb-1 block">Margem Topo</label>
+            <Input
+              type="number"
+              value={marginTop}
+              onChange={(e) => setMarginTop(e.target.value)}
+              className="bg-background border-border h-8 text-xs"
+            />
+          </div>
+          <div>
+            <label className="text-[10px] font-semibold text-foreground mb-1 block">Margem Esquerda</label>
+            <Input
+              type="number"
+              value={marginLeft}
+              onChange={(e) => setMarginLeft(e.target.value)}
+              className="bg-background border-border h-8 text-xs"
+            />
+          </div>
+          <div>
+            <label className="text-[10px] font-semibold text-foreground mb-1 block">Deslocamento X</label>
+            <Input
+              type="number"
+              value={offsetX}
+              onChange={(e) => setOffsetX(e.target.value)}
+              className="bg-background border-border h-8 text-xs"
+            />
+          </div>
+          <div>
+            <label className="text-[10px] font-semibold text-foreground mb-1 block">Deslocamento Y</label>
+            <Input
+              type="number"
+              value={offsetY}
+              onChange={(e) => setOffsetY(e.target.value)}
+              className="bg-background border-border h-8 text-xs"
+            />
+          </div>
+        </div>
+
         {/* Receipt Live Preview */}
         <div>
           <label className="text-xs font-semibold text-foreground mb-1.5 flex items-center gap-1.5">
             <Printer className="w-4 h-4" /> Pré-visualização ({paperWidth}mm)
           </label>
           <div 
-            className="bg-white rounded-lg border border-border p-4 font-mono leading-relaxed mx-auto shadow-sm transition-all" 
+            className="bg-white rounded-lg border border-border font-mono leading-relaxed mx-auto shadow-sm transition-all overflow-hidden" 
             style={{ 
               color: "#000",
               width: paperWidth === "58" ? "200px" : "280px",
-              fontSize: paperWidth === "58" ? "9px" : "11px"
+              fontSize: paperWidth === "58" ? "9px" : "11px",
+              padding: "4px",
+              position: "relative"
             }}
           >
+            <div style={{
+              marginTop: `${marginTop}px`,
+              marginLeft: `${marginLeft}px`,
+              paddingLeft: `${offsetX}px`,
+              paddingTop: `${offsetY}px`,
+              padding: paperWidth === "58" ? "4px" : "12px",
+              border: "1px dashed #eee",
+              boxSizing: "border-box"
+            }}>
             {/* Preview Header */}
             <div className="text-center mb-2">
               {(receiptHeader || "PDV FÊNIX").split("\n").map((line, i) => (
@@ -404,6 +470,7 @@ export function AdminSettings() {
               {(receiptFooter || "Obrigado pela preferência!\nPDV Fênix • Sistema de Gestão").split("\n").map((line, i) => (
                 <div key={i}>{line}</div>
               ))}
+            </div>
             </div>
           </div>
         </div>

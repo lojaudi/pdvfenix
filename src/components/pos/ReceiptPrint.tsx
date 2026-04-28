@@ -39,7 +39,7 @@ export function useReceiptSettings() {
       const { data } = await supabase
         .from("app_settings")
         .select("key, value")
-        .in("key", ["receipt_header", "receipt_footer", "restaurant_name", "paper_width"]);
+        .in("key", ["receipt_header", "receipt_footer", "restaurant_name", "paper_width", "receipt_margin_top", "receipt_margin_left", "receipt_offset_x", "receipt_offset_y"]);
       const map: Record<string, string> = {};
       (data || []).forEach((s) => { map[s.key] = s.value; });
       return map;
@@ -65,8 +65,18 @@ const paymentLabels: Record<string, string> = {
  * Receipt component optimised for 80mm thermal printers.
  * Rendered off-screen; call window.print() while it's mounted.
  */
-export const ReceiptPrint = forwardRef<HTMLDivElement, { data: ReceiptData; headerText?: string; footerText?: string; paperWidth?: string; isPreview?: boolean }>(
-  ({ data, headerText, footerText, paperWidth = "80", isPreview = false }, ref) => {
+export const ReceiptPrint = forwardRef<HTMLDivElement, { 
+  data: ReceiptData; 
+  headerText?: string; 
+  footerText?: string; 
+  paperWidth?: string; 
+  isPreview?: boolean;
+  marginTop?: string;
+  marginLeft?: string;
+  offsetX?: string;
+  offsetY?: string;
+}>(
+  ({ data, headerText, footerText, paperWidth = "80", isPreview = false, marginTop = "0", marginLeft = "0", offsetX = "0", offsetY = "0" }, ref) => {
     const now = data.paidAt ? new Date(data.paidAt) : new Date();
 
     const headerLines = headerText || "PDV FÊNIX";
@@ -78,6 +88,14 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, { data: ReceiptData; head
 
     return (
       <div ref={ref} className={`receipt-print-area ${isPreview ? "no-print" : ""}`}>
+        <div className="receipt-content-wrapper" style={{
+          marginTop: `${marginTop}px`,
+          marginLeft: `${marginLeft}px`,
+          paddingLeft: `${offsetX}px`,
+          paddingTop: `${offsetY}px`,
+          width: "100%",
+          boxSizing: "border-box"
+        }}>
         <style>{`
           @page {
             size: ${width} auto;
@@ -265,6 +283,7 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, { data: ReceiptData; head
           {footerLines.split("\n").map((line, i) => (
             <div key={i} style={{ marginTop: i > 0 ? 2 : 0, textAlign: "center" }}>{line}</div>
           ))}
+        </div>
         </div>
       </div>
     );

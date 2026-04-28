@@ -440,6 +440,10 @@ function ReceiptPrintWrapper({ data }: { data: ReceiptData }) {
       headerText={settings?.receipt_header || undefined}
       footerText={settings?.receipt_footer || undefined}
       paperWidth={settings?.paper_width}
+      marginTop={settings?.receipt_margin_top}
+      marginLeft={settings?.receipt_margin_left}
+      offsetX={settings?.receipt_offset_x}
+      offsetY={settings?.receipt_offset_y}
     />
   );
 }

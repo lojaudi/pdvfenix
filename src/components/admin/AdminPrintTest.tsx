@@ -32,7 +32,7 @@ export function AdminPrintTest() {
       const { data } = await supabase
         .from("app_settings")
         .select("key, value")
-        .in("key", ["receipt_header", "receipt_footer", "restaurant_name"]);
+        .in("key", ["receipt_header", "receipt_footer", "restaurant_name", "receipt_margin_top", "receipt_margin_left", "receipt_offset_x", "receipt_offset_y"]);
       const map: Record<string, string> = {};
       (data || []).forEach((s) => { map[s.key] = s.value; });
       return map;
@@ -115,6 +115,10 @@ export function AdminPrintTest() {
               footerText={settings?.receipt_footer}
               paperWidth={testPaperWidth}
               isPreview={true}
+              marginTop={settings?.receipt_margin_top}
+              marginLeft={settings?.receipt_margin_left}
+              offsetX={settings?.receipt_offset_x}
+              offsetY={settings?.receipt_offset_y}
             />
           </div>
           <p className="text-[10px] text-muted-foreground mt-4 text-center italic">
@@ -130,6 +134,10 @@ export function AdminPrintTest() {
         paperWidth={testPaperWidth}
         headerText={settings?.receipt_header}
         footerText={settings?.receipt_footer}
+        marginTop={settings?.receipt_margin_top}
+        marginLeft={settings?.receipt_margin_left}
+        offsetX={settings?.receipt_offset_x}
+        offsetY={settings?.receipt_offset_y}
       />
     </div>
   );
