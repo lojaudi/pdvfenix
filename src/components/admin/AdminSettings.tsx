@@ -330,12 +330,36 @@ export function AdminSettings() {
           />
         </div>
 
+        {/* Printer Model */}
+        <div>
+          <label className="text-xs font-semibold text-foreground mb-1.5 block">Modelo da impressora (Tamanho do papel)</label>
+          <div className="relative">
+            <Layout className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10" />
+            <Select value={paperWidth} onValueChange={setPaperWidth}>
+              <SelectTrigger className="pl-10 bg-background border-border">
+                <SelectValue placeholder="Selecione o tamanho" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="80">Padrão 80mm (Média/Grande)</SelectItem>
+                <SelectItem value="58">Compacta 58mm (Pequena)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
         {/* Receipt Live Preview */}
         <div>
           <label className="text-xs font-semibold text-foreground mb-1.5 flex items-center gap-1.5">
-            <Printer className="w-4 h-4" /> Pré-visualização do recibo
+            <Printer className="w-4 h-4" /> Pré-visualização ({paperWidth}mm)
           </label>
-          <div className="bg-white rounded-lg border border-border p-4 font-mono text-[11px] leading-relaxed max-w-[300px] mx-auto shadow-sm" style={{ color: "#000" }}>
+          <div 
+            className="bg-white rounded-lg border border-border p-4 font-mono leading-relaxed mx-auto shadow-sm transition-all" 
+            style={{ 
+              color: "#000",
+              width: paperWidth === "58" ? "200px" : "280px",
+              fontSize: paperWidth === "58" ? "9px" : "11px"
+            }}
+          >
             {/* Preview Header */}
             <div className="text-center mb-2">
               {(receiptHeader || "PDV FÊNIX").split("\n").map((line, i) => (
