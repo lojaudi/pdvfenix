@@ -116,6 +116,7 @@ export default function AdminPage() {
         {activeTab === "delivery" && <AdminDeliveryZones />}
         {activeTab === "drivers" && <AdminDrivers />}
         {activeTab === "settings" && <AdminSettings />}
+        {activeTab === "print_test" && <AdminPrintTest />}
         {activeTab === "visual" && <AdminVisualSettings />}
         {activeTab === "neon" && <AdminNeonBoard />}
         {activeTab === "whatsapp" && <AdminWhatsApp />}
