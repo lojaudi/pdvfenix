@@ -344,6 +344,7 @@ function DeliveryReceiptWrapper({ data }: { data: ReceiptData }) {
       data={data}
       headerText={settings?.receipt_header || undefined}
       footerText={settings?.receipt_footer || undefined}
+      paperWidth={settings?.paper_width}
     />
   );
 }
