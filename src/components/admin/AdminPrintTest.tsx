@@ -106,53 +106,20 @@ export function AdminPrintTest() {
           </div>
         </div>
 
-        <div className="bg-card border border-border rounded-xl p-5">
-          <h3 className="text-sm font-semibold mb-4">Pré-visualização do Conteúdo</h3>
-          <div 
-            className="bg-white rounded-lg border border-border p-4 font-mono leading-relaxed mx-auto shadow-sm" 
-            style={{ 
-              color: "#000",
-              width: "100%",
-              maxWidth: "280px",
-              fontSize: "11px"
-            }}
-          >
-            <div className="text-center mb-2">
-              <div className="font-bold text-sm">{settings?.restaurant_name || "PDV FÊNIX"}</div>
-              <div className="text-[10px] text-gray-500">CABECALHO DE TESTE</div>
-              <div className="text-[9px] text-gray-400">27/02/2026 14:30</div>
-            </div>
-            <div className="border-t border-dashed border-gray-400 my-1" />
-            <div className="text-center border-2 border-black py-1 my-2 font-bold text-sm">
-              ★ MESA 15 ★
-            </div>
-            <div className="space-y-0.5 text-[10px]">
-              <div><strong>Pedido:</strong> #TEST-123</div>
-              <div><strong>Cliente:</strong> Cliente de Teste</div>
-            </div>
-            <div className="border-t border-dashed border-gray-400 my-1" />
-            <table className="w-full text-[10px]">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left pb-1">Item</th>
-                  <th className="text-center pb-1">Qtd</th>
-                  <th className="text-right pb-1">Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr><td className="py-0.5">X-Burger</td><td className="text-center">2</td><td className="text-right">R$ 51,80</td></tr>
-                <tr><td className="py-0.5">Batata G</td><td className="text-center">1</td><td className="text-right">R$ 18,00</td></tr>
-              </tbody>
-            </table>
-            <div className="border-t border-dashed border-gray-400 my-1" />
-            <div className="flex justify-between font-bold text-sm">
-              <span>TOTAL</span>
-              <span>R$ 69,80</span>
-            </div>
-            <div className="text-center mt-4 text-[9px] text-gray-500">
-              RODAPÉ DE TESTE PARA ALINHAMENTO
-            </div>
+        <div className="bg-card border border-border rounded-xl p-5 overflow-hidden">
+          <h3 className="text-sm font-semibold mb-4">Pré-visualização (Mesmo Layout da Impressão)</h3>
+          <div className="bg-secondary/20 p-4 rounded-lg overflow-x-auto">
+            <ReceiptPrint
+              data={MOCK_DATA}
+              headerText={settings?.receipt_header}
+              footerText={settings?.receipt_footer}
+              paperWidth={testPaperWidth}
+              isPreview={true}
+            />
           </div>
+          <p className="text-[10px] text-muted-foreground mt-4 text-center italic">
+            * O conteúdo acima é uma representação fiel do que será enviado para a impressora.
+          </p>
         </div>
       </div>
 
