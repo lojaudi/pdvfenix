@@ -363,9 +363,11 @@ export function AdminSettings() {
             {/* Preview Header */}
             <div className="text-center mb-2">
               {(receiptHeader || "PDV FÊNIX").split("\n").map((line, i) => (
-                <div key={i} className={i === 0 ? "text-sm font-bold" : "text-[10px]"}>{line}</div>
+                <div key={i} style={{ fontSize: i === 0 ? (paperWidth === "58" ? "12px" : "14px") : (paperWidth === "58" ? "8px" : "10px"), fontWeight: i === 0 ? "bold" : "normal" }}>
+                  {line}
+                </div>
               ))}
-              <div className="text-[10px] text-gray-500">27/02/2026 14:30</div>
+              <div style={{ fontSize: paperWidth === "58" ? "8px" : "10px" }} className="text-gray-500">27/02/2026 14:30</div>
             </div>
             <div className="border-t border-dashed border-gray-400 my-1" />
             {/* Preview Order Info */}
