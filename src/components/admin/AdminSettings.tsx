@@ -469,6 +469,7 @@ export function AdminSettings() {
                 <div key={i}>{line}</div>
               ))}
             </div>
+            </div>
           </div>
         </div>
 
