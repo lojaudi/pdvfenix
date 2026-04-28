@@ -125,7 +125,7 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, { data: ReceiptData; head
               visibility: visible !important;
             }
             /* Specifically hide known UI overlays */
-            .sonner-toast, [data-radix-portal], header, nav, aside {
+            .sonner-toast, [data-radix-portal], header, nav, aside, .no-print {
               display: none !important;
             }
             /* Force table widths */
