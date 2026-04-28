@@ -282,6 +282,7 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, {
             <div key={i} style={{ marginTop: i > 0 ? 2 : 0, textAlign: "center" }}>{line}</div>
           ))}
         </div>
+        </div>
       </div>
     );
   }
