@@ -38,11 +38,30 @@ export function useReceiptSettings() {
     queryFn: async () => {
       const { data } = await supabase
         .from("app_settings")
-        .select("key, value")
-        .in("key", ["receipt_header", "receipt_footer", "restaurant_name", "paper_width", "receipt_margin_top", "receipt_margin_left", "receipt_offset_x", "receipt_offset_y"]);
+        .select("key, value");
+      
       const map: Record<string, string> = {};
       (data || []).forEach((s) => { map[s.key] = s.value; });
-      return map;
+
+      // Logic to pick correct calibration based on paper_width
+      const paperWidth = map["paper_width"] || "80";
+      const is58 = paperWidth === "58";
+      
+      return {
+        ...map,
+        effective_margin_top: is58 
+          ? (map["paper_width_58_margin_top"] || map["receipt_margin_top"] || "0")
+          : (map["paper_width_80_margin_top"] || map["receipt_margin_top"] || "0"),
+        effective_margin_left: is58
+          ? (map["paper_width_58_margin_left"] || map["receipt_margin_left"] || "0")
+          : (map["paper_width_80_margin_left"] || map["receipt_margin_left"] || "0"),
+        effective_offset_x: is58
+          ? (map["paper_width_58_offset_x"] || map["receipt_offset_x"] || "0")
+          : (map["paper_width_80_offset_x"] || map["receipt_offset_x"] || "0"),
+        effective_offset_y: is58
+          ? (map["paper_width_58_offset_y"] || map["receipt_offset_y"] || "0")
+          : (map["paper_width_80_offset_y"] || map["receipt_offset_y"] || "0"),
+      };
     },
     staleTime: 60_000,
   });
