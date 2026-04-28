@@ -176,7 +176,7 @@ export default function ActiveOrdersPage() {
     };
 
     setPrintData(receipt);
-    setTimeout(() => triggerPrint(), 400);
+    triggerPrint();
   };
 
   const canUserAdvance = (order: ActiveOrder): boolean => {
@@ -415,6 +415,7 @@ export default function ActiveOrdersPage() {
           data={printData}
           headerText={receiptSettings?.receipt_header}
           footerText={receiptSettings?.receipt_footer}
+          paperWidth={receiptSettings?.paper_width}
         />
       )}
     </div>
