@@ -19,10 +19,13 @@ export function AdminSettings() {
   const [receiptHeader, setReceiptHeader] = useState("");
   const [receiptFooter, setReceiptFooter] = useState("");
   const [paperWidth, setPaperWidth] = useState("80");
-  const [marginTop, setMarginTop] = useState("0");
-  const [marginLeft, setMarginLeft] = useState("0");
-  const [offsetX, setOffsetX] = useState("0");
-  const [offsetY, setOffsetY] = useState("0");
+  
+  // Independent presets for 58mm and 80mm
+  const [presets, setPresets] = useState({
+    "58": { marginTop: "0", marginLeft: "0", offsetX: "0", offsetY: "0" },
+    "80": { marginTop: "0", marginLeft: "0", offsetX: "0", offsetY: "0" }
+  });
+
   const [saving, setSaving] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
