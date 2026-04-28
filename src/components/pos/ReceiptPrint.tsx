@@ -238,6 +238,8 @@ ReceiptPrint.displayName = "ReceiptPrint";
 
 /** Triggers print dialog for the receipt */
 export function triggerPrint() {
-  // Small delay to ensure the receipt DOM is rendered
-  setTimeout(() => window.print(), 300);
+  // Small delay to ensure the receipt DOM is rendered and settings are applied
+  setTimeout(() => {
+    window.print();
+  }, 500);
 }
