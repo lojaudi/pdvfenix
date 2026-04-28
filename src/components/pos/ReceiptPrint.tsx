@@ -110,13 +110,13 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, { data: ReceiptData; head
         `}</style>
 
         {/* Header */}
-        <div style={{ textAlign: "center", marginBottom: 8 }}>
+        <div style={{ textAlign: "center", marginBottom: isSmall ? 4 : 8 }}>
           {headerLines.split("\n").map((line, i) => (
-            <div key={i} style={{ fontSize: i === 0 ? 16 : 10, fontWeight: i === 0 ? "bold" : "normal" }}>
+            <div key={i} style={{ fontSize: i === 0 ? (isSmall ? 13 : 16) : (isSmall ? 9 : 10), fontWeight: i === 0 ? "bold" : "normal" }}>
               {line}
             </div>
           ))}
-          <div style={{ fontSize: 13, fontWeight: "bold", marginTop: 4, letterSpacing: 0.5 }}>
+          <div style={{ fontSize: isSmall ? 10 : 13, fontWeight: "bold", marginTop: 4, letterSpacing: 0.5 }}>
             {format(now, "dd/MM/yyyy  HH:mm", { locale: ptBR })}
           </div>
         </div>
@@ -124,23 +124,23 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, { data: ReceiptData; head
         <div style={{ borderTop: "1px dashed #000", margin: "4px 0" }} />
 
         {/* Channel identification banner */}
-        <div style={{ textAlign: "center", margin: "6px 0", padding: "4px 0", border: "2px solid #000" }}>
-          <div style={{ fontSize: 16, fontWeight: "bold", letterSpacing: 1 }}>
-            {data.channel === "delivery" && "★ PEDIDO DELIVERY ★"}
-            {data.channel === "balcao" && "★ PEDIDO BALCÃO ★"}
-            {data.channel === "garcom" && `★ PEDIDO MESA ${data.tableNumber || ""} ★`}
+        <div style={{ textAlign: "center", margin: isSmall ? "4px 0" : "6px 0", padding: "4px 0", border: "2px solid #000" }}>
+          <div style={{ fontSize: isSmall ? 13 : 16, fontWeight: "bold", letterSpacing: 1 }}>
+            {data.channel === "delivery" && "★ DELIVERY ★"}
+            {data.channel === "balcao" && "★ BALCÃO ★"}
+            {data.channel === "garcom" && `★ MESA ${data.tableNumber || ""} ★`}
           </div>
         </div>
 
         {/* Order info */}
-        <div style={{ fontSize: 11, marginBottom: 4 }}>
+        <div style={{ fontSize: isSmall ? 9 : 11, marginBottom: 4 }}>
           <div><strong>Pedido:</strong> #{data.orderId.slice(0, 8).toUpperCase()}</div>
           {data.channel === "garcom" && data.tableNumber && (
-            <div style={{ fontSize: 14, fontWeight: "bold" }}>Mesa: {data.tableNumber}</div>
+            <div style={{ fontSize: isSmall ? 12 : 14, fontWeight: "bold" }}>Mesa: {data.tableNumber}</div>
           )}
           {data.waiterName && (
-            <div style={{ fontSize: 14, fontWeight: "bold", marginTop: 4, padding: "3px 0", borderBottom: "1px dashed #000" }}>
-              GARÇOM: {data.waiterName.toUpperCase()}
+            <div style={{ fontSize: isSmall ? 11 : 14, fontWeight: "bold", marginTop: 4, padding: "3px 0", borderBottom: "1px dashed #000" }}>
+              GARÇOM: {data.waiterName.split('@')[0].toUpperCase()}
             </div>
           )}
           {data.customerName && <div><strong>Cliente:</strong> {data.customerName}</div>}
@@ -151,7 +151,7 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, { data: ReceiptData; head
         <div style={{ borderTop: "1px dashed #000", margin: "4px 0" }} />
 
         {/* Items */}
-        <table style={{ width: "100%", fontSize: 11, borderCollapse: "collapse" }}>
+        <table style={{ width: "100%", fontSize: isSmall ? 9 : 11, borderCollapse: "collapse" }}>
           <thead>
             <tr>
               <th style={{ textAlign: "left", paddingBottom: 2 }}>Item</th>
@@ -162,9 +162,9 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, { data: ReceiptData; head
           <tbody>
             {data.items.map((item, i) => (
               <tr key={i}>
-                <td style={{ paddingTop: 1, paddingBottom: 1 }}>{item.product_name}</td>
-                <td style={{ textAlign: "center" }}>{item.quantity}</td>
-                <td style={{ textAlign: "right" }}>
+                <td style={{ paddingTop: 1, paddingBottom: 1, paddingRight: 4 }}>{item.product_name}</td>
+                <td style={{ textAlign: "center", verticalAlign: "top" }}>{item.quantity}</td>
+                <td style={{ textAlign: "right", verticalAlign: "top" }}>
                   {formatCurrency(item.quantity * item.unit_price)}
                 </td>
               </tr>
@@ -175,33 +175,33 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, { data: ReceiptData; head
         <div style={{ borderTop: "1px dashed #000", margin: "4px 0" }} />
 
         {/* Total */}
-        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 14, fontWeight: "bold" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", fontSize: isSmall ? 12 : 14, fontWeight: "bold" }}>
           <span>TOTAL</span>
           <span>{formatCurrency(data.total)}</span>
         </div>
 
         {/* Payment method */}
         {data.paymentMethod && (
-          <div style={{ fontSize: 11, marginTop: 4 }}>
+          <div style={{ fontSize: isSmall ? 9 : 11, marginTop: 4 }}>
             <strong>Pagamento:</strong> {paymentLabels[data.paymentMethod] || data.paymentMethod}
           </div>
         )}
 
         {/* Change info */}
         {data.changeFor != null && data.changeFor > 0 && (
-          <div style={{ fontSize: 11, marginTop: 2 }}>
+          <div style={{ fontSize: isSmall ? 9 : 11, marginTop: 2 }}>
             <strong>Troco para:</strong> {formatCurrency(data.changeFor)}
           </div>
         )}
         {data.changeAmount != null && data.changeAmount > 0 && (
-          <div style={{ fontSize: 13, fontWeight: "bold", marginTop: 2 }}>
+          <div style={{ fontSize: isSmall ? 11 : 13, fontWeight: "bold", marginTop: 2 }}>
             TROCO: {formatCurrency(data.changeAmount)}
           </div>
         )}
 
         {/* Delivery notes */}
         {data.deliveryNotes && (
-          <div style={{ fontSize: 11, marginTop: 4 }}>
+          <div style={{ fontSize: isSmall ? 9 : 11, marginTop: 4 }}>
             <strong>Obs:</strong> {data.deliveryNotes}
           </div>
         )}
@@ -209,7 +209,7 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, { data: ReceiptData; head
         <div style={{ borderTop: "1px dashed #000", margin: "8px 0" }} />
 
         {/* Footer */}
-        <div style={{ textAlign: "center", fontSize: 10 }}>
+        <div style={{ textAlign: "center", fontSize: isSmall ? 8 : 10 }}>
           {footerLines.split("\n").map((line, i) => (
             <div key={i} style={{ marginTop: i > 0 ? 2 : 0 }}>{line}</div>
           ))}
