@@ -88,6 +88,12 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, {
 
     return (
       <div ref={ref} className={`receipt-print-area ${isPreview ? "no-print" : ""}`}>
+        <div className="receipt-content-wrapper" style={{
+          marginTop: `${marginTop}px`,
+          marginLeft: `${marginLeft}px`,
+          transform: `translate(${offsetX}px, ${offsetY}px)`,
+          width: "100%"
+        }}>
         <style>{`
           @page {
             size: ${width} auto;
