@@ -121,6 +121,7 @@ export function AdminSettings() {
       setLogoUrl(get("restaurant_logo"));
       setReceiptHeader(get("receipt_header"));
       setReceiptFooter(get("receipt_footer"));
+      setPaperWidth(get("paper_width") || "80");
     }
   }, [settings]);
 
