@@ -261,9 +261,9 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, { data: ReceiptData; head
         <div style={{ borderTop: "1px dashed #000", margin: "8px 0" }} />
 
         {/* Footer */}
-        <div style={{ textAlign: "center", fontSize: isSmall ? 8 : 10 }}>
+        <div style={{ textAlign: "center", fontSize: isSmall ? 8 : 10, width: "100%" }}>
           {footerLines.split("\n").map((line, i) => (
-            <div key={i} style={{ marginTop: i > 0 ? 2 : 0 }}>{line}</div>
+            <div key={i} style={{ marginTop: i > 0 ? 2 : 0, textAlign: "center" }}>{line}</div>
           ))}
         </div>
       </div>
