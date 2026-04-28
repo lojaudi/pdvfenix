@@ -65,8 +65,18 @@ const paymentLabels: Record<string, string> = {
  * Receipt component optimised for 80mm thermal printers.
  * Rendered off-screen; call window.print() while it's mounted.
  */
-export const ReceiptPrint = forwardRef<HTMLDivElement, { data: ReceiptData; headerText?: string; footerText?: string; paperWidth?: string; isPreview?: boolean }>(
-  ({ data, headerText, footerText, paperWidth = "80", isPreview = false }, ref) => {
+export const ReceiptPrint = forwardRef<HTMLDivElement, { 
+  data: ReceiptData; 
+  headerText?: string; 
+  footerText?: string; 
+  paperWidth?: string; 
+  isPreview?: boolean;
+  marginTop?: string;
+  marginLeft?: string;
+  offsetX?: string;
+  offsetY?: string;
+}>(
+  ({ data, headerText, footerText, paperWidth = "80", isPreview = false, marginTop = "0", marginLeft = "0", offsetX = "0", offsetY = "0" }, ref) => {
     const now = data.paidAt ? new Date(data.paidAt) : new Date();
 
     const headerLines = headerText || "PDV FÊNIX";
