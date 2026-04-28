@@ -185,6 +185,7 @@ export function AdminSettings() {
         { key: "welcome_message", value: welcomeMessage, updated_at: now },
         { key: "receipt_header", value: receiptHeader, updated_at: now },
         { key: "receipt_footer", value: receiptFooter, updated_at: now },
+        { key: "paper_width", value: paperWidth, updated_at: now },
       ];
       const { error } = await supabase
         .from("app_settings")
