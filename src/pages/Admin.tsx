@@ -15,7 +15,7 @@ import { AdminWhatsApp } from "@/components/admin/AdminWhatsApp";
 import { AdminPrintTest } from "@/components/admin/AdminPrintTest";
 import { ArrowLeft, Package, Grid3X3, Users, Loader2, ShieldAlert, Truck, Bike, Settings, Palette, Zap, MessageSquare, Printer } from "lucide-react";
 
-type Tab = "products" | "categories" | "users" | "delivery" | "drivers" | "settings" | "visual" | "neon" | "whatsapp";
+type Tab = "products" | "categories" | "users" | "delivery" | "drivers" | "settings" | "visual" | "neon" | "whatsapp" | "print_test";
 
 const tabs: { id: Tab; label: string; icon: typeof Package }[] = [
   { id: "products", label: "Produtos", icon: Package },
@@ -25,6 +25,7 @@ const tabs: { id: Tab; label: string; icon: typeof Package }[] = [
   { id: "drivers", label: "Entregadores", icon: Bike },
   { id: "whatsapp", label: "WhatsApp", icon: MessageSquare },
   { id: "settings", label: "Config", icon: Settings },
+  { id: "print_test", label: "Teste Comanda", icon: Printer },
   { id: "visual", label: "Visual", icon: Palette },
   { id: "neon", label: "Neon", icon: Zap },
 ];
