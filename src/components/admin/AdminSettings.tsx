@@ -3,8 +3,9 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Save, Phone, Store, Clock, MessageSquare, ImagePlus, Trash2, Printer, User, Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { Save, Phone, Store, Clock, MessageSquare, ImagePlus, Trash2, Printer, User, Mail, Lock, Eye, EyeOff, Layout } from "lucide-react";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
@@ -17,6 +18,7 @@ export function AdminSettings() {
   const [logoUrl, setLogoUrl] = useState("");
   const [receiptHeader, setReceiptHeader] = useState("");
   const [receiptFooter, setReceiptFooter] = useState("");
+  const [paperWidth, setPaperWidth] = useState("80");
   const [saving, setSaving] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -119,6 +121,7 @@ export function AdminSettings() {
       setLogoUrl(get("restaurant_logo"));
       setReceiptHeader(get("receipt_header"));
       setReceiptFooter(get("receipt_footer"));
+      setPaperWidth(get("paper_width") || "80");
     }
   }, [settings]);
 
@@ -182,6 +185,7 @@ export function AdminSettings() {
         { key: "welcome_message", value: welcomeMessage, updated_at: now },
         { key: "receipt_header", value: receiptHeader, updated_at: now },
         { key: "receipt_footer", value: receiptFooter, updated_at: now },
+        { key: "paper_width", value: paperWidth, updated_at: now },
       ];
       const { error } = await supabase
         .from("app_settings")
@@ -326,28 +330,54 @@ export function AdminSettings() {
           />
         </div>
 
+        {/* Printer Model */}
+        <div>
+          <label className="text-xs font-semibold text-foreground mb-1.5 block">Modelo da impressora (Tamanho do papel)</label>
+          <div className="relative">
+            <Layout className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10" />
+            <Select value={paperWidth} onValueChange={setPaperWidth}>
+              <SelectTrigger className="pl-10 bg-background border-border">
+                <SelectValue placeholder="Selecione o tamanho" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="80">Padrão 80mm (Média/Grande)</SelectItem>
+                <SelectItem value="58">Compacta 58mm (Pequena)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
         {/* Receipt Live Preview */}
         <div>
           <label className="text-xs font-semibold text-foreground mb-1.5 flex items-center gap-1.5">
-            <Printer className="w-4 h-4" /> Pré-visualização do recibo
+            <Printer className="w-4 h-4" /> Pré-visualização ({paperWidth}mm)
           </label>
-          <div className="bg-white rounded-lg border border-border p-4 font-mono text-[11px] leading-relaxed max-w-[300px] mx-auto shadow-sm" style={{ color: "#000" }}>
+          <div 
+            className="bg-white rounded-lg border border-border p-4 font-mono leading-relaxed mx-auto shadow-sm transition-all" 
+            style={{ 
+              color: "#000",
+              width: paperWidth === "58" ? "200px" : "280px",
+              fontSize: paperWidth === "58" ? "9px" : "11px"
+            }}
+          >
             {/* Preview Header */}
             <div className="text-center mb-2">
               {(receiptHeader || "PDV FÊNIX").split("\n").map((line, i) => (
-                <div key={i} className={i === 0 ? "text-sm font-bold" : "text-[10px]"}>{line}</div>
+                <div key={i} style={{ fontSize: i === 0 ? (paperWidth === "58" ? "12px" : "14px") : (paperWidth === "58" ? "8px" : "10px"), fontWeight: i === 0 ? "bold" : "normal" }}>
+                  {line}
+                </div>
               ))}
-              <div className="text-[10px] text-gray-500">27/02/2026 14:30</div>
+              <div style={{ fontSize: paperWidth === "58" ? "8px" : "10px" }} className="text-gray-500">27/02/2026 14:30</div>
             </div>
             <div className="border-t border-dashed border-gray-400 my-1" />
             {/* Preview Order Info */}
-            <div className="text-[11px] mb-1 space-y-0.5">
+            <div style={{ fontSize: paperWidth === "58" ? "9px" : "11px" }} className="mb-1 space-y-0.5">
               <div><strong>Pedido:</strong> #A1B2C3D4</div>
               <div><strong>Canal:</strong> Balcão</div>
             </div>
             <div className="border-t border-dashed border-gray-400 my-1" />
             {/* Preview Items */}
-            <table className="w-full text-[11px]">
+            <table className="w-full" style={{ fontSize: paperWidth === "58" ? "9px" : "11px" }}>
               <thead>
                 <tr>
                   <th className="text-left pb-0.5">Item</th>
@@ -363,14 +393,14 @@ export function AdminSettings() {
             </table>
             <div className="border-t border-dashed border-gray-400 my-1" />
             {/* Preview Total */}
-            <div className="flex justify-between text-xs font-bold">
+            <div className="flex justify-between font-bold" style={{ fontSize: paperWidth === "58" ? "10px" : "12px" }}>
               <span>TOTAL</span>
               <span>R$ 65,80</span>
             </div>
-            <div className="text-[11px] mt-1"><strong>Pagamento:</strong> PIX</div>
+            <div style={{ fontSize: paperWidth === "58" ? "9px" : "11px" }} className="mt-1"><strong>Pagamento:</strong> PIX</div>
             <div className="border-t border-dashed border-gray-400 my-2" />
             {/* Preview Footer */}
-            <div className="text-center text-[10px]">
+            <div className="text-center" style={{ fontSize: paperWidth === "58" ? "8px" : "10px" }}>
               {(receiptFooter || "Obrigado pela preferência!\nPDV Fênix • Sistema de Gestão").split("\n").map((line, i) => (
                 <div key={i}>{line}</div>
               ))}
