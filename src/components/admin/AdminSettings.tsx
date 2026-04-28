@@ -19,10 +19,13 @@ export function AdminSettings() {
   const [receiptHeader, setReceiptHeader] = useState("");
   const [receiptFooter, setReceiptFooter] = useState("");
   const [paperWidth, setPaperWidth] = useState("80");
-  const [marginTop, setMarginTop] = useState("0");
-  const [marginLeft, setMarginLeft] = useState("0");
-  const [offsetX, setOffsetX] = useState("0");
-  const [offsetY, setOffsetY] = useState("0");
+  
+  // Independent presets for 58mm and 80mm
+  const [presets, setPresets] = useState({
+    "58": { marginTop: "0", marginLeft: "0", offsetX: "0", offsetY: "0" },
+    "80": { marginTop: "0", marginLeft: "0", offsetX: "0", offsetY: "0" }
+  });
+
   const [saving, setSaving] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -126,12 +129,30 @@ export function AdminSettings() {
       setReceiptHeader(get("receipt_header"));
       setReceiptFooter(get("receipt_footer"));
       setPaperWidth(get("paper_width") || "80");
-      setMarginTop(get("receipt_margin_top") || "0");
-      setMarginLeft(get("receipt_margin_left") || "0");
-      setOffsetX(get("receipt_offset_x") || "0");
-      setOffsetY(get("receipt_offset_y") || "0");
+      
+      setPresets({
+        "58": {
+          marginTop: get("paper_width_58_margin_top") || get("receipt_margin_top") || "0",
+          marginLeft: get("paper_width_58_margin_left") || get("receipt_margin_left") || "0",
+          offsetX: get("paper_width_58_offset_x") || get("receipt_offset_x") || "0",
+          offsetY: get("paper_width_58_offset_y") || get("receipt_offset_y") || "0"
+        },
+        "80": {
+          marginTop: get("paper_width_80_margin_top") || get("receipt_margin_top") || "0",
+          marginLeft: get("paper_width_80_margin_left") || get("receipt_margin_left") || "0",
+          offsetX: get("paper_width_80_offset_x") || get("receipt_offset_x") || "0",
+          offsetY: get("paper_width_80_offset_y") || get("receipt_offset_y") || "0"
+        }
+      });
     }
   }, [settings]);
+
+  const updatePreset = (width: "58" | "80", field: string, value: string) => {
+    setPresets(prev => ({
+      ...prev,
+      [width]: { ...prev[width], [field]: value }
+    }));
+  };
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -194,10 +215,17 @@ export function AdminSettings() {
         { key: "receipt_header", value: receiptHeader, updated_at: now },
         { key: "receipt_footer", value: receiptFooter, updated_at: now },
         { key: "paper_width", value: paperWidth, updated_at: now },
-        { key: "receipt_margin_top", value: marginTop, updated_at: now },
-        { key: "receipt_margin_left", value: marginLeft, updated_at: now },
-        { key: "receipt_offset_x", value: offsetX, updated_at: now },
-        { key: "receipt_offset_y", value: offsetY, updated_at: now },
+        
+        // Save both presets
+        { key: "paper_width_58_margin_top", value: presets["58"].marginTop, updated_at: now },
+        { key: "paper_width_58_margin_left", value: presets["58"].marginLeft, updated_at: now },
+        { key: "paper_width_58_offset_x", value: presets["58"].offsetX, updated_at: now },
+        { key: "paper_width_58_offset_y", value: presets["58"].offsetY, updated_at: now },
+        
+        { key: "paper_width_80_margin_top", value: presets["80"].marginTop, updated_at: now },
+        { key: "paper_width_80_margin_left", value: presets["80"].marginLeft, updated_at: now },
+        { key: "paper_width_80_offset_x", value: presets["80"].offsetX, updated_at: now },
+        { key: "paper_width_80_offset_y", value: presets["80"].offsetY, updated_at: now },
       ];
       const { error } = await supabase
         .from("app_settings")
@@ -362,14 +390,16 @@ export function AdminSettings() {
         {/* Calibration Settings */}
         <div className="grid grid-cols-2 gap-4 border-t border-border pt-4">
           <div className="col-span-2">
-            <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Calibração de Alinhamento (mm)</h4>
+            <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">
+              Calibração {paperWidth}mm (mm)
+            </h4>
           </div>
           <div>
             <label className="text-[10px] font-semibold text-foreground mb-1 block">Margem Topo</label>
             <Input
               type="number"
-              value={marginTop}
-              onChange={(e) => setMarginTop(e.target.value)}
+              value={presets[paperWidth as "58" | "80"].marginTop}
+              onChange={(e) => updatePreset(paperWidth as "58" | "80", "marginTop", e.target.value)}
               className="bg-background border-border h-8 text-xs"
             />
           </div>
@@ -377,8 +407,8 @@ export function AdminSettings() {
             <label className="text-[10px] font-semibold text-foreground mb-1 block">Margem Esquerda</label>
             <Input
               type="number"
-              value={marginLeft}
-              onChange={(e) => setMarginLeft(e.target.value)}
+              value={presets[paperWidth as "58" | "80"].marginLeft}
+              onChange={(e) => updatePreset(paperWidth as "58" | "80", "marginLeft", e.target.value)}
               className="bg-background border-border h-8 text-xs"
             />
           </div>
@@ -386,8 +416,8 @@ export function AdminSettings() {
             <label className="text-[10px] font-semibold text-foreground mb-1 block">Deslocamento X</label>
             <Input
               type="number"
-              value={offsetX}
-              onChange={(e) => setOffsetX(e.target.value)}
+              value={presets[paperWidth as "58" | "80"].offsetX}
+              onChange={(e) => updatePreset(paperWidth as "58" | "80", "offsetX", e.target.value)}
               className="bg-background border-border h-8 text-xs"
             />
           </div>
@@ -395,8 +425,8 @@ export function AdminSettings() {
             <label className="text-[10px] font-semibold text-foreground mb-1 block">Deslocamento Y</label>
             <Input
               type="number"
-              value={offsetY}
-              onChange={(e) => setOffsetY(e.target.value)}
+              value={presets[paperWidth as "58" | "80"].offsetY}
+              onChange={(e) => updatePreset(paperWidth as "58" | "80", "offsetY", e.target.value)}
               className="bg-background border-border h-8 text-xs"
             />
           </div>
@@ -430,10 +460,10 @@ export function AdminSettings() {
             <div className="absolute top-0 left-1/2 h-full w-px bg-red-500/30 border-l border-dashed border-red-500/50 pointer-events-none z-10" />
 
             <div style={{
-              marginTop: `${marginTop}px`,
-              marginLeft: `${marginLeft}px`,
-              paddingLeft: `${offsetX}px`,
-              paddingTop: `${offsetY}px`,
+              marginTop: `${presets[paperWidth as "58" | "80"].marginTop}px`,
+              marginLeft: `${presets[paperWidth as "58" | "80"].marginLeft}px`,
+              paddingLeft: `${presets[paperWidth as "58" | "80"].offsetX}px`,
+              paddingTop: `${presets[paperWidth as "58" | "80"].offsetY}px`,
               padding: paperWidth === "58" ? "4px" : "12px",
               border: "1px dashed #eee",
               boxSizing: "border-box",

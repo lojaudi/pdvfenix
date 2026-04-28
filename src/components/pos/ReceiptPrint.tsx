@@ -38,11 +38,32 @@ export function useReceiptSettings() {
     queryFn: async () => {
       const { data } = await supabase
         .from("app_settings")
-        .select("key, value")
-        .in("key", ["receipt_header", "receipt_footer", "restaurant_name", "paper_width", "receipt_margin_top", "receipt_margin_left", "receipt_offset_x", "receipt_offset_y"]);
-      const map: Record<string, string> = {};
-      (data || []).forEach((s) => { map[s.key] = s.value; });
-      return map;
+        .select("key, value");
+      
+      const settingsMap: Record<string, string> = {};
+      (data || []).forEach((s) => { settingsMap[s.key] = s.value; });
+
+      const paperWidth = settingsMap["paper_width"] || "80";
+      const is58 = paperWidth === "58";
+      
+      return {
+        receipt_header: settingsMap["receipt_header"],
+        receipt_footer: settingsMap["receipt_footer"],
+        restaurant_name: settingsMap["restaurant_name"],
+        paper_width: paperWidth,
+        receipt_margin_top: is58 
+          ? (settingsMap["paper_width_58_margin_top"] || settingsMap["receipt_margin_top"] || "0")
+          : (settingsMap["paper_width_80_margin_top"] || settingsMap["receipt_margin_top"] || "0"),
+        receipt_margin_left: is58
+          ? (settingsMap["paper_width_58_margin_left"] || settingsMap["receipt_margin_left"] || "0")
+          : (settingsMap["paper_width_80_margin_left"] || settingsMap["receipt_margin_left"] || "0"),
+        receipt_offset_x: is58
+          ? (settingsMap["paper_width_58_offset_x"] || settingsMap["receipt_offset_x"] || "0")
+          : (settingsMap["paper_width_80_offset_x"] || settingsMap["receipt_offset_x"] || "0"),
+        receipt_offset_y: is58
+          ? (settingsMap["paper_width_58_offset_y"] || settingsMap["receipt_offset_y"] || "0")
+          : (settingsMap["paper_width_80_offset_y"] || settingsMap["receipt_offset_y"] || "0"),
+      };
     },
     staleTime: 60_000,
   });
