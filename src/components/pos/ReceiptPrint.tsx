@@ -136,7 +136,20 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, { data: ReceiptData; head
             }
           }
           @media screen {
-            .receipt-print-area { display: none; }
+            .receipt-print-area { 
+              display: ${isPreview ? "block" : "none"};
+              ${isPreview ? `
+                width: ${width};
+                padding: ${padding};
+                background: #fff;
+                color: #000;
+                font-family: 'Courier New', monospace;
+                font-size: ${baseFontSize};
+                border: 1px solid #ccc;
+                box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+                margin: 0 auto;
+              ` : ""}
+            }
           }
         `}</style>
 
