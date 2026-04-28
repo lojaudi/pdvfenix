@@ -126,6 +126,10 @@ export function AdminSettings() {
       setReceiptHeader(get("receipt_header"));
       setReceiptFooter(get("receipt_footer"));
       setPaperWidth(get("paper_width") || "80");
+      setMarginTop(get("receipt_margin_top") || "0");
+      setMarginLeft(get("receipt_margin_left") || "0");
+      setOffsetX(get("receipt_offset_x") || "0");
+      setOffsetY(get("receipt_offset_y") || "0");
     }
   }, [settings]);
 
