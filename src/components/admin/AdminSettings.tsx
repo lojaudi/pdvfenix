@@ -215,10 +215,17 @@ export function AdminSettings() {
         { key: "receipt_header", value: receiptHeader, updated_at: now },
         { key: "receipt_footer", value: receiptFooter, updated_at: now },
         { key: "paper_width", value: paperWidth, updated_at: now },
-        { key: "receipt_margin_top", value: marginTop, updated_at: now },
-        { key: "receipt_margin_left", value: marginLeft, updated_at: now },
-        { key: "receipt_offset_x", value: offsetX, updated_at: now },
-        { key: "receipt_offset_y", value: offsetY, updated_at: now },
+        
+        // Save both presets
+        { key: "paper_width_58_margin_top", value: presets["58"].marginTop, updated_at: now },
+        { key: "paper_width_58_margin_left", value: presets["58"].marginLeft, updated_at: now },
+        { key: "paper_width_58_offset_x", value: presets["58"].offsetX, updated_at: now },
+        { key: "paper_width_58_offset_y", value: presets["58"].offsetY, updated_at: now },
+        
+        { key: "paper_width_80_margin_top", value: presets["80"].marginTop, updated_at: now },
+        { key: "paper_width_80_margin_left", value: presets["80"].marginLeft, updated_at: now },
+        { key: "paper_width_80_offset_x", value: presets["80"].offsetX, updated_at: now },
+        { key: "paper_width_80_offset_y", value: presets["80"].offsetY, updated_at: now },
       ];
       const { error } = await supabase
         .from("app_settings")
