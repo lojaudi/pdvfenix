@@ -174,8 +174,8 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, { data: ReceiptData; head
         <div style={{ borderTop: "1px dashed #000", margin: "4px 0" }} />
 
         {/* Channel identification banner */}
-        <div style={{ textAlign: "center", margin: isSmall ? "4px 0" : "6px 0", padding: "4px 0", border: "2px solid #000" }}>
-          <div style={{ fontSize: isSmall ? 13 : 16, fontWeight: "bold", letterSpacing: 1 }}>
+        <div style={{ textAlign: "center", margin: isSmall ? "4px 0" : "6px 0", padding: "4px 0", border: "2px solid #000", width: "100%", boxSizing: "border-box" }}>
+          <div style={{ fontSize: isSmall ? 13 : 16, fontWeight: "bold", letterSpacing: 1, textAlign: "center" }}>
             {data.channel === "delivery" && "★ DELIVERY ★"}
             {data.channel === "balcao" && "★ BALCÃO ★"}
             {data.channel === "garcom" && `★ MESA ${data.tableNumber || ""} ★`}
