@@ -194,6 +194,10 @@ export function AdminSettings() {
         { key: "receipt_header", value: receiptHeader, updated_at: now },
         { key: "receipt_footer", value: receiptFooter, updated_at: now },
         { key: "paper_width", value: paperWidth, updated_at: now },
+        { key: "receipt_margin_top", value: marginTop, updated_at: now },
+        { key: "receipt_margin_left", value: marginLeft, updated_at: now },
+        { key: "receipt_offset_x", value: offsetX, updated_at: now },
+        { key: "receipt_offset_y", value: offsetY, updated_at: now },
       ];
       const { error } = await supabase
         .from("app_settings")
