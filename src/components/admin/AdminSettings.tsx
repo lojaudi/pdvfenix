@@ -141,7 +141,8 @@ export function AdminSettings() {
           offsetY: get("paper_width_58_offset_y") || get("receipt_offset_y") || "0",
           fontHeader: get("paper_width_58_font_header") || "12",
           fontItems: get("paper_width_58_font_items") || "9",
-          fontFooter: get("paper_width_58_font_footer") || "8"
+          fontFooter: get("paper_width_58_font_footer") || "8",
+          boldItems: get("paper_width_58_bold_items") === "true"
         },
         "80": {
           marginTop: get("paper_width_80_margin_top") || get("receipt_margin_top") || "0",
@@ -150,13 +151,14 @@ export function AdminSettings() {
           offsetY: get("paper_width_80_offset_y") || get("receipt_offset_y") || "0",
           fontHeader: get("paper_width_80_font_header") || "14",
           fontItems: get("paper_width_80_font_items") || "11",
-          fontFooter: get("paper_width_80_font_footer") || "10"
+          fontFooter: get("paper_width_80_font_footer") || "10",
+          boldItems: get("paper_width_80_bold_items") === "true"
         }
       });
     }
   }, [settings]);
 
-  const updatePreset = (width: "58" | "80", field: string, value: string) => {
+  const updatePreset = (width: "58" | "80", field: string, value: any) => {
     setPresets(prev => ({
       ...prev,
       [width]: { ...prev[width], [field]: value }
