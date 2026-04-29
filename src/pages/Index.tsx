@@ -105,10 +105,11 @@ const Index = () => {
     setVariationProduct(null);
   }, [cart]);
 
-  const filteredProducts =
-    selectedCategory === "all"
-      ? products
-      : products.filter((p) => p.category_id === selectedCategory);
+  const filteredProducts = products.filter((p) => {
+    const matchesCategory = selectedCategory === "all" || p.category_id === selectedCategory;
+    const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
 
   const handleCheckout = async () => {
     if (!activeSession) {
