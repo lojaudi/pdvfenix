@@ -237,7 +237,7 @@ export function AdminOrdersHistory() {
                       </td>
                       <td className="px-4 py-3">
                         <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${
-                          order.status === "finalizado" ? "bg-success/10 text-success" :
+                          order.status === "pago" || order.status === "entregue" ? "bg-success/10 text-success" :
                           order.status === "cancelado" ? "bg-destructive/10 text-destructive" :
                           "bg-primary/10 text-primary"
                         }`}>
