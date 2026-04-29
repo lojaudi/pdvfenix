@@ -111,6 +111,7 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, {
   fontHeader?: string;
   fontItems?: string;
   fontFooter?: string;
+  boldItems?: boolean;
 }>(
   ({ 
     data, 
