@@ -31,8 +31,7 @@ export function AdminPrintTest() {
     queryFn: async () => {
       const { data } = await supabase
         .from("app_settings")
-        .select("key, value")
-        .in("key", ["receipt_header", "receipt_footer", "restaurant_name", "receipt_margin_top", "receipt_margin_left", "receipt_offset_x", "receipt_offset_y"]);
+        .select("key, value");
       const map: Record<string, string> = {};
       (data || []).forEach((s) => { map[s.key] = s.value; });
       return map;
@@ -115,10 +114,13 @@ export function AdminPrintTest() {
               footerText={settings?.receipt_footer}
               paperWidth={testPaperWidth}
               isPreview={true}
-              marginTop={settings?.receipt_margin_top}
-              marginLeft={settings?.receipt_margin_left}
-              offsetX={settings?.receipt_offset_x}
-              offsetY={settings?.receipt_offset_y}
+              marginTop={testPaperWidth === "58" ? (settings?.paper_width_58_margin_top || settings?.receipt_margin_top) : (settings?.paper_width_80_margin_top || settings?.receipt_margin_top)}
+              marginLeft={testPaperWidth === "58" ? (settings?.paper_width_58_margin_left || settings?.receipt_margin_left) : (settings?.paper_width_80_margin_left || settings?.receipt_margin_left)}
+              offsetX={testPaperWidth === "58" ? (settings?.paper_width_58_offset_x || settings?.receipt_offset_x) : (settings?.paper_width_80_offset_x || settings?.receipt_offset_x)}
+              offsetY={testPaperWidth === "58" ? (settings?.paper_width_58_offset_y || settings?.receipt_offset_y) : (settings?.paper_width_80_offset_y || settings?.receipt_offset_y)}
+              fontHeader={testPaperWidth === "58" ? (settings?.paper_width_58_font_header || "12") : (settings?.paper_width_80_font_header || "14")}
+              fontItems={testPaperWidth === "58" ? (settings?.paper_width_58_font_items || "9") : (settings?.paper_width_80_font_items || "11")}
+              fontFooter={testPaperWidth === "58" ? (settings?.paper_width_58_font_footer || "8") : (settings?.paper_width_80_font_footer || "10")}
             />
           </div>
           <p className="text-[10px] text-muted-foreground mt-4 text-center italic">
@@ -134,10 +136,13 @@ export function AdminPrintTest() {
         paperWidth={testPaperWidth}
         headerText={settings?.receipt_header}
         footerText={settings?.receipt_footer}
-        marginTop={settings?.receipt_margin_top}
-        marginLeft={settings?.receipt_margin_left}
-        offsetX={settings?.receipt_offset_x}
-        offsetY={settings?.receipt_offset_y}
+        marginTop={testPaperWidth === "58" ? (settings?.paper_width_58_margin_top || settings?.receipt_margin_top) : (settings?.paper_width_80_margin_top || settings?.receipt_margin_top)}
+        marginLeft={testPaperWidth === "58" ? (settings?.paper_width_58_margin_left || settings?.receipt_margin_left) : (settings?.paper_width_80_margin_left || settings?.receipt_margin_left)}
+        offsetX={testPaperWidth === "58" ? (settings?.paper_width_58_offset_x || settings?.receipt_offset_x) : (settings?.paper_width_80_offset_x || settings?.receipt_offset_x)}
+        offsetY={testPaperWidth === "58" ? (settings?.paper_width_58_offset_y || settings?.receipt_offset_y) : (settings?.paper_width_80_offset_y || settings?.receipt_offset_y)}
+        fontHeader={testPaperWidth === "58" ? (settings?.paper_width_58_font_header || "12") : (settings?.paper_width_80_font_header || "14")}
+        fontItems={testPaperWidth === "58" ? (settings?.paper_width_58_font_items || "9") : (settings?.paper_width_80_font_items || "11")}
+        fontFooter={testPaperWidth === "58" ? (settings?.paper_width_58_font_footer || "8") : (settings?.paper_width_80_font_footer || "10")}
       />
     </div>
   );

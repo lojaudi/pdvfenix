@@ -4,8 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
 import { toast } from "sonner";
-import { Save, Phone, Store, Clock, MessageSquare, ImagePlus, Trash2, Printer, User, Mail, Lock, Eye, EyeOff, Layout } from "lucide-react";
+import { Save, Phone, Store, Clock, MessageSquare, ImagePlus, Trash2, Printer, User, Mail, Lock, Eye, EyeOff, Layout, Type } from "lucide-react";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
@@ -22,8 +23,8 @@ export function AdminSettings() {
   
   // Independent presets for 58mm and 80mm
   const [presets, setPresets] = useState({
-    "58": { marginTop: "0", marginLeft: "0", offsetX: "0", offsetY: "0" },
-    "80": { marginTop: "0", marginLeft: "0", offsetX: "0", offsetY: "0" }
+    "58": { marginTop: "0", marginLeft: "0", offsetX: "0", offsetY: "0", fontHeader: "12", fontItems: "9", fontFooter: "8" },
+    "80": { marginTop: "0", marginLeft: "0", offsetX: "0", offsetY: "0", fontHeader: "14", fontItems: "11", fontFooter: "10" }
   });
 
   const [saving, setSaving] = useState(false);
@@ -136,13 +137,19 @@ export function AdminSettings() {
           marginTop: get("paper_width_58_margin_top") || get("receipt_margin_top") || "0",
           marginLeft: get("paper_width_58_margin_left") || get("receipt_margin_left") || "0",
           offsetX: get("paper_width_58_offset_x") || get("receipt_offset_x") || "0",
-          offsetY: get("paper_width_58_offset_y") || get("receipt_offset_y") || "0"
+          offsetY: get("paper_width_58_offset_y") || get("receipt_offset_y") || "0",
+          fontHeader: get("paper_width_58_font_header") || "12",
+          fontItems: get("paper_width_58_font_items") || "9",
+          fontFooter: get("paper_width_58_font_footer") || "8"
         },
         "80": {
           marginTop: get("paper_width_80_margin_top") || get("receipt_margin_top") || "0",
           marginLeft: get("paper_width_80_margin_left") || get("receipt_margin_left") || "0",
           offsetX: get("paper_width_80_offset_x") || get("receipt_offset_x") || "0",
-          offsetY: get("paper_width_80_offset_y") || get("receipt_offset_y") || "0"
+          offsetY: get("paper_width_80_offset_y") || get("receipt_offset_y") || "0",
+          fontHeader: get("paper_width_80_font_header") || "14",
+          fontItems: get("paper_width_80_font_items") || "11",
+          fontFooter: get("paper_width_80_font_footer") || "10"
         }
       });
     }
@@ -222,11 +229,17 @@ export function AdminSettings() {
         { key: "paper_width_58_margin_left", value: presets["58"].marginLeft, updated_at: now },
         { key: "paper_width_58_offset_x", value: presets["58"].offsetX, updated_at: now },
         { key: "paper_width_58_offset_y", value: presets["58"].offsetY, updated_at: now },
+        { key: "paper_width_58_font_header", value: presets["58"].fontHeader, updated_at: now },
+        { key: "paper_width_58_font_items", value: presets["58"].fontItems, updated_at: now },
+        { key: "paper_width_58_font_footer", value: presets["58"].fontFooter, updated_at: now },
         
         { key: "paper_width_80_margin_top", value: presets["80"].marginTop, updated_at: now },
         { key: "paper_width_80_margin_left", value: presets["80"].marginLeft, updated_at: now },
         { key: "paper_width_80_offset_x", value: presets["80"].offsetX, updated_at: now },
         { key: "paper_width_80_offset_y", value: presets["80"].offsetY, updated_at: now },
+        { key: "paper_width_80_font_header", value: presets["80"].fontHeader, updated_at: now },
+        { key: "paper_width_80_font_items", value: presets["80"].fontItems, updated_at: now },
+        { key: "paper_width_80_font_footer", value: presets["80"].fontFooter, updated_at: now },
       ];
       const { error } = await supabase
         .from("app_settings")
@@ -389,47 +402,90 @@ export function AdminSettings() {
         </div>
 
         {/* Calibration Settings */}
-        <div className="grid grid-cols-2 gap-4 border-t border-border pt-4">
-          <div className="col-span-2">
-            <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">
+        <div className="space-y-4 border-t border-border pt-4">
+          <div>
+            <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-3">
               Calibração {paperWidth}mm (mm)
             </h4>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-[10px] font-semibold text-foreground mb-1 block">Margem Topo</label>
+                <Input
+                  type="number"
+                  value={presets[paperWidth as "58" | "80"].marginTop}
+                  onChange={(e) => updatePreset(paperWidth as "58" | "80", "marginTop", e.target.value)}
+                  className="bg-background border-border h-8 text-xs"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-semibold text-foreground mb-1 block">Margem Esquerda</label>
+                <Input
+                  type="number"
+                  value={presets[paperWidth as "58" | "80"].marginLeft}
+                  onChange={(e) => updatePreset(paperWidth as "58" | "80", "marginLeft", e.target.value)}
+                  className="bg-background border-border h-8 text-xs"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-semibold text-foreground mb-1 block">Deslocamento X</label>
+                <Input
+                  type="number"
+                  value={presets[paperWidth as "58" | "80"].offsetX}
+                  onChange={(e) => updatePreset(paperWidth as "58" | "80", "offsetX", e.target.value)}
+                  className="bg-background border-border h-8 text-xs"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-semibold text-foreground mb-1 block">Deslocamento Y</label>
+                <Input
+                  type="number"
+                  value={presets[paperWidth as "58" | "80"].offsetY}
+                  onChange={(e) => updatePreset(paperWidth as "58" | "80", "offsetY", e.target.value)}
+                  className="bg-background border-border h-8 text-xs"
+                />
+              </div>
+            </div>
           </div>
-          <div>
-            <label className="text-[10px] font-semibold text-foreground mb-1 block">Margem Topo</label>
-            <Input
-              type="number"
-              value={presets[paperWidth as "58" | "80"].marginTop}
-              onChange={(e) => updatePreset(paperWidth as "58" | "80", "marginTop", e.target.value)}
-              className="bg-background border-border h-8 text-xs"
-            />
-          </div>
-          <div>
-            <label className="text-[10px] font-semibold text-foreground mb-1 block">Margem Esquerda</label>
-            <Input
-              type="number"
-              value={presets[paperWidth as "58" | "80"].marginLeft}
-              onChange={(e) => updatePreset(paperWidth as "58" | "80", "marginLeft", e.target.value)}
-              className="bg-background border-border h-8 text-xs"
-            />
-          </div>
-          <div>
-            <label className="text-[10px] font-semibold text-foreground mb-1 block">Deslocamento X</label>
-            <Input
-              type="number"
-              value={presets[paperWidth as "58" | "80"].offsetX}
-              onChange={(e) => updatePreset(paperWidth as "58" | "80", "offsetX", e.target.value)}
-              className="bg-background border-border h-8 text-xs"
-            />
-          </div>
-          <div>
-            <label className="text-[10px] font-semibold text-foreground mb-1 block">Deslocamento Y</label>
-            <Input
-              type="number"
-              value={presets[paperWidth as "58" | "80"].offsetY}
-              onChange={(e) => updatePreset(paperWidth as "58" | "80", "offsetY", e.target.value)}
-              className="bg-background border-border h-8 text-xs"
-            />
+
+          <div className="space-y-4 pt-2">
+            <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+              <Type className="w-3 h-3" /> Tamanho das Fontes
+            </h4>
+            
+            <div className="space-y-3">
+              <div>
+                <div className="flex justify-between mb-1">
+                  <label className="text-[10px] font-semibold text-foreground">Cabeçalho ({presets[paperWidth as "58" | "80"].fontHeader}px)</label>
+                </div>
+                <Slider 
+                  value={[parseInt(presets[paperWidth as "58" | "80"].fontHeader)]}
+                  min={8} max={24} step={1}
+                  onValueChange={([val]) => updatePreset(paperWidth as "58" | "80", "fontHeader", val.toString())}
+                />
+              </div>
+
+              <div>
+                <div className="flex justify-between mb-1">
+                  <label className="text-[10px] font-semibold text-foreground">Itens/Corpo ({presets[paperWidth as "58" | "80"].fontItems}px)</label>
+                </div>
+                <Slider 
+                  value={[parseInt(presets[paperWidth as "58" | "80"].fontItems)]}
+                  min={6} max={18} step={1}
+                  onValueChange={([val]) => updatePreset(paperWidth as "58" | "80", "fontItems", val.toString())}
+                />
+              </div>
+
+              <div>
+                <div className="flex justify-between mb-1">
+                  <label className="text-[10px] font-semibold text-foreground">Rodapé ({presets[paperWidth as "58" | "80"].fontFooter}px)</label>
+                </div>
+                <Slider 
+                  value={[parseInt(presets[paperWidth as "58" | "80"].fontFooter)]}
+                  min={6} max={16} step={1}
+                  onValueChange={([val]) => updatePreset(paperWidth as "58" | "80", "fontFooter", val.toString())}
+                />
+              </div>
+            </div>
           </div>
         </div>
 
@@ -506,21 +562,26 @@ export function AdminSettings() {
                 {/* Preview Header */}
                 <div className="text-center mb-2">
                   {(receiptHeader || "PDV FÊNIX").split("\n").map((line, i) => (
-                    <div key={i} style={{ fontSize: i === 0 ? (paperWidth === "58" ? "12px" : "14px") : (paperWidth === "58" ? "8px" : "10px"), fontWeight: i === 0 ? "bold" : "normal" }}>
+                    <div key={i} style={{ 
+                      fontSize: i === 0 
+                        ? `${presets[paperWidth as "58" | "80"].fontHeader}px` 
+                        : `${Math.max(6, parseInt(presets[paperWidth as "58" | "80"].fontHeader) - 4)}px`, 
+                      fontWeight: i === 0 ? "bold" : "normal" 
+                    }}>
                       {line}
                     </div>
                   ))}
-                  <div style={{ fontSize: paperWidth === "58" ? "8px" : "10px" }} className="text-gray-500">27/02/2026 14:30</div>
+                  <div style={{ fontSize: `${presets[paperWidth as "58" | "80"].fontFooter}px` }} className="text-gray-500">27/02/2026 14:30</div>
                 </div>
                 <div className="border-t border-dashed border-gray-400 my-1" />
                 {/* Preview Order Info */}
-                <div style={{ fontSize: paperWidth === "58" ? "9px" : "11px" }} className="mb-1 space-y-0.5">
+                <div style={{ fontSize: `${presets[paperWidth as "58" | "80"].fontItems}px` }} className="mb-1 space-y-0.5">
                   <div><strong>Pedido:</strong> #A1B2C3D4</div>
                   <div><strong>Canal:</strong> Balcão</div>
                 </div>
                 <div className="border-t border-dashed border-gray-400 my-1" />
                 {/* Preview Items */}
-                <table className="w-full" style={{ fontSize: paperWidth === "58" ? "9px" : "11px" }}>
+                <table className="w-full" style={{ fontSize: `${presets[paperWidth as "58" | "80"].fontItems}px` }}>
                   <thead>
                     <tr>
                       <th className="text-left pb-0.5">Item</th>
@@ -536,14 +597,14 @@ export function AdminSettings() {
                 </table>
                 <div className="border-t border-dashed border-gray-400 my-1" />
                 {/* Preview Total */}
-                <div className="flex justify-between font-bold" style={{ fontSize: paperWidth === "58" ? "10px" : "12px" }}>
+                <div className="flex justify-between font-bold" style={{ fontSize: `${parseInt(presets[paperWidth as "58" | "80"].fontItems) + 1}px` }}>
                   <span>TOTAL</span>
                   <span>R$ 65,80</span>
                 </div>
-                <div style={{ fontSize: paperWidth === "58" ? "9px" : "11px" }} className="mt-1"><strong>Pagamento:</strong> PIX</div>
+                <div style={{ fontSize: `${presets[paperWidth as "58" | "80"].fontItems}px` }} className="mt-1"><strong>Pagamento:</strong> PIX</div>
                 <div className="border-t border-dashed border-gray-400 my-2" />
                 {/* Preview Footer */}
-                <div className="text-center" style={{ fontSize: paperWidth === "58" ? "8px" : "10px" }}>
+                <div className="text-center" style={{ fontSize: `${presets[paperWidth as "58" | "80"].fontFooter}px` }}>
                   {(receiptFooter || "Obrigado pela preferência!\nPDV Fênix • Sistema de Gestão").split("\n").map((line, i) => (
                     <div key={i}>{line}</div>
                   ))}

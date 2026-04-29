@@ -63,6 +63,15 @@ export function useReceiptSettings() {
         receipt_offset_y: is58
           ? (settingsMap["paper_width_58_offset_y"] || settingsMap["receipt_offset_y"] || "0")
           : (settingsMap["paper_width_80_offset_y"] || settingsMap["receipt_offset_y"] || "0"),
+        font_header: is58
+          ? (settingsMap["paper_width_58_font_header"] || "12")
+          : (settingsMap["paper_width_80_font_header"] || "14"),
+        font_items: is58
+          ? (settingsMap["paper_width_58_font_items"] || "9")
+          : (settingsMap["paper_width_80_font_items"] || "11"),
+        font_footer: is58
+          ? (settingsMap["paper_width_58_font_footer"] || "8")
+          : (settingsMap["paper_width_80_font_footer"] || "10"),
       };
     },
     staleTime: 60_000,
@@ -96,15 +105,37 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, {
   marginLeft?: string;
   offsetX?: string;
   offsetY?: string;
+  fontHeader?: string;
+  fontItems?: string;
+  fontFooter?: string;
 }>(
-  ({ data, headerText, footerText, paperWidth = "80", isPreview = false, marginTop = "0", marginLeft = "0", offsetX = "0", offsetY = "0" }, ref) => {
+  ({ 
+    data, 
+    headerText, 
+    footerText, 
+    paperWidth = "80", 
+    isPreview = false, 
+    marginTop = "0", 
+    marginLeft = "0", 
+    offsetX = "0", 
+    offsetY = "0",
+    fontHeader,
+    fontItems,
+    fontFooter
+  }, ref) => {
     const now = data.paidAt ? new Date(data.paidAt) : new Date();
 
     const headerLines = headerText || "PDV FÊNIX";
     const footerLines = footerText || "Obrigado pela preferência!\nPDV Fênix • Sistema de Gestão";
     const isSmall = paperWidth === "58";
     const width = isSmall ? "58mm" : "80mm";
-    const baseFontSize = isSmall ? "10px" : "12px";
+    
+    // Use provided fonts or fallback to defaults
+    const fHeader = fontHeader || (isSmall ? "12" : "14");
+    const fItems = fontItems || (isSmall ? "9" : "11");
+    const fFooter = fontFooter || (isSmall ? "8" : "10");
+
+    const baseFontSize = `${fItems}px`;
     const padding = isSmall ? "1mm" : "3mm";
 
     return (
@@ -198,14 +229,14 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, {
         <div style={{ textAlign: "center", marginBottom: isSmall ? 4 : 8, width: "100%" }}>
           {headerLines.split("\n").map((line, i) => (
             <div key={i} style={{ 
-              fontSize: i === 0 ? (isSmall ? 13 : 16) : (isSmall ? 9 : 10), 
+              fontSize: i === 0 ? `${fHeader}px` : `${Math.max(6, parseInt(fHeader) - 4)}px`, 
               fontWeight: i === 0 ? "bold" : "normal",
               textAlign: "center"
             }}>
               {line}
             </div>
           ))}
-          <div style={{ fontSize: isSmall ? 10 : 13, fontWeight: "bold", marginTop: 4, letterSpacing: 0.5, textAlign: "center" }}>
+          <div style={{ fontSize: `${fFooter}px`, fontWeight: "bold", marginTop: 4, letterSpacing: 0.5, textAlign: "center" }}>
             {format(now, "dd/MM/yyyy  HH:mm", { locale: ptBR })}
           </div>
         </div>
@@ -214,7 +245,7 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, {
 
         {/* Channel identification banner */}
         <div style={{ textAlign: "center", margin: isSmall ? "4px 0" : "6px 0", padding: "4px 0", border: "2px solid #000", width: "100%", boxSizing: "border-box" }}>
-          <div style={{ fontSize: isSmall ? 13 : 16, fontWeight: "bold", letterSpacing: 1, textAlign: "center" }}>
+          <div style={{ fontSize: `${parseInt(fHeader) + 1}px`, fontWeight: "bold", letterSpacing: 1, textAlign: "center" }}>
             {data.channel === "delivery" && "★ DELIVERY ★"}
             {data.channel === "balcao" && "★ BALCÃO ★"}
             {data.channel === "garcom" && `★ MESA ${data.tableNumber || ""} ★`}
@@ -222,13 +253,13 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, {
         </div>
 
         {/* Order info */}
-        <div style={{ fontSize: isSmall ? 9 : 11, marginBottom: 4 }}>
+        <div style={{ fontSize: `${fItems}px`, marginBottom: 4 }}>
           <div><strong>Pedido:</strong> #{data.orderId.slice(0, 8).toUpperCase()}</div>
           {data.channel === "garcom" && data.tableNumber && (
-            <div style={{ fontSize: isSmall ? 12 : 14, fontWeight: "bold" }}>Mesa: {data.tableNumber}</div>
+            <div style={{ fontSize: `${parseInt(fHeader)}px`, fontWeight: "bold" }}>Mesa: {data.tableNumber}</div>
           )}
           {data.waiterName && (
-            <div style={{ fontSize: isSmall ? 11 : 14, fontWeight: "bold", marginTop: 4, padding: "3px 0", borderBottom: "1px dashed #000" }}>
+            <div style={{ fontSize: `${parseInt(fHeader)}px`, fontWeight: "bold", marginTop: 4, padding: "3px 0", borderBottom: "1px dashed #000" }}>
               GARÇOM: {data.waiterName.split('@')[0].toUpperCase()}
             </div>
           )}
@@ -240,7 +271,7 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, {
         <div style={{ borderTop: "1px dashed #000", margin: "4px 0" }} />
 
         {/* Items */}
-        <table style={{ width: "100%", fontSize: isSmall ? 9 : 11, borderCollapse: "collapse" }}>
+        <table style={{ width: "100%", fontSize: `${fItems}px`, borderCollapse: "collapse" }}>
           <thead>
             <tr>
               <th style={{ textAlign: "left", paddingBottom: 2, width: "60%" }}>Item</th>
@@ -251,7 +282,7 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, {
           <tbody>
             {data.items.map((item, i) => (
               <tr key={i}>
-                <td style={{ paddingTop: 2, paddingBottom: 2, paddingRight: 4, wordWrap: "break-word", overflowWrap: "break-word" }}>
+                <td style={{ paddingTop: 2, paddingBottom: 2, paddingRight: 4, wordBreak: "break-all", whiteSpace: "normal" }}>
                   {item.product_name}
                 </td>
                 <td style={{ textAlign: "center", verticalAlign: "top", paddingTop: 2 }}>{item.quantity}</td>
@@ -266,33 +297,33 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, {
         <div style={{ borderTop: "1px dashed #000", margin: "4px 0" }} />
 
         {/* Total */}
-        <div style={{ display: "flex", justifyContent: "space-between", fontSize: isSmall ? 12 : 14, fontWeight: "bold" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", fontSize: `${parseInt(fItems) + 2}px`, fontWeight: "bold" }}>
           <span>TOTAL</span>
           <span>{formatCurrency(data.total)}</span>
         </div>
 
         {/* Payment method */}
         {data.paymentMethod && (
-          <div style={{ fontSize: isSmall ? 9 : 11, marginTop: 4 }}>
+          <div style={{ fontSize: `${fItems}px`, marginTop: 4 }}>
             <strong>Pagamento:</strong> {paymentLabels[data.paymentMethod] || data.paymentMethod}
           </div>
         )}
 
         {/* Change info */}
         {data.changeFor != null && data.changeFor > 0 && (
-          <div style={{ fontSize: isSmall ? 9 : 11, marginTop: 2 }}>
+          <div style={{ fontSize: `${fItems}px`, marginTop: 2 }}>
             <strong>Troco para:</strong> {formatCurrency(data.changeFor)}
           </div>
         )}
         {data.changeAmount != null && data.changeAmount > 0 && (
-          <div style={{ fontSize: isSmall ? 11 : 13, fontWeight: "bold", marginTop: 2 }}>
+          <div style={{ fontSize: `${parseInt(fItems) + 2}px`, fontWeight: "bold", marginTop: 2 }}>
             TROCO: {formatCurrency(data.changeAmount)}
           </div>
         )}
 
         {/* Delivery notes */}
         {data.deliveryNotes && (
-          <div style={{ fontSize: isSmall ? 9 : 11, marginTop: 4 }}>
+          <div style={{ fontSize: `${fItems}px`, marginTop: 4 }}>
             <strong>Obs:</strong> {data.deliveryNotes}
           </div>
         )}
@@ -300,7 +331,7 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, {
         <div style={{ borderTop: "1px dashed #000", margin: "8px 0" }} />
 
         {/* Footer */}
-        <div style={{ textAlign: "center", fontSize: isSmall ? 8 : 10, width: "100%" }}>
+        <div style={{ textAlign: "center", fontSize: `${fFooter}px`, width: "100%" }}>
           {footerLines.split("\n").map((line, i) => (
             <div key={i} style={{ marginTop: i > 0 ? 2 : 0, textAlign: "center" }}>{line}</div>
           ))}
