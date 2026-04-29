@@ -228,14 +228,28 @@ const Index = () => {
     <main className="flex h-screen overflow-hidden bg-background">
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
-        <header className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-border gap-2">
-          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-primary/15 flex items-center justify-center flex-shrink-0">
-              <Store className="w-4 h-4 sm:w-5 sm:h-5 text-primary" aria-hidden="true" />
+        <header className="flex flex-col sm:flex-row sm:items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-border gap-3 sm:gap-4">
+          <div className="flex items-center justify-between sm:justify-start gap-2 sm:gap-3 min-w-0">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-primary/15 flex items-center justify-center flex-shrink-0">
+                <Store className="w-4 h-4 sm:w-5 sm:h-5 text-primary" aria-hidden="true" />
+              </div>
+              <div className="min-w-0">
+                <h1 className="text-base sm:text-lg font-bold text-foreground truncate">PDV Express</h1>
+                <p className="text-xs text-muted-foreground truncate hidden sm:block">{user?.email}</p>
+              </div>
             </div>
-            <div className="min-w-0">
-              <h1 className="text-base sm:text-lg font-bold text-foreground truncate">PDV Express</h1>
-              <p className="text-xs text-muted-foreground truncate hidden sm:block">{user?.email}</p>
+            
+            {/* Search input for mobile, inside header for better visibility */}
+            <div className="relative w-full max-w-[180px] sm:hidden">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="Pesquisar..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-8 pr-3 py-1.5 rounded-lg bg-secondary border border-border text-foreground placeholder:text-muted-foreground text-xs focus:outline-none focus:ring-2 focus:ring-primary/50"
+              />
             </div>
           </div>
 
