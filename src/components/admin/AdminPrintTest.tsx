@@ -31,8 +31,7 @@ export function AdminPrintTest() {
     queryFn: async () => {
       const { data } = await supabase
         .from("app_settings")
-        .select("key, value")
-        .in("key", ["receipt_header", "receipt_footer", "restaurant_name", "receipt_margin_top", "receipt_margin_left", "receipt_offset_x", "receipt_offset_y"]);
+        .select("key, value");
       const map: Record<string, string> = {};
       (data || []).forEach((s) => { map[s.key] = s.value; });
       return map;
