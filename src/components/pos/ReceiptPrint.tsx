@@ -125,7 +125,8 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, {
     offsetY = "0",
     fontHeader,
     fontItems,
-    fontFooter
+    fontFooter,
+    boldItems = false
   }, ref) => {
     const now = data.paidAt ? new Date(data.paidAt) : new Date();
 
