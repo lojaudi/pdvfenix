@@ -271,7 +271,7 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, {
         <div style={{ borderTop: "1px dashed #000", margin: "4px 0" }} />
 
         {/* Items */}
-        <table style={{ width: "100%", fontSize: isSmall ? 9 : 11, borderCollapse: "collapse" }}>
+        <table style={{ width: "100%", fontSize: `${fItems}px`, borderCollapse: "collapse" }}>
           <thead>
             <tr>
               <th style={{ textAlign: "left", paddingBottom: 2, width: "60%" }}>Item</th>
@@ -282,7 +282,7 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, {
           <tbody>
             {data.items.map((item, i) => (
               <tr key={i}>
-                <td style={{ paddingTop: 2, paddingBottom: 2, paddingRight: 4, wordWrap: "break-word", overflowWrap: "break-word" }}>
+                <td style={{ paddingTop: 2, paddingBottom: 2, paddingRight: 4, wordBreak: "break-all", whiteSpace: "normal" }}>
                   {item.product_name}
                 </td>
                 <td style={{ textAlign: "center", verticalAlign: "top", paddingTop: 2 }}>{item.quantity}</td>
