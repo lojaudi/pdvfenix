@@ -4,8 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
 import { toast } from "sonner";
-import { Save, Phone, Store, Clock, MessageSquare, ImagePlus, Trash2, Printer, User, Mail, Lock, Eye, EyeOff, Layout } from "lucide-react";
+import { Save, Phone, Store, Clock, MessageSquare, ImagePlus, Trash2, Printer, User, Mail, Lock, Eye, EyeOff, Layout, Type } from "lucide-react";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
@@ -22,8 +23,8 @@ export function AdminSettings() {
   
   // Independent presets for 58mm and 80mm
   const [presets, setPresets] = useState({
-    "58": { marginTop: "0", marginLeft: "0", offsetX: "0", offsetY: "0" },
-    "80": { marginTop: "0", marginLeft: "0", offsetX: "0", offsetY: "0" }
+    "58": { marginTop: "0", marginLeft: "0", offsetX: "0", offsetY: "0", fontHeader: "12", fontItems: "9", fontFooter: "8" },
+    "80": { marginTop: "0", marginLeft: "0", offsetX: "0", offsetY: "0", fontHeader: "14", fontItems: "11", fontFooter: "10" }
   });
 
   const [saving, setSaving] = useState(false);
