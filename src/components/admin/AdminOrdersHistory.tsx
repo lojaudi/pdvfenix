@@ -28,6 +28,7 @@ export function AdminOrdersHistory() {
   const [isReprinting, setIsReprinting] = useState(false);
   
   const { data: settings } = useReceiptSettings();
+  const { isAdmin, isCashier } = useUserRole();
   const printRef = useRef<HTMLDivElement>(null);
 
   const { data: orders, isLoading, refetch } = useQuery({
