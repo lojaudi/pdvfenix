@@ -24,8 +24,8 @@ export function AdminSettings() {
   
   // Independent presets for 58mm and 80mm
   const [presets, setPresets] = useState({
-    "58": { marginTop: "0", marginLeft: "0", offsetX: "0", offsetY: "0", fontHeader: "12", fontItems: "9", fontFooter: "8" },
-    "80": { marginTop: "0", marginLeft: "0", offsetX: "0", offsetY: "0", fontHeader: "14", fontItems: "11", fontFooter: "10" }
+    "58": { marginTop: "0", marginLeft: "0", offsetX: "0", offsetY: "0", fontHeader: "12", fontItems: "9", fontFooter: "8", boldItems: false },
+    "80": { marginTop: "0", marginLeft: "0", offsetX: "0", offsetY: "0", fontHeader: "14", fontItems: "11", fontFooter: "10", boldItems: false }
   });
 
   const [saving, setSaving] = useState(false);
