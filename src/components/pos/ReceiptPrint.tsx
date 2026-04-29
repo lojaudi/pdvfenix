@@ -297,7 +297,7 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, {
         <div style={{ borderTop: "1px dashed #000", margin: "4px 0" }} />
 
         {/* Total */}
-        <div style={{ display: "flex", justifyContent: "space-between", fontSize: isSmall ? 12 : 14, fontWeight: "bold" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", fontSize: `${parseInt(fItems) + 2}px`, fontWeight: "bold" }}>
           <span>TOTAL</span>
           <span>{formatCurrency(data.total)}</span>
         </div>
