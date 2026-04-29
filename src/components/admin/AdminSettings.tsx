@@ -137,13 +137,19 @@ export function AdminSettings() {
           marginTop: get("paper_width_58_margin_top") || get("receipt_margin_top") || "0",
           marginLeft: get("paper_width_58_margin_left") || get("receipt_margin_left") || "0",
           offsetX: get("paper_width_58_offset_x") || get("receipt_offset_x") || "0",
-          offsetY: get("paper_width_58_offset_y") || get("receipt_offset_y") || "0"
+          offsetY: get("paper_width_58_offset_y") || get("receipt_offset_y") || "0",
+          fontHeader: get("paper_width_58_font_header") || "12",
+          fontItems: get("paper_width_58_font_items") || "9",
+          fontFooter: get("paper_width_58_font_footer") || "8"
         },
         "80": {
           marginTop: get("paper_width_80_margin_top") || get("receipt_margin_top") || "0",
           marginLeft: get("paper_width_80_margin_left") || get("receipt_margin_left") || "0",
           offsetX: get("paper_width_80_offset_x") || get("receipt_offset_x") || "0",
-          offsetY: get("paper_width_80_offset_y") || get("receipt_offset_y") || "0"
+          offsetY: get("paper_width_80_offset_y") || get("receipt_offset_y") || "0",
+          fontHeader: get("paper_width_80_font_header") || "14",
+          fontItems: get("paper_width_80_font_items") || "11",
+          fontFooter: get("paper_width_80_font_footer") || "10"
         }
       });
     }
