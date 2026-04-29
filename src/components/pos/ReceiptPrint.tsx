@@ -72,6 +72,9 @@ export function useReceiptSettings() {
         font_footer: is58
           ? (settingsMap["paper_width_58_font_footer"] || "8")
           : (settingsMap["paper_width_80_font_footer"] || "10"),
+        bold_items: is58
+          ? (settingsMap["paper_width_58_bold_items"] === "true")
+          : (settingsMap["paper_width_80_bold_items"] === "true"),
       };
     },
     staleTime: 60_000,
