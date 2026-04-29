@@ -3,7 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Search, Printer, Calendar, Loader2, Eye, X, Filter } from "lucide-react";
+import { Search, Printer, Calendar, Loader2, Eye, X, Filter, ShieldAlert } from "lucide-react";
+import { useUserRole } from "@/hooks/useUserRole";
 import { toast } from "sonner";
 import { ReceiptPrint, triggerPrint, useReceiptSettings, type ReceiptData } from "@/components/pos/ReceiptPrint";
 
