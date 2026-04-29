@@ -6,7 +6,7 @@ import { useRealtimeOrdersWithSound } from "@/hooks/useRealtimeOrdersWithSound";
 import { useCashSession } from "@/hooks/useCashSession";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { ArrowLeft, Loader2, Wallet, CheckCircle2, Printer } from "lucide-react";
+import { ArrowLeft, Loader2, Wallet, CheckCircle2, Printer, History, X } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { PaymentDialog } from "@/components/pos/PaymentDialog";
@@ -15,6 +15,8 @@ import { CashSessionBanner } from "@/components/cashier/CashSessionBanner";
 import { OpenCashDialog } from "@/components/cashier/OpenCashDialog";
 import { CloseCashDialog } from "@/components/cashier/CloseCashDialog";
 import { toast } from "sonner";
+import { AdminOrdersHistory } from "@/components/admin/AdminOrdersHistory";
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 
 import type { PaymentMethod } from "@/components/pos/PaymentDialog";
 
@@ -148,6 +150,7 @@ export default function CashierPage() {
   const [receiptData, setReceiptData] = useState<ReceiptData | null>(null);
   const [showOpenDialog, setShowOpenDialog] = useState(false);
   const [showCloseDialog, setShowCloseDialog] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
   useRealtimeOrdersWithSound(QUERY_KEY);
   const { activeSession, isLoading: loadingSession, isOpen: cashIsOpen, openSession, closeSession, getPaymentSummary } = useCashSession();
 
@@ -250,6 +253,13 @@ export default function CashierPage() {
               </p>
             </div>
           </div>
+          <button 
+            onClick={() => setShowHistory(true)}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-secondary text-foreground hover:bg-accent transition-all text-sm font-semibold ml-auto"
+          >
+            <History className="w-4 h-4" />
+            Histórico / Reimpressão
+          </button>
         </div>
       </header>
 
@@ -402,6 +412,27 @@ export default function CashierPage() {
           channel={selectedBill.channel}
         />
       )}
+
+      {/* History and Reprinting Sheet */}
+      <Sheet open={showHistory} onOpenChange={setShowHistory}>
+        <SheetContent side="bottom" className="h-[90vh] sm:h-[85vh] p-0 overflow-hidden">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-border sticky top-0 bg-background z-10">
+            <SheetTitle className="flex items-center gap-2">
+              <History className="w-5 h-5 text-primary" />
+              Histórico e Reimpressão
+            </SheetTitle>
+            <button 
+              onClick={() => setShowHistory(false)}
+              className="p-2 rounded-lg hover:bg-secondary transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          <div className="p-6 overflow-y-auto h-full pb-20 scrollbar-thin">
+            <AdminOrdersHistory />
+          </div>
+        </SheetContent>
+      </Sheet>
 
       {/* Hidden receipt for printing */}
       {receiptData && <ReceiptPrintWrapper data={receiptData} />}

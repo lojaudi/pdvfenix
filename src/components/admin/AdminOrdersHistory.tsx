@@ -3,7 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Search, Printer, Calendar, Loader2, Eye, X, Filter } from "lucide-react";
+import { Search, Printer, Calendar, Loader2, Eye, X, Filter, ShieldAlert } from "lucide-react";
+import { useUserRole } from "@/hooks/useUserRole";
 import { toast } from "sonner";
 import { ReceiptPrint, triggerPrint, useReceiptSettings, type ReceiptData } from "@/components/pos/ReceiptPrint";
 
@@ -28,6 +29,7 @@ export function AdminOrdersHistory() {
   const [isReprinting, setIsReprinting] = useState(false);
   
   const { data: settings } = useReceiptSettings();
+  const { isAdmin, isCashier } = useUserRole();
   const printRef = useRef<HTMLDivElement>(null);
 
   const { data: orders, isLoading, refetch } = useQuery({
@@ -125,6 +127,16 @@ export function AdminOrdersHistory() {
     setSelectedOrder(receiptData);
     setIsPreviewing(true);
   };
+
+  if (!isAdmin && !isCashier) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <ShieldAlert className="w-16 h-16 text-destructive mb-4" />
+        <h3 className="text-xl font-bold">Acesso Restrito</h3>
+        <p className="text-muted-foreground">Apenas administradores e operadores de caixa podem acessar o histórico.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
