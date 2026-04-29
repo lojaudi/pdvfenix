@@ -253,6 +253,13 @@ export default function CashierPage() {
               </p>
             </div>
           </div>
+          <button 
+            onClick={() => setShowHistory(true)}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-secondary text-foreground hover:bg-accent transition-all text-sm font-semibold ml-auto"
+          >
+            <History className="w-4 h-4" />
+            Histórico / Reimpressão
+          </button>
         </div>
       </header>
 
