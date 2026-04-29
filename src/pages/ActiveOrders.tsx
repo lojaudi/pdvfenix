@@ -420,6 +420,10 @@ export default function ActiveOrdersPage() {
           marginLeft={receiptSettings?.receipt_margin_left}
           offsetX={receiptSettings?.receipt_offset_x}
           offsetY={receiptSettings?.receipt_offset_y}
+          fontHeader={receiptSettings?.font_header}
+          fontItems={receiptSettings?.font_items}
+          fontFooter={receiptSettings?.font_footer}
+          boldItems={receiptSettings?.bold_items}
         />
       )}
     </div>
