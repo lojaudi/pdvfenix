@@ -276,7 +276,12 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, {
         <div style={{ borderTop: "1px dashed #000", margin: "4px 0" }} />
 
         {/* Items */}
-        <table style={{ width: "100%", fontSize: `${fItems}px`, borderCollapse: "collapse" }}>
+        <table style={{ 
+          width: "100%", 
+          fontSize: `${fItems}px`, 
+          borderCollapse: "collapse",
+          fontWeight: boldItems ? "bold" : "normal"
+        }}>
           <thead>
             <tr>
               <th style={{ textAlign: "left", paddingBottom: 2, width: "60%" }}>Item</th>
