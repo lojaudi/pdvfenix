@@ -150,6 +150,7 @@ export default function CashierPage() {
   const [receiptData, setReceiptData] = useState<ReceiptData | null>(null);
   const [showOpenDialog, setShowOpenDialog] = useState(false);
   const [showCloseDialog, setShowCloseDialog] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
   useRealtimeOrdersWithSound(QUERY_KEY);
   const { activeSession, isLoading: loadingSession, isOpen: cashIsOpen, openSession, closeSession, getPaymentSummary } = useCashSession();
 
