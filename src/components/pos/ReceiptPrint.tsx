@@ -253,13 +253,13 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, {
         </div>
 
         {/* Order info */}
-        <div style={{ fontSize: isSmall ? 9 : 11, marginBottom: 4 }}>
+        <div style={{ fontSize: `${fItems}px`, marginBottom: 4 }}>
           <div><strong>Pedido:</strong> #{data.orderId.slice(0, 8).toUpperCase()}</div>
           {data.channel === "garcom" && data.tableNumber && (
-            <div style={{ fontSize: isSmall ? 12 : 14, fontWeight: "bold" }}>Mesa: {data.tableNumber}</div>
+            <div style={{ fontSize: `${parseInt(fHeader)}px`, fontWeight: "bold" }}>Mesa: {data.tableNumber}</div>
           )}
           {data.waiterName && (
-            <div style={{ fontSize: isSmall ? 11 : 14, fontWeight: "bold", marginTop: 4, padding: "3px 0", borderBottom: "1px dashed #000" }}>
+            <div style={{ fontSize: `${parseInt(fHeader)}px`, fontWeight: "bold", marginTop: 4, padding: "3px 0", borderBottom: "1px dashed #000" }}>
               GARÇOM: {data.waiterName.split('@')[0].toUpperCase()}
             </div>
           )}
