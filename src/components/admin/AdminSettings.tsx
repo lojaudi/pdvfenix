@@ -596,7 +596,10 @@ export function AdminSettings() {
                 </div>
                 <div className="border-t border-dashed border-gray-400 my-1" />
                 {/* Preview Items */}
-                <table className="w-full" style={{ fontSize: `${presets[paperWidth as "58" | "80"].fontItems}px` }}>
+                <table className="w-full" style={{ 
+                  fontSize: `${presets[paperWidth as "58" | "80"].fontItems}px`,
+                  fontWeight: presets[paperWidth as "58" | "80"].boldItems ? "bold" : "normal"
+                }}>
                   <thead>
                     <tr>
                       <th className="text-left pb-0.5">Item</th>
