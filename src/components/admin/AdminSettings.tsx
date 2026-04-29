@@ -235,6 +235,7 @@ export function AdminSettings() {
         { key: "paper_width_58_font_header", value: presets["58"].fontHeader, updated_at: now },
         { key: "paper_width_58_font_items", value: presets["58"].fontItems, updated_at: now },
         { key: "paper_width_58_font_footer", value: presets["58"].fontFooter, updated_at: now },
+        { key: "paper_width_58_bold_items", value: presets["58"].boldItems.toString(), updated_at: now },
         
         { key: "paper_width_80_margin_top", value: presets["80"].marginTop, updated_at: now },
         { key: "paper_width_80_margin_left", value: presets["80"].marginLeft, updated_at: now },
@@ -243,6 +244,7 @@ export function AdminSettings() {
         { key: "paper_width_80_font_header", value: presets["80"].fontHeader, updated_at: now },
         { key: "paper_width_80_font_items", value: presets["80"].fontItems, updated_at: now },
         { key: "paper_width_80_font_footer", value: presets["80"].fontFooter, updated_at: now },
+        { key: "paper_width_80_bold_items", value: presets["80"].boldItems.toString(), updated_at: now },
       ];
       const { error } = await supabase
         .from("app_settings")
