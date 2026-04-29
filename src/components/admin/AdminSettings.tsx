@@ -229,11 +229,17 @@ export function AdminSettings() {
         { key: "paper_width_58_margin_left", value: presets["58"].marginLeft, updated_at: now },
         { key: "paper_width_58_offset_x", value: presets["58"].offsetX, updated_at: now },
         { key: "paper_width_58_offset_y", value: presets["58"].offsetY, updated_at: now },
+        { key: "paper_width_58_font_header", value: presets["58"].fontHeader, updated_at: now },
+        { key: "paper_width_58_font_items", value: presets["58"].fontItems, updated_at: now },
+        { key: "paper_width_58_font_footer", value: presets["58"].fontFooter, updated_at: now },
         
         { key: "paper_width_80_margin_top", value: presets["80"].marginTop, updated_at: now },
         { key: "paper_width_80_margin_left", value: presets["80"].marginLeft, updated_at: now },
         { key: "paper_width_80_offset_x", value: presets["80"].offsetX, updated_at: now },
         { key: "paper_width_80_offset_y", value: presets["80"].offsetY, updated_at: now },
+        { key: "paper_width_80_font_header", value: presets["80"].fontHeader, updated_at: now },
+        { key: "paper_width_80_font_items", value: presets["80"].fontItems, updated_at: now },
+        { key: "paper_width_80_font_footer", value: presets["80"].fontFooter, updated_at: now },
       ];
       const { error } = await supabase
         .from("app_settings")
