@@ -13,9 +13,10 @@ const formatCurrency = (v: number) =>
 const statusLabels: Record<string, string> = {
   aberto: "Aberto",
   preparando: "Preparando",
-  finalizado: "Finalizado",
+  pronto: "Pronto",
+  pago: "Pago",
+  entregue: "Entregue",
   cancelado: "Cancelado",
-  saiu_para_entrega: "Em Entrega",
 };
 
 export function AdminOrdersHistory() {
