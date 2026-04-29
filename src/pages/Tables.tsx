@@ -3,7 +3,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useRealtimeTables } from "@/hooks/useRealtimeTables";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
-import { ArrowLeft, Loader2, Plus, Minus, Users, CreditCard, CheckCircle2, Unlock, Store } from "lucide-react";
+import { ArrowLeft, Loader2, Plus, Minus, Users, CreditCard, CheckCircle2, Unlock, Store, Wallet } from "lucide-react";
+import { useCashSession } from "@/hooks/useCashSession";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -49,6 +50,7 @@ export default function TablesPage() {
   const queryClient = useQueryClient();
   useRealtimeTables(QUERY_KEY);
   const [forceFreeTable, setForceFreeTable] = useState<TableItem | null>(null);
+  const { activeSession } = useCashSession();
 
   const { data: tables, isLoading } = useQuery({
     queryKey: QUERY_KEY,
@@ -77,6 +79,11 @@ export default function TablesPage() {
   });
 
   const changeStatus = async (table: TableItem, newStatus: TableStatus) => {
+    if (!activeSession && newStatus === "ocupada") {
+      toast.error("O caixa está fechado! Abra o caixa para ocupar mesas.");
+      navigate("/cashier");
+      return;
+    }
     const updateData: any = {
       status: newStatus,
       current_order_id: newStatus === "livre" ? null : table.current_order_id,

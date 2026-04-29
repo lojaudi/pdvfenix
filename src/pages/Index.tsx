@@ -13,6 +13,7 @@ import { ChannelSelector } from "@/components/pos/ChannelSelector";
 import { PaymentDialog } from "@/components/pos/PaymentDialog";
 import { TableSelector } from "@/components/pos/TableSelector";
 import { TableOrdersSummary } from "@/components/pos/TableOrdersSummary";
+import { useCashSession } from "@/hooks/useCashSession";
 import { VariationPicker } from "@/components/pos/VariationPicker";
 import { createOrder } from "@/services/orderService";
 import { supabase } from "@/integrations/supabase/client";
@@ -37,6 +38,7 @@ const Index = () => {
   const { isAdmin, isWaiter, isCashier, isKitchen } = useUserRole();
   const { unlocked, toggle: toggleSystem } = useSystemUnlocked();
   const { unlocked: catalogUnlocked, toggle: toggleCatalog } = useCatalogUnlocked();
+  const { activeSession, isLoading: loadingSession } = useCashSession();
   const { categories, products, loading } = useProducts();
   const { data: settings } = useReceiptSettings();
   const [channel, setChannel] = useState<OrderChannel>("balcao");
@@ -108,6 +110,11 @@ const Index = () => {
       : products.filter((p) => p.category_id === selectedCategory);
 
   const handleCheckout = async () => {
+    if (!activeSession) {
+      toast.error("O caixa está fechado! Abra o caixa para realizar vendas.");
+      navigate("/cashier");
+      return;
+    }
     if (channel === "garcom" && !selectedTable) {
       toast.error("Selecione uma mesa antes de finalizar!");
       return;
@@ -156,6 +163,11 @@ const Index = () => {
   };
 
   const handlePayment = async (method: PaymentMethodType, _changeValue?: number) => {
+    if (!activeSession) {
+      toast.error("O caixa está fechado! Abra o caixa para realizar vendas.");
+      navigate("/cashier");
+      return;
+    }
     if (!user) return;
     setSubmitting(true);
     try {
