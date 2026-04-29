@@ -15,6 +15,8 @@ import { CashSessionBanner } from "@/components/cashier/CashSessionBanner";
 import { OpenCashDialog } from "@/components/cashier/OpenCashDialog";
 import { CloseCashDialog } from "@/components/cashier/CloseCashDialog";
 import { toast } from "sonner";
+import { AdminOrdersHistory } from "@/components/admin/AdminOrdersHistory";
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 
 import type { PaymentMethod } from "@/components/pos/PaymentDialog";
 
