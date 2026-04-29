@@ -402,47 +402,90 @@ export function AdminSettings() {
         </div>
 
         {/* Calibration Settings */}
-        <div className="grid grid-cols-2 gap-4 border-t border-border pt-4">
-          <div className="col-span-2">
-            <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">
+        <div className="space-y-4 border-t border-border pt-4">
+          <div>
+            <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-3">
               Calibração {paperWidth}mm (mm)
             </h4>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-[10px] font-semibold text-foreground mb-1 block">Margem Topo</label>
+                <Input
+                  type="number"
+                  value={presets[paperWidth as "58" | "80"].marginTop}
+                  onChange={(e) => updatePreset(paperWidth as "58" | "80", "marginTop", e.target.value)}
+                  className="bg-background border-border h-8 text-xs"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-semibold text-foreground mb-1 block">Margem Esquerda</label>
+                <Input
+                  type="number"
+                  value={presets[paperWidth as "58" | "80"].marginLeft}
+                  onChange={(e) => updatePreset(paperWidth as "58" | "80", "marginLeft", e.target.value)}
+                  className="bg-background border-border h-8 text-xs"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-semibold text-foreground mb-1 block">Deslocamento X</label>
+                <Input
+                  type="number"
+                  value={presets[paperWidth as "58" | "80"].offsetX}
+                  onChange={(e) => updatePreset(paperWidth as "58" | "80", "offsetX", e.target.value)}
+                  className="bg-background border-border h-8 text-xs"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-semibold text-foreground mb-1 block">Deslocamento Y</label>
+                <Input
+                  type="number"
+                  value={presets[paperWidth as "58" | "80"].offsetY}
+                  onChange={(e) => updatePreset(paperWidth as "58" | "80", "offsetY", e.target.value)}
+                  className="bg-background border-border h-8 text-xs"
+                />
+              </div>
+            </div>
           </div>
-          <div>
-            <label className="text-[10px] font-semibold text-foreground mb-1 block">Margem Topo</label>
-            <Input
-              type="number"
-              value={presets[paperWidth as "58" | "80"].marginTop}
-              onChange={(e) => updatePreset(paperWidth as "58" | "80", "marginTop", e.target.value)}
-              className="bg-background border-border h-8 text-xs"
-            />
-          </div>
-          <div>
-            <label className="text-[10px] font-semibold text-foreground mb-1 block">Margem Esquerda</label>
-            <Input
-              type="number"
-              value={presets[paperWidth as "58" | "80"].marginLeft}
-              onChange={(e) => updatePreset(paperWidth as "58" | "80", "marginLeft", e.target.value)}
-              className="bg-background border-border h-8 text-xs"
-            />
-          </div>
-          <div>
-            <label className="text-[10px] font-semibold text-foreground mb-1 block">Deslocamento X</label>
-            <Input
-              type="number"
-              value={presets[paperWidth as "58" | "80"].offsetX}
-              onChange={(e) => updatePreset(paperWidth as "58" | "80", "offsetX", e.target.value)}
-              className="bg-background border-border h-8 text-xs"
-            />
-          </div>
-          <div>
-            <label className="text-[10px] font-semibold text-foreground mb-1 block">Deslocamento Y</label>
-            <Input
-              type="number"
-              value={presets[paperWidth as "58" | "80"].offsetY}
-              onChange={(e) => updatePreset(paperWidth as "58" | "80", "offsetY", e.target.value)}
-              className="bg-background border-border h-8 text-xs"
-            />
+
+          <div className="space-y-4 pt-2">
+            <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+              <Type className="w-3 h-3" /> Tamanho das Fontes
+            </h4>
+            
+            <div className="space-y-3">
+              <div>
+                <div className="flex justify-between mb-1">
+                  <label className="text-[10px] font-semibold text-foreground">Cabeçalho ({presets[paperWidth as "58" | "80"].fontHeader}px)</label>
+                </div>
+                <Slider 
+                  value={[parseInt(presets[paperWidth as "58" | "80"].fontHeader)]}
+                  min={8} max={24} step={1}
+                  onValueChange={([val]) => updatePreset(paperWidth as "58" | "80", "fontHeader", val.toString())}
+                />
+              </div>
+
+              <div>
+                <div className="flex justify-between mb-1">
+                  <label className="text-[10px] font-semibold text-foreground">Itens/Corpo ({presets[paperWidth as "58" | "80"].fontItems}px)</label>
+                </div>
+                <Slider 
+                  value={[parseInt(presets[paperWidth as "58" | "80"].fontItems)]}
+                  min={6} max={18} step={1}
+                  onValueChange={([val]) => updatePreset(paperWidth as "58" | "80", "fontItems", val.toString())}
+                />
+              </div>
+
+              <div>
+                <div className="flex justify-between mb-1">
+                  <label className="text-[10px] font-semibold text-foreground">Rodapé ({presets[paperWidth as "58" | "80"].fontFooter}px)</label>
+                </div>
+                <Slider 
+                  value={[parseInt(presets[paperWidth as "58" | "80"].fontFooter)]}
+                  min={6} max={16} step={1}
+                  onValueChange={([val]) => updatePreset(paperWidth as "58" | "80", "fontFooter", val.toString())}
+                />
+              </div>
+            </div>
           </div>
         </div>
 
