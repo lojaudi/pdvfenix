@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { Save, Phone, Store, Clock, MessageSquare, ImagePlus, Trash2, Printer, User, Mail, Lock, Eye, EyeOff, Layout, Type } from "lucide-react";
 
@@ -23,8 +24,8 @@ export function AdminSettings() {
   
   // Independent presets for 58mm and 80mm
   const [presets, setPresets] = useState({
-    "58": { marginTop: "0", marginLeft: "0", offsetX: "0", offsetY: "0", fontHeader: "12", fontItems: "9", fontFooter: "8" },
-    "80": { marginTop: "0", marginLeft: "0", offsetX: "0", offsetY: "0", fontHeader: "14", fontItems: "11", fontFooter: "10" }
+    "58": { marginTop: "0", marginLeft: "0", offsetX: "0", offsetY: "0", fontHeader: "12", fontItems: "9", fontFooter: "8", boldItems: false },
+    "80": { marginTop: "0", marginLeft: "0", offsetX: "0", offsetY: "0", fontHeader: "14", fontItems: "11", fontFooter: "10", boldItems: false }
   });
 
   const [saving, setSaving] = useState(false);
@@ -140,7 +141,8 @@ export function AdminSettings() {
           offsetY: get("paper_width_58_offset_y") || get("receipt_offset_y") || "0",
           fontHeader: get("paper_width_58_font_header") || "12",
           fontItems: get("paper_width_58_font_items") || "9",
-          fontFooter: get("paper_width_58_font_footer") || "8"
+          fontFooter: get("paper_width_58_font_footer") || "8",
+          boldItems: get("paper_width_58_bold_items") === "true"
         },
         "80": {
           marginTop: get("paper_width_80_margin_top") || get("receipt_margin_top") || "0",
@@ -149,13 +151,14 @@ export function AdminSettings() {
           offsetY: get("paper_width_80_offset_y") || get("receipt_offset_y") || "0",
           fontHeader: get("paper_width_80_font_header") || "14",
           fontItems: get("paper_width_80_font_items") || "11",
-          fontFooter: get("paper_width_80_font_footer") || "10"
+          fontFooter: get("paper_width_80_font_footer") || "10",
+          boldItems: get("paper_width_80_bold_items") === "true"
         }
       });
     }
   }, [settings]);
 
-  const updatePreset = (width: "58" | "80", field: string, value: string) => {
+  const updatePreset = (width: "58" | "80", field: string, value: any) => {
     setPresets(prev => ({
       ...prev,
       [width]: { ...prev[width], [field]: value }
@@ -232,6 +235,7 @@ export function AdminSettings() {
         { key: "paper_width_58_font_header", value: presets["58"].fontHeader, updated_at: now },
         { key: "paper_width_58_font_items", value: presets["58"].fontItems, updated_at: now },
         { key: "paper_width_58_font_footer", value: presets["58"].fontFooter, updated_at: now },
+        { key: "paper_width_58_bold_items", value: presets["58"].boldItems.toString(), updated_at: now },
         
         { key: "paper_width_80_margin_top", value: presets["80"].marginTop, updated_at: now },
         { key: "paper_width_80_margin_left", value: presets["80"].marginLeft, updated_at: now },
@@ -240,6 +244,7 @@ export function AdminSettings() {
         { key: "paper_width_80_font_header", value: presets["80"].fontHeader, updated_at: now },
         { key: "paper_width_80_font_items", value: presets["80"].fontItems, updated_at: now },
         { key: "paper_width_80_font_footer", value: presets["80"].fontFooter, updated_at: now },
+        { key: "paper_width_80_bold_items", value: presets["80"].boldItems.toString(), updated_at: now },
       ];
       const { error } = await supabase
         .from("app_settings")
@@ -465,6 +470,16 @@ export function AdminSettings() {
               </div>
 
               <div>
+                <div className="flex justify-between items-center mb-1">
+                  <label className="text-[10px] font-semibold text-foreground">Negritar Itens</label>
+                  <Switch 
+                    checked={presets[paperWidth as "58" | "80"].boldItems}
+                    onCheckedChange={(val) => updatePreset(paperWidth as "58" | "80", "boldItems", val)}
+                  />
+                </div>
+              </div>
+
+              <div>
                 <div className="flex justify-between mb-1">
                   <label className="text-[10px] font-semibold text-foreground">Itens/Corpo ({presets[paperWidth as "58" | "80"].fontItems}px)</label>
                 </div>
@@ -581,7 +596,10 @@ export function AdminSettings() {
                 </div>
                 <div className="border-t border-dashed border-gray-400 my-1" />
                 {/* Preview Items */}
-                <table className="w-full" style={{ fontSize: `${presets[paperWidth as "58" | "80"].fontItems}px` }}>
+                <table className="w-full" style={{ 
+                  fontSize: `${presets[paperWidth as "58" | "80"].fontItems}px`,
+                  fontWeight: presets[paperWidth as "58" | "80"].boldItems ? "bold" : "normal"
+                }}>
                   <thead>
                     <tr>
                       <th className="text-left pb-0.5">Item</th>

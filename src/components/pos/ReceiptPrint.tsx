@@ -72,6 +72,9 @@ export function useReceiptSettings() {
         font_footer: is58
           ? (settingsMap["paper_width_58_font_footer"] || "8")
           : (settingsMap["paper_width_80_font_footer"] || "10"),
+        bold_items: is58
+          ? (settingsMap["paper_width_58_bold_items"] === "true")
+          : (settingsMap["paper_width_80_bold_items"] === "true"),
       };
     },
     staleTime: 60_000,
@@ -108,6 +111,7 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, {
   fontHeader?: string;
   fontItems?: string;
   fontFooter?: string;
+  boldItems?: boolean;
 }>(
   ({ 
     data, 
@@ -121,7 +125,8 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, {
     offsetY = "0",
     fontHeader,
     fontItems,
-    fontFooter
+    fontFooter,
+    boldItems = false
   }, ref) => {
     const now = data.paidAt ? new Date(data.paidAt) : new Date();
 
@@ -271,7 +276,12 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, {
         <div style={{ borderTop: "1px dashed #000", margin: "4px 0" }} />
 
         {/* Items */}
-        <table style={{ width: "100%", fontSize: `${fItems}px`, borderCollapse: "collapse" }}>
+        <table style={{ 
+          width: "100%", 
+          fontSize: `${fItems}px`, 
+          borderCollapse: "collapse",
+          fontWeight: boldItems ? "bold" : "normal"
+        }}>
           <thead>
             <tr>
               <th style={{ textAlign: "left", paddingBottom: 2, width: "60%" }}>Item</th>
