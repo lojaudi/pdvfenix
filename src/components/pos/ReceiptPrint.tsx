@@ -105,8 +105,24 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, {
   marginLeft?: string;
   offsetX?: string;
   offsetY?: string;
+  fontHeader?: string;
+  fontItems?: string;
+  fontFooter?: string;
 }>(
-  ({ data, headerText, footerText, paperWidth = "80", isPreview = false, marginTop = "0", marginLeft = "0", offsetX = "0", offsetY = "0" }, ref) => {
+  ({ 
+    data, 
+    headerText, 
+    footerText, 
+    paperWidth = "80", 
+    isPreview = false, 
+    marginTop = "0", 
+    marginLeft = "0", 
+    offsetX = "0", 
+    offsetY = "0",
+    fontHeader,
+    fontItems,
+    fontFooter
+  }, ref) => {
     const now = data.paidAt ? new Date(data.paidAt) : new Date();
 
     const headerLines = headerText || "PDV FÊNIX";
