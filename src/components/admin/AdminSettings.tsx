@@ -597,14 +597,14 @@ export function AdminSettings() {
                 </table>
                 <div className="border-t border-dashed border-gray-400 my-1" />
                 {/* Preview Total */}
-                <div className="flex justify-between font-bold" style={{ fontSize: paperWidth === "58" ? "10px" : "12px" }}>
+                <div className="flex justify-between font-bold" style={{ fontSize: `${parseInt(presets[paperWidth as "58" | "80"].fontItems) + 1}px` }}>
                   <span>TOTAL</span>
                   <span>R$ 65,80</span>
                 </div>
-                <div style={{ fontSize: paperWidth === "58" ? "9px" : "11px" }} className="mt-1"><strong>Pagamento:</strong> PIX</div>
+                <div style={{ fontSize: `${presets[paperWidth as "58" | "80"].fontItems}px` }} className="mt-1"><strong>Pagamento:</strong> PIX</div>
                 <div className="border-t border-dashed border-gray-400 my-2" />
                 {/* Preview Footer */}
-                <div className="text-center" style={{ fontSize: paperWidth === "58" ? "8px" : "10px" }}>
+                <div className="text-center" style={{ fontSize: `${presets[paperWidth as "58" | "80"].fontFooter}px` }}>
                   {(receiptFooter || "Obrigado pela preferência!\nPDV Fênix • Sistema de Gestão").split("\n").map((line, i) => (
                     <div key={i}>{line}</div>
                   ))}
