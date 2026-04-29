@@ -470,6 +470,16 @@ export function AdminSettings() {
               </div>
 
               <div>
+                <div className="flex justify-between items-center mb-1">
+                  <label className="text-[10px] font-semibold text-foreground">Negritar Itens</label>
+                  <Switch 
+                    checked={presets[paperWidth as "58" | "80"].boldItems}
+                    onCheckedChange={(val) => updatePreset(paperWidth as "58" | "80", "boldItems", val)}
+                  />
+                </div>
+              </div>
+
+              <div>
                 <div className="flex justify-between mb-1">
                   <label className="text-[10px] font-semibold text-foreground">Itens/Corpo ({presets[paperWidth as "58" | "80"].fontItems}px)</label>
                 </div>
