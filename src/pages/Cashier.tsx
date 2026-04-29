@@ -413,6 +413,27 @@ export default function CashierPage() {
         />
       )}
 
+      {/* History and Reprinting Sheet */}
+      <Sheet open={showHistory} onOpenChange={setShowHistory}>
+        <SheetContent side="bottom" className="h-[90vh] sm:h-[85vh] p-0 overflow-hidden">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-border sticky top-0 bg-background z-10">
+            <SheetTitle className="flex items-center gap-2">
+              <History className="w-5 h-5 text-primary" />
+              Histórico e Reimpressão
+            </SheetTitle>
+            <button 
+              onClick={() => setShowHistory(false)}
+              className="p-2 rounded-lg hover:bg-secondary transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          <div className="p-6 overflow-y-auto h-full pb-20 scrollbar-thin">
+            <AdminOrdersHistory />
+          </div>
+        </SheetContent>
+      </Sheet>
+
       {/* Hidden receipt for printing */}
       {receiptData && <ReceiptPrintWrapper data={receiptData} />}
 
