@@ -18,7 +18,7 @@ import { VariationPicker } from "@/components/pos/VariationPicker";
 import { createOrder } from "@/services/orderService";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Store, LogOut, Loader2, Settings, BarChart3, ClipboardList, LayoutGrid, Wallet, Bike, Link2, Check, Unlock, Lock } from "lucide-react";
+import { Store, LogOut, Loader2, Settings, BarChart3, ClipboardList, LayoutGrid, Wallet, Bike, Link2, Check, Unlock, Lock, Search } from "lucide-react";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 
 type OrderChannel = "balcao" | "garcom" | "delivery";
