@@ -13,13 +13,15 @@ import { AdminVisualSettings } from "@/components/admin/AdminVisualSettings";
 import { AdminNeonBoard } from "@/components/admin/AdminNeonBoard";
 import { AdminWhatsApp } from "@/components/admin/AdminWhatsApp";
 import { AdminPrintTest } from "@/components/admin/AdminPrintTest";
-import { ArrowLeft, Package, Grid3X3, Users, Loader2, ShieldAlert, Truck, Bike, Settings, Palette, Zap, MessageSquare, Printer } from "lucide-react";
+import { AdminOrdersHistory } from "@/components/admin/AdminOrdersHistory";
+import { ArrowLeft, Package, Grid3X3, Users, Loader2, ShieldAlert, Truck, Bike, Settings, Palette, Zap, MessageSquare, Printer, History } from "lucide-react";
 
-type Tab = "products" | "categories" | "users" | "delivery" | "drivers" | "settings" | "visual" | "neon" | "whatsapp" | "print_test";
+type Tab = "products" | "categories" | "users" | "delivery" | "drivers" | "settings" | "visual" | "neon" | "whatsapp" | "print_test" | "orders_history";
 
 const tabs: { id: Tab; label: string; icon: typeof Package }[] = [
   { id: "products", label: "Produtos", icon: Package },
   { id: "categories", label: "Categorias", icon: Grid3X3 },
+  { id: "orders_history", label: "Histórico", icon: History },
   { id: "users", label: "Usuários", icon: Users },
   { id: "delivery", label: "Zonas", icon: Truck },
   { id: "drivers", label: "Entregadores", icon: Bike },
@@ -117,6 +119,7 @@ export default function AdminPage() {
         {activeTab === "drivers" && <AdminDrivers />}
         {activeTab === "settings" && <AdminSettings />}
         {activeTab === "print_test" && <AdminPrintTest />}
+        {activeTab === "orders_history" && <AdminOrdersHistory />}
         {activeTab === "visual" && <AdminVisualSettings />}
         {activeTab === "neon" && <AdminNeonBoard />}
         {activeTab === "whatsapp" && <AdminWhatsApp />}

@@ -1,0 +1,1 @@
+CREATE INDEX IF NOT EXISTS idx_orders_created_at ON public.orders (created_at DESC);
