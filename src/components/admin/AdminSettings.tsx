@@ -575,13 +575,13 @@ export function AdminSettings() {
                 </div>
                 <div className="border-t border-dashed border-gray-400 my-1" />
                 {/* Preview Order Info */}
-                <div style={{ fontSize: paperWidth === "58" ? "9px" : "11px" }} className="mb-1 space-y-0.5">
+                <div style={{ fontSize: `${presets[paperWidth as "58" | "80"].fontItems}px` }} className="mb-1 space-y-0.5">
                   <div><strong>Pedido:</strong> #A1B2C3D4</div>
                   <div><strong>Canal:</strong> Balcão</div>
                 </div>
                 <div className="border-t border-dashed border-gray-400 my-1" />
                 {/* Preview Items */}
-                <table className="w-full" style={{ fontSize: paperWidth === "58" ? "9px" : "11px" }}>
+                <table className="w-full" style={{ fontSize: `${presets[paperWidth as "58" | "80"].fontItems}px` }}>
                   <thead>
                     <tr>
                       <th className="text-left pb-0.5">Item</th>
