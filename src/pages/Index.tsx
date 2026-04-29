@@ -472,6 +472,7 @@ const Index = () => {
           fontHeader={settings?.font_header}
           fontItems={settings?.font_items}
           fontFooter={settings?.font_footer}
+          boldItems={settings?.bold_items}
         />
       )}
     </main>
