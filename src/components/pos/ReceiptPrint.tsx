@@ -129,7 +129,13 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, {
     const footerLines = footerText || "Obrigado pela preferência!\nPDV Fênix • Sistema de Gestão";
     const isSmall = paperWidth === "58";
     const width = isSmall ? "58mm" : "80mm";
-    const baseFontSize = isSmall ? "10px" : "12px";
+    
+    // Use provided fonts or fallback to defaults
+    const fHeader = fontHeader || (isSmall ? "12" : "14");
+    const fItems = fontItems || (isSmall ? "9" : "11");
+    const fFooter = fontFooter || (isSmall ? "8" : "10");
+
+    const baseFontSize = `${fItems}px`;
     const padding = isSmall ? "1mm" : "3mm";
 
     return (
