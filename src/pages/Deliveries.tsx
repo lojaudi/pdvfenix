@@ -349,6 +349,10 @@ function DeliveryReceiptWrapper({ data }: { data: ReceiptData }) {
       marginLeft={settings?.receipt_margin_left}
       offsetX={settings?.receipt_offset_x}
       offsetY={settings?.receipt_offset_y}
+      fontHeader={settings?.font_header}
+      fontItems={settings?.font_items}
+      fontFooter={settings?.font_footer}
+      boldItems={settings?.bold_items}
     />
   );
 }
