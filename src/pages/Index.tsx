@@ -43,6 +43,7 @@ const Index = () => {
   const { data: settings } = useReceiptSettings();
   const [channel, setChannel] = useState<OrderChannel>("balcao");
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
   const [showPayment, setShowPayment] = useState(false);
   const [selectedTable, setSelectedTable] = useState<number | null>(null);
   const [customerName, setCustomerName] = useState("");
