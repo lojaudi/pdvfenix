@@ -119,6 +119,7 @@ export default function AdminPage() {
         {activeTab === "drivers" && <AdminDrivers />}
         {activeTab === "settings" && <AdminSettings />}
         {activeTab === "print_test" && <AdminPrintTest />}
+        {activeTab === "orders_history" && <AdminOrdersHistory />}
         {activeTab === "visual" && <AdminVisualSettings />}
         {activeTab === "neon" && <AdminNeonBoard />}
         {activeTab === "whatsapp" && <AdminWhatsApp />}
