@@ -304,26 +304,26 @@ export const ReceiptPrint = forwardRef<HTMLDivElement, {
 
         {/* Payment method */}
         {data.paymentMethod && (
-          <div style={{ fontSize: isSmall ? 9 : 11, marginTop: 4 }}>
+          <div style={{ fontSize: `${fItems}px`, marginTop: 4 }}>
             <strong>Pagamento:</strong> {paymentLabels[data.paymentMethod] || data.paymentMethod}
           </div>
         )}
 
         {/* Change info */}
         {data.changeFor != null && data.changeFor > 0 && (
-          <div style={{ fontSize: isSmall ? 9 : 11, marginTop: 2 }}>
+          <div style={{ fontSize: `${fItems}px`, marginTop: 2 }}>
             <strong>Troco para:</strong> {formatCurrency(data.changeFor)}
           </div>
         )}
         {data.changeAmount != null && data.changeAmount > 0 && (
-          <div style={{ fontSize: isSmall ? 11 : 13, fontWeight: "bold", marginTop: 2 }}>
+          <div style={{ fontSize: `${parseInt(fItems) + 2}px`, fontWeight: "bold", marginTop: 2 }}>
             TROCO: {formatCurrency(data.changeAmount)}
           </div>
         )}
 
         {/* Delivery notes */}
         {data.deliveryNotes && (
-          <div style={{ fontSize: isSmall ? 9 : 11, marginTop: 4 }}>
+          <div style={{ fontSize: `${fItems}px`, marginTop: 4 }}>
             <strong>Obs:</strong> {data.deliveryNotes}
           </div>
         )}
