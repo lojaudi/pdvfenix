@@ -121,6 +121,7 @@ export function AdminPrintTest() {
               fontHeader={testPaperWidth === "58" ? (settings?.paper_width_58_font_header || "12") : (settings?.paper_width_80_font_header || "14")}
               fontItems={testPaperWidth === "58" ? (settings?.paper_width_58_font_items || "9") : (settings?.paper_width_80_font_items || "11")}
               fontFooter={testPaperWidth === "58" ? (settings?.paper_width_58_font_footer || "8") : (settings?.paper_width_80_font_footer || "10")}
+              boldItems={testPaperWidth === "58" ? (settings?.paper_width_58_bold_items === "true") : (settings?.paper_width_80_bold_items === "true")}
             />
           </div>
           <p className="text-[10px] text-muted-foreground mt-4 text-center italic">
