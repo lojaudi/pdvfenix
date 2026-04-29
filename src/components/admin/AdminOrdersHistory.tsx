@@ -128,6 +128,16 @@ export function AdminOrdersHistory() {
     setIsPreviewing(true);
   };
 
+  if (!isAdmin && !isCashier) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <ShieldAlert className="w-16 h-16 text-destructive mb-4" />
+        <h3 className="text-xl font-bold">Acesso Restrito</h3>
+        <p className="text-muted-foreground">Apenas administradores e operadores de caixa podem acessar o histórico.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
