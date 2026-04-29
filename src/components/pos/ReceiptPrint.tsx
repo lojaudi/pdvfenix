@@ -63,6 +63,15 @@ export function useReceiptSettings() {
         receipt_offset_y: is58
           ? (settingsMap["paper_width_58_offset_y"] || settingsMap["receipt_offset_y"] || "0")
           : (settingsMap["paper_width_80_offset_y"] || settingsMap["receipt_offset_y"] || "0"),
+        font_header: is58
+          ? (settingsMap["paper_width_58_font_header"] || "12")
+          : (settingsMap["paper_width_80_font_header"] || "14"),
+        font_items: is58
+          ? (settingsMap["paper_width_58_font_items"] || "9")
+          : (settingsMap["paper_width_80_font_items"] || "11"),
+        font_footer: is58
+          ? (settingsMap["paper_width_58_font_footer"] || "8")
+          : (settingsMap["paper_width_80_font_footer"] || "10"),
       };
     },
     staleTime: 60_000,
